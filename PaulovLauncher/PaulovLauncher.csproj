@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <Reference Include="bsg.componentace.compression.libs.zlib">
-      <HintPath>H:\EmuTarkov\Client Modules\Tarkov.References\bsg.componentace.compression.libs.zlib.dll</HintPath>
+      <HintPath>References\bsg.componentace.compression.libs.zlib.dll</HintPath>
     </Reference>
   </ItemGroup>
 
