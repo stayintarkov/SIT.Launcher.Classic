@@ -95,7 +95,7 @@ namespace PaulovLauncher
             }
 
             // If all good, launch game with AID
-            if(!string.IsNullOrEmpty(returnData) && returnData != "FAILED" && returnData.StartsWith("AID"))
+            if(!string.IsNullOrEmpty(returnData) && returnData != "FAILED" && returnData != "ALREADY_IN_USE" && returnData.StartsWith("AID"))
             {
                 OpenFileDialog openFileDialog = new OpenFileDialog();
                 openFileDialog.Filter = "Executable (EscapeFromTarkov.exe)|EscapeFromTarkov.exe;";
@@ -105,6 +105,14 @@ namespace PaulovLauncher
                     Process.Start(openFileDialog.FileName, commandArgs);
                     WindowState = WindowState.Minimized;
                 }
+            }
+            else if (returnData == "ALREADY_IN_USE")
+            {
+                var messageBoxResult = MessageBox.Show("The username/email has already been created, please use another one.", "Account");
+            }
+            else
+            {
+                var messageBoxResult = MessageBox.Show("Something went wrong.", "Account");
             }
         }
     }
