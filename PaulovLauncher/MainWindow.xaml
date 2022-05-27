@@ -6,7 +6,7 @@
         xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
         xmlns:local="clr-namespace:PaulovLauncher"
         mc:Ignorable="d"
-        Title="Paulov Launcher" 
+        Title="Stay In Tarkov Launcher" 
         MinHeight="450" 
         Height="450" 
         MinWidth="800" 
@@ -14,7 +14,10 @@
                   BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
                       BorderThickness="1"
        WindowStartupLocation="CenterScreen">
-    <Grid>
+    <Window.Background>
+        <ImageBrush ImageSource="/PaulovLauncher;component/Images/StayInTarkov.jpg"/>
+    </Window.Background>
+    <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="80"></RowDefinition>
             <RowDefinition Height="*">
@@ -30,15 +33,17 @@
                 <ColumnDefinition></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <Button Background="Transparent" Grid.Column="1">Play</Button>
+            <!--<Button Background="Transparent" Grid.Column="1">Play</Button>-->
             <!--<Button Background="Transparent" Grid.Column="2"></Button>-->
         </Grid>
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
-                <RowDefinition></RowDefinition>
-                <RowDefinition MaxHeight="120" ></RowDefinition>
+                <RowDefinition MinHeight="180"></RowDefinition>
+                <RowDefinition ></RowDefinition>
+                <RowDefinition MaxHeight="40" ></RowDefinition>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
+                <ColumnDefinition MinWidth="250" Width="250"></ColumnDefinition>
                 <ColumnDefinition MinWidth="300" Width="300"></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
@@ -51,14 +56,6 @@
                     <ColumnDefinition></ColumnDefinition>
                     <ColumnDefinition></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <!--<mah:MetroHeader Content="Servers" />
-                <ListBox DataContext="{Binding ServerInstances}" Grid.Row="1" x:Name="lstServers" BorderThickness="1">
-                    
-                </ListBox>
-                <StackPanel Grid.Row="1" Grid.Column="1">
-                    <Button x:Name="btnAddNewServer" Click="btnAddNewServer_Click">Add</Button>
-                    <Button x:Name="btnRemoveServer" Click="btnRemoveServer_Click">Remove</Button>
-                </StackPanel>-->
             </Grid>
 
             <Grid Grid.Column="0" Grid.ColumnSpan="2">
@@ -72,13 +69,13 @@
                 </StackPanel>
                 <StackPanel Grid.Row="1">
                     <mah:MetroHeader Content="Login" />
-                    <mah:MetroHeader Content="Username" />
+                    <mah:MetroHeader  Content="Username" />
                     <TextBox Text="{Binding Username}"></TextBox>
                     <mah:MetroHeader Content="Password" />
                     <PasswordBox x:Name="txtPassword"></PasswordBox>
                 </StackPanel>
             </Grid>
-            <Button Background="Transparent" Grid.Row="1" Grid.Column="1" x:Name="btnLaunchGame" Click="btnLaunchGame_Click">Launch</Button>
+            <Button Grid.Row="2" Grid.Column="2" x:Name="btnLaunchGame" Click="btnLaunchGame_Click">Launch</Button>
 
         </Grid>
     </Grid>

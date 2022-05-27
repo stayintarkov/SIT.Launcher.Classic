@@ -10,7 +10,7 @@ namespace PaulovLauncher
     {
         public static List<ServerInstance> ServerInstances = new List<ServerInstance>();
 
-        public string ServerName { get; set; }
-        public string ServerAddress { get; set; }
+        public string ServerName { get; set; } = "Local";
+        public string ServerAddress { get; set; } = "https://localhost:443";
     }
 }

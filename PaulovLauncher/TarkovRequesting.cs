@@ -1,9 +1,12 @@
-﻿using ComponentAce.Compression.Libs.zlib;
+﻿//using ComponentAce.Compression.Libs.zlib;
+using ComponentAce.Compression.Libs.zlib;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -19,6 +22,42 @@ namespace PaulovLauncher
             Session = session;
             RemoteEndPoint = remoteEndPoint;
         }
+
+        //private static byte[] CompressFile(Stream stream)
+        //{
+        //    MemoryStream ms = new MemoryStream();
+        //    GZipStream deflateStream;
+        //    using (deflateStream = new GZipStream(ms, CompressionMode.Compress))
+        //    {
+        //        stream.CopyTo(deflateStream);
+        //    }
+        //    return ms.ToArray();
+        //}
+
+        //private static byte[] DecompressFile(byte[] bytes)
+        //{
+        //    var str = UTF8Encoding.UTF8.GetString(bytes);
+
+        //    var destination = new MemoryStream();
+        //    var instream = new MemoryStream(bytes);
+        //    using (var decompressor = (Stream)new DeflateStream(instream, CompressionMode.Decompress, true))
+        //    {
+        //        decompressor.CopyTo(destination);
+        //    }
+
+        //    destination.Seek(0, SeekOrigin.Begin);
+
+        //    return destination.ToArray();
+        //}
+
+        //private static void DecompressFile()
+        //{
+        //    using FileStream compressedFileStream = File.Open(CompressedFileName, FileMode.Open);
+        //    using FileStream outputFileStream = File.Create(DecompressedFileName);
+        //    using var decompressor = new DeflateStream(compressedFileStream, CompressionMode.Decompress);
+        //    decompressor.CopyTo(outputFileStream);
+        //}
+
         /// <summary>
         /// Send request to the server and get Stream of data back
         /// </summary>
@@ -51,7 +90,6 @@ namespace PaulovLauncher
 
             if (method != "GET" && !string.IsNullOrEmpty(data))
             {
-                // set request body
                 byte[] bytes = (compress) ? SimpleZlib.CompressToBytes(data, zlibConst.Z_BEST_COMPRESSION) : Encoding.UTF8.GetBytes(data);
 
                 request.ContentType = "application/json";
@@ -96,6 +134,7 @@ namespace PaulovLauncher
                     if (stream == null)
                         return "";
                     stream.CopyTo(ms);
+                    //return Encoding.UTF8.GetString(DecompressFile(ms.ToArray()));
                     return SimpleZlib.Decompress(ms.ToArray(), null);
                 }
             }
@@ -110,6 +149,7 @@ namespace PaulovLauncher
                     if (stream == null)
                         return "";
                     stream.CopyTo(ms);
+                    //return Encoding.UTF8.GetString(DecompressFile(ms.ToArray()));
                     return SimpleZlib.Decompress(ms.ToArray(), null);
                 }
             }

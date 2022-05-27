@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -28,7 +29,14 @@ namespace PaulovLauncher
         public MainWindow()
         {
             InitializeComponent();
+
+            if(File.Exists("LastUsedSettings.json"))
+            {
+                var ServerInstance = JsonConvert.DeserializeObject<ServerInstance>(File.ReadAllText("LastUsedSettings.json"));
+                ServerAddress = ServerInstance.ServerAddress;
+            }
             this.DataContext = this;
+
         }
 
         public IEnumerable<ServerInstance> ServerInstances 
@@ -40,7 +48,15 @@ namespace PaulovLauncher
         }
 
         public string Username { get; set; }
-        public string ServerAddress { get; set; }
+
+        private string _serverAddress = "https://localhost:443";
+
+        public string ServerAddress
+        {
+            get { return _serverAddress; }
+            set { _serverAddress = value; }
+        }
+
 
         private void btnAddNewServer_Click(object sender, RoutedEventArgs e)
         {
@@ -103,6 +119,9 @@ namespace PaulovLauncher
                 {
                     var commandArgs = $"-token={returnData} -config={{\"BackendUrl\":\"{ServerAddress}\",\"Version\":\"live\"}}";
                     Process.Start(openFileDialog.FileName, commandArgs);
+
+                    File.WriteAllText("LastUsedSettings.json", JsonConvert.SerializeObject(new ServerInstance() { ServerAddress = ServerAddress }));
+
                     WindowState = WindowState.Minimized;
                 }
             }
