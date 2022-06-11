@@ -409,13 +409,4 @@
     <Folder Include="ClientMods\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="H:\EmuTarkov\Client Modules\SIT.A.Tarkov.Core.dll" Link="ClientMods\SIT.A.Tarkov.Core.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="H:\EmuTarkov\Client Modules\SIT.Tarkov.SP.dll" Link="ClientMods\SIT.Tarkov.SP.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>
