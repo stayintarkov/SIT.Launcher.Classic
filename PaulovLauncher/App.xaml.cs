@@ -1,23 +1,31 @@
-﻿using System;
+﻿using SIT.Launcher;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace PaulovLauncher
+namespace SIT.Launcher
 {
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
     public partial class App : Application
     {
-        public static List<ServerInstance> ServerInstances = new List<ServerInstance>(); 
-        
+        public static string ProductVersion
+        {
+            get
+            {
+                return Assembly.GetEntryAssembly().GetName().Version.ToString();
+            }
+        }
+
         public App()
         {
-
+            _ = new DiscordInterop().StartDiscordClient("V." + ProductVersion);
         }
     }
 }

@@ -1,10 +1,12 @@
-﻿<mah:MetroWindow x:Class="PaulovLauncher.MainWindow"
+﻿<mah:MetroWindow x:Class="SIT.Launcher.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
-        xmlns:local="clr-namespace:PaulovLauncher"
+        xmlns:local="clr-namespace:SIT.Launcher"
+        xmlns:MaterialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
         mc:Ignorable="d"
         Title="Stay In Tarkov Launcher" 
         MinHeight="470" 
@@ -15,11 +17,11 @@
                       BorderThickness="1"
        WindowStartupLocation="CenterScreen">
     <Window.Background>
-        <ImageBrush ImageSource="/PaulovLauncher;component/Images/StayInTarkov.jpg"/>
+        <ImageBrush ImageSource="/SIT.Launcher;component/Images/StayInTarkov.jpg"/>
     </Window.Background>
     <Grid Margin="10">
         <Grid.RowDefinitions>
-            <RowDefinition Height="80"></RowDefinition>
+            <RowDefinition Height="60"></RowDefinition>
             <RowDefinition Height="*">
                 
             </RowDefinition>
@@ -31,10 +33,15 @@
                 <ColumnDefinition></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <!--<Button Background="Transparent" Grid.Column="1">Play</Button>-->
             <!--<Button Background="Transparent" Grid.Column="2"></Button>-->
+            <Button Background="Transparent" BorderThickness="0" Grid.Column="6" ToolTip="Settings" x:Name="btnSettingsPopup" Click="btnSettingsPopup_Click">
+                <StackPanel VerticalAlignment="Center"  HorizontalAlignment="Left" Orientation="Horizontal">
+                    <iconPacks:PackIconCodicons Kind="Gear" Height="35" Width="35"></iconPacks:PackIconCodicons>
+                    <!--<Label Content="Settings" VerticalAlignment="Center" FontSize="20" />-->
+                </StackPanel>
+            </Button>
         </Grid>
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
@@ -64,7 +71,14 @@
                 </Grid.RowDefinitions>
                 <StackPanel>
                     <mah:MetroHeader Content="Server" Foreground="White" />
-                    <TextBox Text="{Binding Config.ServerInstance.ServerAddress}"></TextBox>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*"></ColumnDefinition>
+                            <ColumnDefinition></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Text="{Binding Config.ServerInstance.ServerAddress}" HorizontalAlignment="Stretch"></TextBox>
+                        <!--<Button Grid.Column="1" x:Name="btnStartServer" Click="btnStartServer_Click">Start Server</Button>-->
+                    </Grid>
                     <mah:MetroHeader  Content="Username" Foreground="White" />
                     <TextBox Text="{Binding Config.Username}"></TextBox>
                     <mah:MetroHeader Content="Password" Foreground="White" />
@@ -72,8 +86,7 @@
                 </StackPanel>
             </Grid>
             <StackPanel Grid.Row="2" Grid.Column="2">
-                <Button x:Name="btnLaunchGame" Click="btnLaunchGame_Click" Content="{Binding LaunchButtonText}"></Button>
-                <CheckBox IsChecked="{Binding Config.AutomaticallyDeobfuscateDlls}">Automatically Deobfuscate DLLs</CheckBox>
+                <Button x:Name="btnLaunchGame" Click="btnLaunchGame_Click" Content="{Binding LaunchButtonText, Mode=TwoWay}"></Button>
             </StackPanel>
         </Grid>
     </Grid>

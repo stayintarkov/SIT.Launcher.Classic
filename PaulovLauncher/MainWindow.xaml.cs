@@ -1,6 +1,8 @@
 ﻿using MahApps.Metro.Controls;
 using Microsoft.Win32;
 using Newtonsoft.Json;
+using Octokit;
+using SIT.Launcher.Windows;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -21,7 +23,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace PaulovLauncher
+namespace SIT.Launcher
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -42,11 +44,7 @@ namespace PaulovLauncher
 
         }
 
-        public LauncherConfig Config { get; set; } = new LauncherConfig() 
-        {
-            AutomaticallyDeobfuscateDlls = true,
-            ServerInstance = new ServerInstance() { ServerAddress = "https://localhost:443" }
-        };
+        public LauncherConfig Config { get; } = LauncherConfig.Instance;
 
         public IEnumerable<ServerInstance> ServerInstances 
         { 
@@ -59,10 +57,12 @@ namespace PaulovLauncher
 
         //private string _serverAddress = "https://localhost:443";
 
-        public enum ELaunchButtonState
+        public enum ELaunchButtonState : short
         {
             Launch,
             Deob,
+            BepInEx,
+            Custom = short.MaxValue
         }
         public ELaunchButtonState LaunchButtonState { get; set; } = ELaunchButtonState.Launch;
 
@@ -78,7 +78,12 @@ namespace PaulovLauncher
                         _launchButtonText = "Launch";
                         break;
                     case ELaunchButtonState.Deob:
-                        _launchButtonText = "Needs Deobfuscation";
+                        _launchButtonText = "Deobfuscating";
+                        break;
+                    case ELaunchButtonState.BepInEx:
+                        _launchButtonText = "Installing BepInEx";
+                        break;
+                    case ELaunchButtonState.Custom:
                         break;
                     default:
                         _launchButtonText = LaunchButtonState.ToString();
@@ -88,15 +93,10 @@ namespace PaulovLauncher
             }
             set
             {
+                LaunchButtonState = ELaunchButtonState.Custom;
                 _launchButtonText = value;
             }
         }
-
-        //public string ServerAddress
-        //{
-        //    get { return _serverAddress; }
-        //    set { _serverAddress = value; }
-        //}
 
         public string Username
         {
@@ -172,6 +172,16 @@ namespace PaulovLauncher
                 openFileDialog.Filter = "Executable (EscapeFromTarkov.exe)|EscapeFromTarkov.exe;";
                 if(openFileDialog.ShowDialog() == true)
                 {
+                    DiscordInterop.DiscordRpcClient.UpdateDetails("Installing BepInEx");
+                    await DownloadAndInstallBepInEx5(openFileDialog.FileName);
+
+                    DiscordInterop.DiscordRpcClient.UpdateDetails("Installing BepInEx");
+                    await DownloadAndInstallSIT(openFileDialog.FileName);
+
+                    DiscordInterop.DiscordRpcClient.UpdateDetails("Installing Aki DLL");
+                    // Copy Aki Dlls for support
+                    SupportAki(openFileDialog.FileName);
+
                     // Deobfuscate Assembly-CSharp
                     if (Config.AutomaticallyDeobfuscateDlls 
                         && NeedsDeobfuscation(openFileDialog.FileName))
@@ -198,7 +208,7 @@ namespace PaulovLauncher
             }
         }
 
-        private void StartGame(string sessionId, OpenFileDialog openFileDialog)
+        private async void StartGame(string sessionId, OpenFileDialog openFileDialog)
         {
             var battlEyeDirPath = Directory.GetParent(openFileDialog.FileName).FullName + "\\BattlEye";
             if (Directory.Exists(battlEyeDirPath))
@@ -213,8 +223,189 @@ namespace PaulovLauncher
 
             var commandArgs = $"-token={sessionId} -config={{\"BackendUrl\":\"{ServerAddress}\",\"Version\":\"live\"}}";
             Process.Start(openFileDialog.FileName, commandArgs);
-            File.WriteAllText("LauncherConfig.json", JsonConvert.SerializeObject(Config));
+            Config.Save();
             WindowState = WindowState.Minimized;
+
+            await Task.Delay(10000);
+            DiscordInterop.DiscordRpcClient.UpdateDetails("In Game");
+            //do
+            //{
+
+            //} while (Process.GetProcessesByName("EscapeFromTarkov") != null);
+            DiscordInterop.DiscordRpcClient.UpdateDetails("");
+        }
+
+        private async Task DownloadAndInstallBepInEx5(string exeLocation)
+        {
+            UpdateButtonText("Downloading BepInEx");
+            btnLaunchGame.IsEnabled = false;
+
+            var baseGamePath = Directory.GetParent(exeLocation).FullName;
+            var bepinexPath = exeLocation.Replace("EscapeFromTarkov.exe", "");
+            bepinexPath += "BepInEx";
+
+            var bepinexPluginsPath = bepinexPath + "\\plugins\\";
+            if (Directory.Exists(bepinexPluginsPath))
+                return;
+
+            if (!File.Exists(AppContext.BaseDirectory + "\\BepInEx5.zip"))
+            {
+                var httpRequest = HttpWebRequest.Create("https://github.com/BepInEx/BepInEx/releases/download/v5.4.19/BepInEx_x64_5.4.19.0.zip");
+                httpRequest.Method = "GET";
+                var response = await httpRequest.GetResponseAsync();
+                if (response != null)
+                {
+                    var ms = new MemoryStream();
+                    var rStream = response.GetResponseStream();
+                    rStream.CopyTo(ms);
+                    await File.WriteAllBytesAsync(AppContext.BaseDirectory + "\\BepInEx5.zip", ms.ToArray());
+                }
+            }
+
+            System.IO.Compression.ZipFile.ExtractToDirectory(AppContext.BaseDirectory + "\\BepInEx5.zip", baseGamePath);
+            if (!Directory.Exists(bepinexPluginsPath))
+            {
+                Directory.CreateDirectory(bepinexPluginsPath);
+            }
+
+            UpdateButtonText(null);
+            btnLaunchGame.IsEnabled = true;
+
+        }
+
+        private void UpdateButtonText(string text)
+        {
+            if (!string.IsNullOrEmpty(text)) {
+                LaunchButtonText = text;
+                LaunchButtonState = ELaunchButtonState.Custom;
+            }
+            else
+            {
+                LaunchButtonState = ELaunchButtonState.Launch;
+            }
+
+            btnLaunchGame.Content = LaunchButtonText;
+        }
+
+        private async Task DownloadAndInstallSIT(string exeLocation)
+        {
+            if (!Config.AutomaticallyInstallSIT)
+                return;
+
+
+            UpdateButtonText("Downloading SIT");
+            btnLaunchGame.IsEnabled = false;
+
+            var baseGamePath = Directory.GetParent(exeLocation).FullName;
+            var bepinexPath = exeLocation.Replace("EscapeFromTarkov.exe", "");
+            bepinexPath += "BepInEx";
+
+            var bepinexPluginsPath = bepinexPath + "\\plugins\\";
+            if (!Directory.Exists(bepinexPluginsPath))
+                return;
+
+            var github = new GitHubClient(new ProductHeaderValue("MyAmazingApp"));
+            var user = await github.User.Get("paulov-t");
+            Console.WriteLine(user.Followers + " folks love the paulov-t!");
+            var tarkovCoreReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Tarkov.Core");
+            var latestCore = tarkovCoreReleases[0];
+            var tarkovSPReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Tarkov.SP");
+            var latestSP = tarkovSPReleases[0];
+            var allAssets = latestSP.Assets.Union(latestCore.Assets).OrderByDescending(x=>x.CreatedAt).DistinctBy(x => x.Name);
+            var allAssetsCount = allAssets.Count();
+            var assetIndex = 0;
+            foreach (var A in allAssets)
+            {
+                var httpRequest = HttpWebRequest.Create(A.BrowserDownloadUrl);
+                httpRequest.Method = "GET";
+                var response = await httpRequest.GetResponseAsync();
+                if (response != null)
+                {
+                    var ms = new MemoryStream();
+                    var rStream = response.GetResponseStream();
+                    rStream.CopyTo(ms);
+
+                    var deliveryPath = AppContext.BaseDirectory + "\\ClientMods\\" + A.Name;
+                    var fiDelivery = new FileInfo(deliveryPath);
+                    await File.WriteAllBytesAsync(deliveryPath, ms.ToArray());
+                }
+                UpdateButtonText($"Downloading SIT ({assetIndex}/{allAssetsCount})");
+                assetIndex++;
+            }
+
+            UpdateButtonText("Installing SIT");
+
+            foreach (var clientModDLL in Directory.GetFiles(AppContext.BaseDirectory + "\\ClientMods\\"))
+            {
+                if (clientModDLL.Contains("Assembly-CSharp"))
+                {
+                    var assemblyLocation = exeLocation.Replace("EscapeFromTarkov.exe", "");
+                    assemblyLocation += "EscapeFromTarkov_Data\\Managed\\Assembly-CSharp.dll";
+
+                    // Backup the Assembly-CSharp and place the newest clean one
+                    if (!File.Exists(assemblyLocation + ".backup"))
+                    {
+                        File.Copy(assemblyLocation, assemblyLocation + ".backup");
+                        File.Copy(clientModDLL, assemblyLocation, true);
+                    }
+                }
+                else
+                {
+                    bool shouldCopy = false;
+                    var fiClientMod = new FileInfo(clientModDLL);
+                    var fiExistingMod = new FileInfo(bepinexPluginsPath + "\\" + fiClientMod.Name);
+                    if (fiExistingMod.Exists && allAssets.Any(x => x.Name == fiClientMod.Name))
+                    {
+                        var createdDateOfDownloadedAsset = allAssets.FirstOrDefault(x => x.Name == fiClientMod.Name).CreatedAt;
+                        shouldCopy = (fiExistingMod.LastWriteTime < createdDateOfDownloadedAsset);
+                    }
+                    else
+                        shouldCopy = true;
+
+                    if(shouldCopy)
+                        File.Copy(clientModDLL, bepinexPluginsPath + "\\" + fiClientMod.Name, true);
+                }
+            }
+
+            UpdateButtonText(null);
+            btnLaunchGame.IsEnabled = true;
+
+
+            //if (!File.Exists(AppContext.BaseDirectory + "\\BepInEx5.zip"))
+            //{
+            //    var httpRequest = HttpWebRequest.Create("https://github.com/BepInEx/BepInEx/releases/download/v5.4.19/BepInEx_x64_5.4.19.0.zip");
+            //    httpRequest.Method = "GET";
+            //    var response = await httpRequest.GetResponseAsync();
+            //    if (response != null)
+            //    {
+            //        var ms = new MemoryStream();
+            //        var rStream = response.GetResponseStream();
+            //        rStream.CopyTo(ms);
+            //        await File.WriteAllBytesAsync(AppContext.BaseDirectory + "\\BepInEx5.zip", ms.ToArray());
+            //    }
+            //}
+
+            //System.IO.Compression.ZipFile.ExtractToDirectory(AppContext.BaseDirectory + "\\BepInEx5.zip", baseGamePath);
+            //if (!Directory.Exists(bepinexPluginsPath))
+            //{
+            //    Directory.CreateDirectory(bepinexPluginsPath);
+            //}
+        }
+
+        private void SupportAki(string exeLocation)
+        {
+            // Discover where Assembly-CSharp is within the Game Folders
+            var managedPath = exeLocation.Replace("EscapeFromTarkov.exe", "");
+            managedPath += "EscapeFromTarkov_Data\\Managed\\";
+            DirectoryInfo diManaged = new DirectoryInfo(managedPath);
+            if (diManaged.Exists)
+            {
+                List<FileInfo> fiAkiFiles = Directory.GetFiles(AppContext.BaseDirectory + "/AkiSupport/").Select(x => new FileInfo(x)).ToList();
+                foreach(var fileInfo in fiAkiFiles)
+                {
+                    fileInfo.CopyTo(managedPath + fileInfo.Name, true);
+                }
+            }
         }
 
         private async Task<bool> Deobfuscate(string exeLocation)
@@ -319,6 +510,24 @@ namespace PaulovLauncher
             {
                 System.IO.Compression.ZipFile.ExtractToDirectory(deobfusFolder + "Deobfuscator.zip", deobfusFolder);
                 File.Delete(deobfusFolder + "Deobfuscator.zip");
+            }
+        }
+
+        private void btnSettingsPopup_Click(object sender, RoutedEventArgs e)
+        {
+            Settings settings = new Settings();
+            this.Close();
+            settings.Show();
+        }
+
+        private void btnStartServer_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Executable (Server.exe)|Server.exe;";
+            if (openFileDialog.ShowDialog() == true)
+            {
+                //if(!Process.GetProcessesByName("Server").Any())
+                    Process.Start(openFileDialog.FileName, "");
             }
         }
     }
