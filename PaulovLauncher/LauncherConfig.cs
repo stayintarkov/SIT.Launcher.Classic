@@ -59,8 +59,8 @@ namespace SIT.Launcher
                 AutomaticallyInstallAkiSupport = true,
                 ServerInstance = new ServerInstance() { ServerAddress = "https://localhost:443" }
             };
-            if(File.Exists("LauncherConfig.json"))
-                launcherConfig = JsonConvert.DeserializeObject<LauncherConfig>(File.ReadAllText("LauncherConfig.json"));
+            if(File.Exists(App.ApplicationDirectory + "LauncherConfig.json"))
+                launcherConfig = JsonConvert.DeserializeObject<LauncherConfig>(File.ReadAllText(App.ApplicationDirectory + "LauncherConfig.json"));
 
             return launcherConfig;
         }

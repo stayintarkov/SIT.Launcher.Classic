@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -20,6 +22,14 @@ namespace SIT.Launcher
             get
             {
                 return Assembly.GetEntryAssembly().GetName().Version.ToString();
+            }
+        }
+
+        public static string ApplicationDirectory
+        {
+            get
+            {
+                return Directory.GetParent(Process.GetCurrentProcess().MainModule.FileName).FullName + "\\";
             }
         }
 

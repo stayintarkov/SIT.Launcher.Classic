@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Runtime.Loader;
 using System.Text;
 using System.Threading;
@@ -240,6 +241,8 @@ namespace SIT.Launcher
             UpdateButtonText("Downloading BepInEx");
             btnLaunchGame.IsEnabled = false;
 
+            await Task.Delay(1000);
+
             var baseGamePath = Directory.GetParent(exeLocation).FullName;
             var bepinexPath = exeLocation.Replace("EscapeFromTarkov.exe", "");
             bepinexPath += "BepInEx";
@@ -248,7 +251,7 @@ namespace SIT.Launcher
             if (Directory.Exists(bepinexPluginsPath))
                 return;
 
-            if (!File.Exists(AppContext.BaseDirectory + "\\BepInEx5.zip"))
+            if (!File.Exists(App.ApplicationDirectory + "\\BepInEx5.zip"))
             {
                 var httpRequest = HttpWebRequest.Create("https://github.com/BepInEx/BepInEx/releases/download/v5.4.19/BepInEx_x64_5.4.19.0.zip");
                 httpRequest.Method = "GET";
@@ -258,11 +261,11 @@ namespace SIT.Launcher
                     var ms = new MemoryStream();
                     var rStream = response.GetResponseStream();
                     rStream.CopyTo(ms);
-                    await File.WriteAllBytesAsync(AppContext.BaseDirectory + "\\BepInEx5.zip", ms.ToArray());
+                    await File.WriteAllBytesAsync(App.ApplicationDirectory + "\\BepInEx5.zip", ms.ToArray());
                 }
             }
 
-            System.IO.Compression.ZipFile.ExtractToDirectory(AppContext.BaseDirectory + "\\BepInEx5.zip", baseGamePath);
+            System.IO.Compression.ZipFile.ExtractToDirectory(App.ApplicationDirectory + "\\BepInEx5.zip", baseGamePath);
             if (!Directory.Exists(bepinexPluginsPath))
             {
                 Directory.CreateDirectory(bepinexPluginsPath);
@@ -304,9 +307,8 @@ namespace SIT.Launcher
             if (!Directory.Exists(bepinexPluginsPath))
                 return;
 
-            var github = new GitHubClient(new ProductHeaderValue("MyAmazingApp"));
+            var github = new GitHubClient(new ProductHeaderValue("SIT-Launcher"));
             var user = await github.User.Get("paulov-t");
-            Console.WriteLine(user.Followers + " folks love the paulov-t!");
             var tarkovCoreReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Tarkov.Core");
             var latestCore = tarkovCoreReleases[0];
             var tarkovSPReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Tarkov.SP");
@@ -316,16 +318,19 @@ namespace SIT.Launcher
             var assetIndex = 0;
             foreach (var A in allAssets)
             {
-                var httpRequest = HttpWebRequest.Create(A.BrowserDownloadUrl);
-                httpRequest.Method = "GET";
-                var response = await httpRequest.GetResponseAsync();
+                var httpClient = new HttpClient();
+                var response = await httpClient.GetAsync(A.BrowserDownloadUrl);
+                //var httpRequest = HttpWebRequest.Create(A.BrowserDownloadUrl);
+                //httpRequest.Method = "GET";
+                //var response = await httpRequest.GetResponseAsync();
                 if (response != null)
                 {
                     var ms = new MemoryStream();
-                    var rStream = response.GetResponseStream();
-                    rStream.CopyTo(ms);
+                    //var rStream = response.GetResponseStream();
+                    //rStream.CopyTo(ms);
+                    await response.Content.CopyToAsync(ms);
 
-                    var deliveryPath = AppContext.BaseDirectory + "\\ClientMods\\" + A.Name;
+                    var deliveryPath = App.ApplicationDirectory + "\\ClientMods\\" + A.Name;
                     var fiDelivery = new FileInfo(deliveryPath);
                     await File.WriteAllBytesAsync(deliveryPath, ms.ToArray());
                 }
@@ -335,7 +340,7 @@ namespace SIT.Launcher
 
             UpdateButtonText("Installing SIT");
 
-            foreach (var clientModDLL in Directory.GetFiles(AppContext.BaseDirectory + "\\ClientMods\\"))
+            foreach (var clientModDLL in Directory.GetFiles(App.ApplicationDirectory + "\\ClientMods\\"))
             {
                 if (clientModDLL.Contains("Assembly-CSharp"))
                 {
@@ -371,25 +376,6 @@ namespace SIT.Launcher
             btnLaunchGame.IsEnabled = true;
 
 
-            //if (!File.Exists(AppContext.BaseDirectory + "\\BepInEx5.zip"))
-            //{
-            //    var httpRequest = HttpWebRequest.Create("https://github.com/BepInEx/BepInEx/releases/download/v5.4.19/BepInEx_x64_5.4.19.0.zip");
-            //    httpRequest.Method = "GET";
-            //    var response = await httpRequest.GetResponseAsync();
-            //    if (response != null)
-            //    {
-            //        var ms = new MemoryStream();
-            //        var rStream = response.GetResponseStream();
-            //        rStream.CopyTo(ms);
-            //        await File.WriteAllBytesAsync(AppContext.BaseDirectory + "\\BepInEx5.zip", ms.ToArray());
-            //    }
-            //}
-
-            //System.IO.Compression.ZipFile.ExtractToDirectory(AppContext.BaseDirectory + "\\BepInEx5.zip", baseGamePath);
-            //if (!Directory.Exists(bepinexPluginsPath))
-            //{
-            //    Directory.CreateDirectory(bepinexPluginsPath);
-            //}
         }
 
         private void SupportAki(string exeLocation)
@@ -400,7 +386,7 @@ namespace SIT.Launcher
             DirectoryInfo diManaged = new DirectoryInfo(managedPath);
             if (diManaged.Exists)
             {
-                List<FileInfo> fiAkiFiles = Directory.GetFiles(AppContext.BaseDirectory + "/AkiSupport/").Select(x => new FileInfo(x)).ToList();
+                List<FileInfo> fiAkiFiles = Directory.GetFiles(App.ApplicationDirectory + "/AkiSupport/").Select(x => new FileInfo(x)).ToList();
                 foreach(var fileInfo in fiAkiFiles)
                 {
                     fileInfo.CopyTo(managedPath + fileInfo.Name, true);
@@ -410,7 +396,7 @@ namespace SIT.Launcher
 
         private async Task<bool> Deobfuscate(string exeLocation)
         {
-            var deobfusFolder = System.AppContext.BaseDirectory + "/DeObfus/";
+            var deobfusFolder = App.ApplicationDirectory + "/DeObfus/";
             var deobfusApp = deobfusFolder + "de4dot-x64.exe";
 
             // Discover where Assembly-CSharp is within the Game Folders
@@ -422,7 +408,7 @@ namespace SIT.Launcher
             {
                 File.Copy(assemblyLocation, assemblyLocation + ".backup");
 
-                List<FileInfo> fileInfos = Directory.GetFiles(AppContext.BaseDirectory + "/DeObfus/PatchedAssemblies/").Select(x => new FileInfo(x)).ToList();
+                List<FileInfo> fileInfos = Directory.GetFiles(App.ApplicationDirectory + "/DeObfus/PatchedAssemblies/").Select(x => new FileInfo(x)).ToList();
                 var lastAssembly = fileInfos.OrderByDescending(x => x.LastWriteTime).FirstOrDefault();
                 lastAssembly.CopyTo(assemblyLocation, true);
             }
@@ -468,41 +454,12 @@ namespace SIT.Launcher
             var assemblyLocation = exeLocation.Replace("EscapeFromTarkov.exe", "");
             assemblyLocation += "EscapeFromTarkov_Data\\Managed\\Assembly-CSharp.dll";
             return !File.Exists(assemblyLocation + ".backup");
-                //var deobfusFolder = System.AppContext.BaseDirectory + "/DeObfus/";
-                //var deobfusApp = deobfusFolder + "de4dot-x64.exe";
-                //AssemblyLoadContext loadContext = new AssemblyLoadContext("AssemblyCSharpLC",true);
-
-                //var assemblyLocation = exeLocation.Replace("EscapeFromTarkov.exe", "");
-                //assemblyLocation += "EscapeFromTarkov_Data\\Managed\\Assembly-CSharp.dll";
-                //File.Copy(assemblyLocation, "Assembly-CSharp-Readable.dll", true);
-
-                ////var assembly = loadContext.LoadFromAssemblyPath( AppContext.BaseDirectory + "\\Assembly-CSharp-Readable.dll");
-                //var assembly = System.Reflection.Assembly.LoadFrom("Assembly-CSharp-Readable.dll");
-                //if (assembly == null)
-                //    throw new DllNotFoundException("Assembly-CSharp.dll cannot be found");
-
-                //try
-                //{
-                //    var type = assembly.GetTypes().FirstOrDefault(t => t.Name == "AbstractGame");
-                //    if (type == null)
-                //        throw new DllNotFoundException("Could not find AbstractGame in Assembly-CSharp.dll");
-
-                //    var methodToCheck = type.GetMethod("\\uE000", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                //    return (methodToCheck != null);
-                //}
-                //catch
-                //{
-
-                //}
-
-                //loadContext.Unload();
-                //Thread.Sleep(2000);
-                //return true;
+    
         }
 
         private void ExtractDeobfuscator()
         {
-            var deobfusFolder = System.AppContext.BaseDirectory + "/DeObfus/";
+            var deobfusFolder = App.ApplicationDirectory + "/DeObfus/";
             if (!File.Exists(deobfusFolder + "Deobfuscator.zip"))
                 return;
 
