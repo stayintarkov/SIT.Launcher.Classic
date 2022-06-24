@@ -32,10 +32,15 @@ namespace SIT.Launcher
                 return Directory.GetParent(Process.GetCurrentProcess().MainModule.FileName).FullName + "\\";
             }
         }
+        public LauncherConfig Config { get; } = LauncherConfig.Instance;
+
 
         public App()
         {
-            _ = new DiscordInterop().StartDiscordClient("V." + ProductVersion);
+            if (Config.SendInfoToDiscord)
+            {
+                _ = new DiscordInterop().StartDiscordClient("V." + ProductVersion);
+            }
         }
     }
 }

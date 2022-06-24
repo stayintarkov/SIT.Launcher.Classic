@@ -31,5 +31,7 @@
         <CheckBox IsChecked="{Binding Config.AutomaticallyInstallSIT}"></CheckBox>
         <mah:MetroHeader Content="Automatically Install Aki Support" Foreground="White" />
         <CheckBox IsChecked="{Binding Config.AutomaticallyInstallAkiSupport}"></CheckBox>
+        <mah:MetroHeader Content="Send Activity to Discord" Foreground="White" />
+        <CheckBox IsChecked="{Binding Config.SendInfoToDiscord}"></CheckBox>
     </StackPanel>
 </mah:MetroWindow>

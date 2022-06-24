@@ -43,6 +43,7 @@ namespace SIT.Launcher
             }
             this.DataContext = this;
 
+            this.Title = "SIT Launcher - " + App.ProductVersion.ToString();
         }
 
         public LauncherConfig Config { get; } = LauncherConfig.Instance;
@@ -173,13 +174,17 @@ namespace SIT.Launcher
                 openFileDialog.Filter = "Executable (EscapeFromTarkov.exe)|EscapeFromTarkov.exe;";
                 if(openFileDialog.ShowDialog() == true)
                 {
-                    DiscordInterop.DiscordRpcClient.UpdateDetails("Installing BepInEx");
+                    UpdateButtonText(null);
+                    btnLaunchGame.IsEnabled = true;
+
                     await DownloadAndInstallBepInEx5(openFileDialog.FileName);
 
-                    DiscordInterop.DiscordRpcClient.UpdateDetails("Installing BepInEx");
-                    await DownloadAndInstallSIT(openFileDialog.FileName);
+                   
 
-                    DiscordInterop.DiscordRpcClient.UpdateDetails("Installing Aki DLL");
+                    await DownloadAndInstallSIT(openFileDialog.FileName);
+                    
+                    UpdateButtonText("Installing Aki");
+                    await Task.Delay(1000);
                     // Copy Aki Dlls for support
                     SupportAki(openFileDialog.FileName);
 
@@ -211,6 +216,9 @@ namespace SIT.Launcher
 
         private async void StartGame(string sessionId, OpenFileDialog openFileDialog)
         {
+            UpdateButtonText(null);
+            btnLaunchGame.IsEnabled = true;
+
             var battlEyeDirPath = Directory.GetParent(openFileDialog.FileName).FullName + "\\BattlEye";
             if (Directory.Exists(battlEyeDirPath))
             {
@@ -228,19 +236,24 @@ namespace SIT.Launcher
             WindowState = WindowState.Minimized;
 
             await Task.Delay(10000);
-            DiscordInterop.DiscordRpcClient.UpdateDetails("In Game");
+
+            if(Config.SendInfoToDiscord)
+                DiscordInterop.DiscordRpcClient.UpdateDetails("In Game");
             //do
             //{
 
             //} while (Process.GetProcessesByName("EscapeFromTarkov") != null);
-            DiscordInterop.DiscordRpcClient.UpdateDetails("");
+            if(Config.SendInfoToDiscord)
+                DiscordInterop.DiscordRpcClient.UpdateDetails("");
         }
 
         private async Task DownloadAndInstallBepInEx5(string exeLocation)
         {
+            UpdateButtonText("Installing BepInEx");
+            await Task.Delay(1000);
+
             UpdateButtonText("Downloading BepInEx");
             btnLaunchGame.IsEnabled = false;
-
             await Task.Delay(1000);
 
             var baseGamePath = Directory.GetParent(exeLocation).FullName;
@@ -288,13 +301,16 @@ namespace SIT.Launcher
             }
 
             btnLaunchGame.Content = LaunchButtonText;
+
+            if(Config.SendInfoToDiscord)
+                DiscordInterop.DiscordRpcClient.UpdateDetails(text);
+
         }
 
         private async Task DownloadAndInstallSIT(string exeLocation)
         {
             if (!Config.AutomaticallyInstallSIT)
                 return;
-
 
             UpdateButtonText("Downloading SIT");
             btnLaunchGame.IsEnabled = false;
@@ -372,9 +388,7 @@ namespace SIT.Launcher
                 }
             }
 
-            UpdateButtonText(null);
-            btnLaunchGame.IsEnabled = true;
-
+           
 
         }
 

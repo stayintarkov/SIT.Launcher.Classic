@@ -10,6 +10,9 @@
 	  <!--<PublishSingleFile>true</PublishSingleFile>-->
 	  <!-- <SelfContained>true</SelfContained>-->
 	  <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+
+	  <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+	  <Deterministic>false</Deterministic>
   </PropertyGroup>
 
   <ItemGroup>
