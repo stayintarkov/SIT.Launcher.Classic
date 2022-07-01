@@ -146,6 +146,7 @@ namespace SIT.Launcher
             data.Add("username", Username);
             data.Add("email", Username);
             data.Add("edition", "Edge Of Darkness");
+            //data.Add("edition", "Empty");
             if (string.IsNullOrEmpty(txtPassword.Password))
             {
                 MessageBox.Show("You cannot use an empty Password for your account!");
@@ -174,12 +175,13 @@ namespace SIT.Launcher
                 openFileDialog.Filter = "Executable (EscapeFromTarkov.exe)|EscapeFromTarkov.exe;";
                 if(openFileDialog.ShowDialog() == true)
                 {
+                    var fvi = FileVersionInfo.GetVersionInfo(openFileDialog.FileName);
+                    App.GameVersion = fvi.ProductVersion;
+
                     UpdateButtonText(null);
                     btnLaunchGame.IsEnabled = true;
 
                     await DownloadAndInstallBepInEx5(openFileDialog.FileName);
-
-                   
 
                     await DownloadAndInstallSIT(openFileDialog.FileName);
                     
@@ -228,6 +230,21 @@ namespace SIT.Launcher
             if (File.Exists(battlEyeExePath))
             {
                 File.Delete(battlEyeExePath);
+            }
+            var cacheDirPath = Directory.GetParent(openFileDialog.FileName).FullName + "\\cache";
+            if (Directory.Exists(cacheDirPath))
+            {
+                Directory.Delete(cacheDirPath, true);
+            }
+            var consistancyInfoPath = openFileDialog.FileName.Replace("EscapeFromTarkov.exe", "ConsistencyInfo");
+            if (File.Exists(consistancyInfoPath))
+            {
+                File.Delete(consistancyInfoPath);
+            }
+            var uninstallPath = openFileDialog.FileName.Replace("EscapeFromTarkov.exe", "Uninstall.exe");
+            if (File.Exists(uninstallPath))
+            {
+                File.Delete(uninstallPath);
             }
 
             var commandArgs = $"-token={sessionId} -config={{\"BackendUrl\":\"{ServerAddress}\",\"Version\":\"live\"}}";
@@ -327,9 +344,9 @@ namespace SIT.Launcher
             var user = await github.User.Get("paulov-t");
             var tarkovCoreReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Tarkov.Core");
             var latestCore = tarkovCoreReleases[0];
-            var tarkovSPReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Tarkov.SP");
-            var latestSP = tarkovSPReleases[0];
-            var allAssets = latestSP.Assets.Union(latestCore.Assets).OrderByDescending(x=>x.CreatedAt).DistinctBy(x => x.Name);
+            //var tarkovSPReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Tarkov.SP");
+            //var latestSP = tarkovSPReleases[0];
+            var allAssets = latestCore.Assets.OrderByDescending(x=>x.CreatedAt).DistinctBy(x => x.Name);
             var allAssetsCount = allAssets.Count();
             var assetIndex = 0;
             foreach (var A in allAssets)

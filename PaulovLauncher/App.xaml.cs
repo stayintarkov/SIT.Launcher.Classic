@@ -17,6 +17,8 @@ namespace SIT.Launcher
     /// </summary>
     public partial class App : Application
     {
+        public static string GameVersion { get; set; }
+
         public static string ProductVersion
         {
             get
