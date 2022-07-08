@@ -411,6 +411,12 @@
     <None Update="AddNewServerDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
+    <None Update="DeObfus\PatchedAssemblies\Assembly-CSharp-0.12.12.30.18876.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="DeObfus\PatchedAssemblies\Assembly-CSharp-0.12.12.30.18969.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
