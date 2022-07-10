@@ -340,72 +340,82 @@ namespace SIT.Launcher
             if (!Directory.Exists(bepinexPluginsPath))
                 return;
 
-            var github = new GitHubClient(new ProductHeaderValue("SIT-Launcher"));
-            var user = await github.User.Get("paulov-t");
-            var tarkovCoreReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Tarkov.Core");
-            var latestCore = tarkovCoreReleases[0];
-            //var tarkovSPReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Tarkov.SP");
-            //var latestSP = tarkovSPReleases[0];
-            var allAssets = latestCore.Assets.OrderByDescending(x=>x.CreatedAt).DistinctBy(x => x.Name);
-            var allAssetsCount = allAssets.Count();
-            var assetIndex = 0;
-            foreach (var A in allAssets)
+            try
             {
-                var httpClient = new HttpClient();
-                var response = await httpClient.GetAsync(A.BrowserDownloadUrl);
-                //var httpRequest = HttpWebRequest.Create(A.BrowserDownloadUrl);
-                //httpRequest.Method = "GET";
-                //var response = await httpRequest.GetResponseAsync();
-                if (response != null)
+
+                var github = new GitHubClient(new ProductHeaderValue("SIT-Launcher"));
+                var user = await github.User.Get("paulov-t");
+                var tarkovCoreReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Tarkov.Core");
+                var latestCore = tarkovCoreReleases[0];
+                //var tarkovSPReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Tarkov.SP");
+                //var latestSP = tarkovSPReleases[0];
+                var allAssets = latestCore.Assets.OrderByDescending(x => x.CreatedAt).DistinctBy(x => x.Name);
+                var allAssetsCount = allAssets.Count();
+                var assetIndex = 0;
+                foreach (var A in allAssets)
                 {
-                    var ms = new MemoryStream();
-                    //var rStream = response.GetResponseStream();
-                    //rStream.CopyTo(ms);
-                    await response.Content.CopyToAsync(ms);
-
-                    var deliveryPath = App.ApplicationDirectory + "\\ClientMods\\" + A.Name;
-                    var fiDelivery = new FileInfo(deliveryPath);
-                    await File.WriteAllBytesAsync(deliveryPath, ms.ToArray());
-                }
-                UpdateButtonText($"Downloading SIT ({assetIndex}/{allAssetsCount})");
-                assetIndex++;
-            }
-
-            UpdateButtonText("Installing SIT");
-
-            foreach (var clientModDLL in Directory.GetFiles(App.ApplicationDirectory + "\\ClientMods\\"))
-            {
-                if (clientModDLL.Contains("Assembly-CSharp"))
-                {
-                    var assemblyLocation = exeLocation.Replace("EscapeFromTarkov.exe", "");
-                    assemblyLocation += "EscapeFromTarkov_Data\\Managed\\Assembly-CSharp.dll";
-
-                    // Backup the Assembly-CSharp and place the newest clean one
-                    if (!File.Exists(assemblyLocation + ".backup"))
+                    var httpClient = new HttpClient();
+                    var response = await httpClient.GetAsync(A.BrowserDownloadUrl);
+                    //var httpRequest = HttpWebRequest.Create(A.BrowserDownloadUrl);
+                    //httpRequest.Method = "GET";
+                    //var response = await httpRequest.GetResponseAsync();
+                    if (response != null)
                     {
-                        File.Copy(assemblyLocation, assemblyLocation + ".backup");
-                        File.Copy(clientModDLL, assemblyLocation, true);
+                        var ms = new MemoryStream();
+                        //var rStream = response.GetResponseStream();
+                        //rStream.CopyTo(ms);
+                        await response.Content.CopyToAsync(ms);
+
+                        var deliveryPath = App.ApplicationDirectory + "\\ClientMods\\" + A.Name;
+                        var fiDelivery = new FileInfo(deliveryPath);
+                        await File.WriteAllBytesAsync(deliveryPath, ms.ToArray());
                     }
+                    UpdateButtonText($"Downloading SIT ({assetIndex}/{allAssetsCount})");
+                    assetIndex++;
                 }
-                else
+
+
+
+                UpdateButtonText("Installing SIT");
+
+                foreach (var clientModDLL in Directory.GetFiles(App.ApplicationDirectory + "\\ClientMods\\"))
                 {
-                    bool shouldCopy = false;
-                    var fiClientMod = new FileInfo(clientModDLL);
-                    var fiExistingMod = new FileInfo(bepinexPluginsPath + "\\" + fiClientMod.Name);
-                    if (fiExistingMod.Exists && allAssets.Any(x => x.Name == fiClientMod.Name))
+                    if (clientModDLL.Contains("Assembly-CSharp"))
                     {
-                        var createdDateOfDownloadedAsset = allAssets.FirstOrDefault(x => x.Name == fiClientMod.Name).CreatedAt;
-                        shouldCopy = (fiExistingMod.LastWriteTime < createdDateOfDownloadedAsset);
+                        var assemblyLocation = exeLocation.Replace("EscapeFromTarkov.exe", "");
+                        assemblyLocation += "EscapeFromTarkov_Data\\Managed\\Assembly-CSharp.dll";
+
+                        // Backup the Assembly-CSharp and place the newest clean one
+                        if (!File.Exists(assemblyLocation + ".backup"))
+                        {
+                            File.Copy(assemblyLocation, assemblyLocation + ".backup");
+                            File.Copy(clientModDLL, assemblyLocation, true);
+                        }
                     }
                     else
-                        shouldCopy = true;
+                    {
+                        bool shouldCopy = false;
+                        var fiClientMod = new FileInfo(clientModDLL);
+                        var fiExistingMod = new FileInfo(bepinexPluginsPath + "\\" + fiClientMod.Name);
+                        if (fiExistingMod.Exists && allAssets.Any(x => x.Name == fiClientMod.Name))
+                        {
+                            var createdDateOfDownloadedAsset = allAssets.FirstOrDefault(x => x.Name == fiClientMod.Name).CreatedAt;
+                            shouldCopy = (fiExistingMod.LastWriteTime < createdDateOfDownloadedAsset);
+                        }
+                        else
+                            shouldCopy = true;
 
-                    if(shouldCopy)
-                        File.Copy(clientModDLL, bepinexPluginsPath + "\\" + fiClientMod.Name, true);
+                        if (shouldCopy)
+                            File.Copy(clientModDLL, bepinexPluginsPath + "\\" + fiClientMod.Name, true);
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                var r = MessageBox.Show("Unable to download SIT", "Error");
+            }
 
-           
+
 
         }
 

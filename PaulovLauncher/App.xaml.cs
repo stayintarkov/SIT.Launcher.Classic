@@ -89,6 +89,7 @@ namespace SIT.Launcher
             catch
             {
             }
+            MessageBox.Show("Unable to detect legal copy of Escape from Tarkov. Please buy and install the game before using SIT.");
             Application.Current.Shutdown();
             return false;
         }
