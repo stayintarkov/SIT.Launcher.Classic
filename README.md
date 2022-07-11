@@ -8,6 +8,7 @@ This is by no means designed for cheats or illegally downloading the game. This 
 You can obtain it here. [https://www.escapefromtarkov.com](https://www.escapefromtarkov.com)
 
 # Installation
+- Buy, download and install BattleState Games Escape from Tarkov
 - Copy and paste the latest live BSG Tarkov client (downloaded through their launcher) somewhere (i.e. D:\EmuTarkov)
 - Download latest [SIT Server](https://github.com/paulov-t/Tarkov-Server/releases/) and extract it anywhere
 - Run the Server.exe from the SIT Server
@@ -17,6 +18,7 @@ You can obtain it here. [https://www.escapefromtarkov.com](https://www.escapefro
 - Download the zip file from Releases
 - Extract the entire zip file anywhere  except the client directory 
 - Open PaulovLauncher.exe
+- Open Settings (the cog) check install Assembly and install SIT
 - Put the server address at the top (example https://cooptarkov-server.azurewebsites.net/ or https://127.0.0.1:443/ )
 - Put your username (don't use anything that is used anywhere else)
 - Create a password (don't use anything that is used anywhere else)
