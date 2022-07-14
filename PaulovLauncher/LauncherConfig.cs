@@ -49,6 +49,8 @@ namespace SIT.Launcher
 
         public bool AutomaticallyInstallAkiSupport { get; set; } = true;
 
+        public bool EnableCoopServer { get; set; } = false;
+
         public bool SendInfoToDiscord { get; set; } = true;
 
         private static LauncherConfig Load()

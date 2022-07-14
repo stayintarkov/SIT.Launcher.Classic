@@ -511,12 +511,7 @@ namespace SIT.Launcher
             }
         }
 
-        private void btnSettingsPopup_Click(object sender, RoutedEventArgs e)
-        {
-            Settings settings = new Settings();
-            this.Close();
-            settings.Show();
-        }
+       
 
         private void btnStartServer_Click(object sender, RoutedEventArgs e)
         {
@@ -527,6 +522,31 @@ namespace SIT.Launcher
                 //if(!Process.GetProcessesByName("Server").Any())
                     Process.Start(openFileDialog.FileName, "");
             }
+        }
+
+        private void CollapseAll()
+        {
+            gridPlay.Visibility = Visibility.Collapsed;
+            gridCoopServer.Visibility = Visibility.Collapsed;
+            gridSettings.Visibility = Visibility.Collapsed;
+        }
+
+        private void btnCoopServer_Click(object sender, RoutedEventArgs e)
+        {
+            CollapseAll();
+            gridCoopServer.Visibility = Visibility.Visible;
+        }
+
+        private void btnPlay_Click(object sender, RoutedEventArgs e)
+        {
+            CollapseAll();
+            gridPlay.Visibility = Visibility.Visible;
+        }
+
+        private void btnSettingsPopup_Click(object sender, RoutedEventArgs e)
+        {
+            CollapseAll();
+            gridSettings.Visibility = Visibility.Visible;
         }
     }
 }

@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
         xmlns:local="clr-namespace:SIT.Launcher"
+        xmlns:gameServer="clr-namespace:SIT.Launcher.GameServer"
         xmlns:MaterialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
         mc:Ignorable="d"
@@ -19,14 +20,22 @@
     <Window.Background>
         <ImageBrush ImageSource="/SIT.Launcher;component/Images/StayInTarkov.jpg"/>
     </Window.Background>
+    <Window.Resources>
+
+
+    </Window.Resources>
     <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="82*"/>
+            <ColumnDefinition Width="307*"/>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="60"></RowDefinition>
             <RowDefinition Height="*">
-                
+
             </RowDefinition>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" Opacity="0.9">
+        <Grid Grid.Row="0" Opacity="0.9" Grid.ColumnSpan="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
@@ -34,16 +43,28 @@
                 <ColumnDefinition></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
+            <Button Background="Transparent" BorderThickness="0" Grid.Column="0" ToolTip="Settings" x:Name="btnPlay" Click="btnPlay_Click">
+                <StackPanel VerticalAlignment="Center"  HorizontalAlignment="Left" Orientation="Horizontal">
+                    <iconPacks:PackIconCodicons Kind="Play" Height="20" Width="20" VerticalAlignment="Center"></iconPacks:PackIconCodicons>
+                    <Label Content="Play" VerticalAlignment="Center" FontSize="16" />
+                </StackPanel>
+            </Button>
+            <Button Background="Transparent" BorderThickness="0" IsEnabled="{Binding Config.EnableCoopServer}" Grid.Column="2" ToolTip="Settings" x:Name="btnCoopServer" Click="btnCoopServer_Click">
+                <StackPanel VerticalAlignment="Center"  HorizontalAlignment="Left" Orientation="Horizontal">
+                    <iconPacks:PackIconCodicons Kind="Server" Height="20" Width="20"  VerticalAlignment="Center"></iconPacks:PackIconCodicons>
+                    <Label Content="Coop Server" VerticalAlignment="Center" FontSize="16"  />
+                </StackPanel>
+            </Button>
             <!--<Button Background="Transparent" Grid.Column="1">Play</Button>-->
             <!--<Button Background="Transparent" Grid.Column="2"></Button>-->
             <Button Background="Transparent" BorderThickness="0" Grid.Column="6" ToolTip="Settings" x:Name="btnSettingsPopup" Click="btnSettingsPopup_Click">
                 <StackPanel VerticalAlignment="Center"  HorizontalAlignment="Left" Orientation="Horizontal">
-                    <iconPacks:PackIconCodicons Kind="Gear" Height="35" Width="35"></iconPacks:PackIconCodicons>
-                    <!--<Label Content="Settings" VerticalAlignment="Center" FontSize="20" />-->
+                    <iconPacks:PackIconCodicons Kind="Gear" Height="20" Width="20"  VerticalAlignment="Center"></iconPacks:PackIconCodicons>
+                    <Label Content="Settings" VerticalAlignment="Center" FontSize="16" />
                 </StackPanel>
             </Button>
         </Grid>
-        <Grid Grid.Row="1">
+        <Grid x:Name="gridPlay" Grid.Row="1" Grid.ColumnSpan="2">
             <Grid.RowDefinitions>
                 <RowDefinition MinHeight="180"></RowDefinition>
                 <RowDefinition ></RowDefinition>
@@ -87,6 +108,30 @@
             </Grid>
             <StackPanel Grid.Row="2" Grid.Column="2">
                 <Button x:Name="btnLaunchGame" Click="btnLaunchGame_Click" Content="{Binding LaunchButtonText, Mode=TwoWay}"></Button>
+            </StackPanel>
+        </Grid>
+        <Grid x:Name="gridCoopServer" Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="2">
+            <gameServer:GameServerWindow></gameServer:GameServerWindow>
+        </Grid>
+        <Grid x:Name="gridSettings" Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="2">
+            <StackPanel Margin="5">
+                <StackPanel.Resources>
+                    <Style TargetType="{x:Type mah:MetroHeader}">
+                        <Setter Property="Margin" Value="0,5,0,5"/>
+                    </Style>
+                </StackPanel.Resources>
+                <!--<mah:MetroHeader Content="Server Address" Foreground="White" />
+        <TextBox Text="{Binding Config.ServerInstance.ServerAddress}"></TextBox>-->
+                <mah:MetroHeader Content="Automatically Install Assembly DLLs" Foreground="White" />
+                <CheckBox IsChecked="{Binding Config.AutomaticallyDeobfuscateDlls}"></CheckBox>
+                <mah:MetroHeader Content="Automatically Install SIT" Foreground="White" />
+                <CheckBox IsChecked="{Binding Config.AutomaticallyInstallSIT}"></CheckBox>
+                <mah:MetroHeader Content="Automatically Install Aki Support" Foreground="White" />
+                <CheckBox IsChecked="{Binding Config.AutomaticallyInstallAkiSupport}"></CheckBox>
+                <mah:MetroHeader Content="Send Activity to Discord" Foreground="White" />
+                <CheckBox IsChecked="{Binding Config.SendInfoToDiscord}"></CheckBox>
+                <mah:MetroHeader Content="Enable Coop Server" Foreground="White" />
+                <CheckBox IsChecked="{Binding Config.EnableCoopServer}"></CheckBox>
             </StackPanel>
         </Grid>
     </Grid>
