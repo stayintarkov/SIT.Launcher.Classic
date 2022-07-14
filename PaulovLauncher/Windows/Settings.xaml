@@ -33,5 +33,7 @@
         <CheckBox IsChecked="{Binding Config.AutomaticallyInstallAkiSupport}"></CheckBox>
         <mah:MetroHeader Content="Send Activity to Discord" Foreground="White" />
         <CheckBox IsChecked="{Binding Config.SendInfoToDiscord}"></CheckBox>
+        <mah:MetroHeader Content="Enable Coop Server" Foreground="White" />
+        <CheckBox IsChecked="{Binding Config.EnableCoopServer}"></CheckBox>
     </StackPanel>
 </mah:MetroWindow>
