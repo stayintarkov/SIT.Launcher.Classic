@@ -11,5 +11,11 @@
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Dark.Cobalt.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
+
+
+        
+
+
     </Application.Resources>
+    
 </Application>
