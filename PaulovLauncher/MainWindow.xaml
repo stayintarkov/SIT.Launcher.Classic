@@ -43,13 +43,13 @@
                 <ColumnDefinition></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <Button Background="Transparent" BorderThickness="0" Grid.Column="0" ToolTip="Settings" x:Name="btnPlay" Click="btnPlay_Click">
+            <Button Background="Transparent" BorderThickness="0" Grid.Column="0" ToolTip="Play" x:Name="btnPlay" Click="btnPlay_Click">
                 <StackPanel VerticalAlignment="Center"  HorizontalAlignment="Left" Orientation="Horizontal">
                     <iconPacks:PackIconCodicons Kind="Play" Height="20" Width="20" VerticalAlignment="Center"></iconPacks:PackIconCodicons>
                     <Label Content="Play" VerticalAlignment="Center" FontSize="16" />
                 </StackPanel>
             </Button>
-            <Button Background="Transparent" BorderThickness="0" IsEnabled="{Binding Config.EnableCoopServer}" Grid.Column="2" ToolTip="Settings" x:Name="btnCoopServer" Click="btnCoopServer_Click">
+            <Button Background="Transparent" BorderThickness="0" IsEnabled="{Binding Config.EnableCoopServer}" Grid.Column="2" ToolTip="Coop Server" x:Name="btnCoopServer" Click="btnCoopServer_Click">
                 <StackPanel VerticalAlignment="Center"  HorizontalAlignment="Left" Orientation="Horizontal">
                     <iconPacks:PackIconCodicons Kind="Server" Height="20" Width="20"  VerticalAlignment="Center"></iconPacks:PackIconCodicons>
                     <Label Content="Coop Server" VerticalAlignment="Center" FontSize="16"  />

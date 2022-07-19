@@ -30,8 +30,8 @@ namespace SIT.Launcher.GameServer
         public delegate void MethodCallHandler(ConcurrentDictionary<string, int> actionCounts);
         public event MethodCallHandler OnMethodCall;
 
-        public static EchoGameServer Instance { get { return Instances.Last(); } }
-        public static List<EchoGameServer> Instances = new List<EchoGameServer>();
+        public static EchoGameServer Instance { get; private set; }// = new EchoGameServer();
+        //public static List<EchoGameServer> Instances = new List<EchoGameServer>();
 
         public static int HighestAcceptablePing { get { return 999; } }
         public TcpListener tcpServer { get; set; }
@@ -43,7 +43,8 @@ namespace SIT.Launcher.GameServer
         public bool quit;
         public int NumberOfConnections = 0;
         public (IPEndPoint, string)? HostConnection;
-        public readonly ConcurrentDictionary<IPEndPoint, string> ConnectedClients = new ConcurrentDictionary<IPEndPoint, string>();
+        public ConcurrentDictionary<string, string> ConnectedClientsIPs { get; } = new ConcurrentDictionary<string, string>();
+        public ConcurrentDictionary<IPEndPoint, string> ConnectedClients { get; } = new ConcurrentDictionary<IPEndPoint, string>();
         public readonly ConcurrentDictionary<IPEndPoint, (UdpClient, int)> ConnectedClientToReceiverPort = new ConcurrentDictionary<IPEndPoint, (UdpClient, int)>();
         public readonly ConcurrentDictionary<IPEndPoint, DateTime> ConnectedClientsLastTimeDataReceiver = new ConcurrentDictionary<IPEndPoint, DateTime>();
         public readonly ConcurrentDictionary<string, IPEndPoint> PlayersToConnectedClients = new ConcurrentDictionary<string, IPEndPoint>();
@@ -81,8 +82,12 @@ namespace SIT.Launcher.GameServer
             InstanceId = Guid.NewGuid();
             if (startingUdpPort.HasValue) udpReceiverPort = startingUdpPort.Value;
             // Only handle 1 instance for now
-            Instances.Clear();
-            Instances.Add(this);
+            //Instances.Clear();
+            //Instances.Add(this);
+            if (Instance == null)
+                Instance = this;
+            else
+                throw new Exception("Bad instances shithead!");
         }
 
         public void CreateListenersAndStart()
@@ -118,56 +123,56 @@ namespace SIT.Launcher.GameServer
                 udpReceivers.Add(udpReceiver);
             }
 
-                tcpServer = new TcpListener(new IPEndPoint(IPAddress.Any, 7076));
-                tcpServer.Server.ReceiveBufferSize = 2048;
-                tcpServer.Server.ReceiveTimeout = HighestAcceptablePing;
-                tcpServer.Server.SendTimeout = HighestAcceptablePing;
-            StartTcpServerAndAccept();    
+            //    tcpServer = new TcpListener(new IPEndPoint(IPAddress.Any, 7076));
+            //    tcpServer.Server.ReceiveBufferSize = 2048;
+            //    tcpServer.Server.ReceiveTimeout = HighestAcceptablePing;
+            //    tcpServer.Server.SendTimeout = HighestAcceptablePing;
+            //StartTcpServerAndAccept();    
 
      
                     UpdatePings();
             ServerSendOutEnqueuedData();
         }
 
-        public void StartTcpServerAndAccept()
-        {
-            tcpServer.Start();
-            AddToLog("Started tcp receiver on " + tcpServer.LocalEndpoint);
-            tcpServer.BeginAcceptTcpClient((IAsyncResult result) =>
-            {
-                StartTcpServerAndAccept();
-                TcpClient client = tcpServer.EndAcceptTcpClient(result);  //creates the TcpClient
-                NetworkStream ns = client.GetStream();
-                ConnectedClientsTcp.Add(client);
-                while (client.Connected)  //while the client is connected, we look for incoming messages
-                {
-                    try
-                    {
-                        byte[] msg = new byte[2048];     //the messages arrive as byte array
-                        ns.Read(msg, 0, msg.Length);   //the same networkstream reads the message sent by the client
-                        Debug.WriteLine("TCP:" + Encoding.Default.GetString(msg));
-                        AddToLog("TCP:" + Encoding.Default.GetString(msg));
-                        foreach(var cc in ConnectedClientsTcp)
-                        {
-                            NetworkStream ccns = cc.GetStream();
-                            if(ccns != null && ccns.CanWrite)
-                            {
-                                ccns.Write(msg, 0, msg.Length);
-                            }
+        //public void StartTcpServerAndAccept()
+        //{
+        //    tcpServer.Start();
+        //    AddToLog("Started tcp receiver on " + tcpServer.LocalEndpoint);
+        //    tcpServer.BeginAcceptTcpClient((IAsyncResult result) =>
+        //    {
+        //        StartTcpServerAndAccept();
+        //        TcpClient client = tcpServer.EndAcceptTcpClient(result);  //creates the TcpClient
+        //        NetworkStream ns = client.GetStream();
+        //        ConnectedClientsTcp.Add(client);
+        //        while (client.Connected)  //while the client is connected, we look for incoming messages
+        //        {
+        //            try
+        //            {
+        //                byte[] msg = new byte[2048];     //the messages arrive as byte array
+        //                ns.Read(msg, 0, msg.Length);   //the same networkstream reads the message sent by the client
+        //                Debug.WriteLine("TCP:" + Encoding.Default.GetString(msg));
+        //                AddToLog("TCP:" + Encoding.Default.GetString(msg));
+        //                foreach(var cc in ConnectedClientsTcp)
+        //                {
+        //                    NetworkStream ccns = cc.GetStream();
+        //                    if(ccns != null && ccns.CanWrite)
+        //                    {
+        //                        ccns.Write(msg, 0, msg.Length);
+        //                    }
 
-                        }
-                        client.Close();
-                        //ns.Write(msg, 0, msg.Length);
-                    }
-                    catch (Exception)
-                    {
-                    }
-                }
-                ConnectedClientsTcp.Remove(client);
+        //                }
+        //                client.Close();
+        //                //ns.Write(msg, 0, msg.Length);
+        //            }
+        //            catch (Exception)
+        //            {
+        //            }
+        //        }
+        //        ConnectedClientsTcp.Remove(client);
 
 
-            }, tcpServer);  //this is called asynchronously and will run in a different thread
-        }
+        //    }, tcpServer);  //this is called asynchronously and will run in a different thread
+        //}
 
         public void UdpReceive(IAsyncResult ar)
         {
@@ -175,7 +180,14 @@ namespace SIT.Launcher.GameServer
             IPEndPoint endPoint = null;
             var data = udpClient.EndReceive(ar, ref endPoint);
 
-            ServerHandleReceivedData(data, endPoint);
+            try
+            {
+                ServerHandleReceivedData(data, endPoint);
+            }
+            catch (Exception ex)
+            {
+                AddToLog(ex.ToString());
+            }
 
             udpClient.BeginReceive(UdpReceive, udpClient);
         }
@@ -225,7 +237,7 @@ namespace SIT.Launcher.GameServer
 
         public async void UpdatePings()
         {
-            await Task.Delay(50);
+            await Task.Delay(1000);
             var array = ASCIIEncoding.ASCII.GetBytes("Ping");
             foreach (IPEndPoint item in ConnectedClients.Keys)
             {
@@ -258,52 +270,52 @@ namespace SIT.Launcher.GameServer
             ServerSendOutEnqueuedData();
         }
 
-        private void ServerHandleReceivedDataTcp(ref StreamReader reader, ref StreamWriter writer, IPEndPoint receivedIpEndPoint)
-        {
-            if (reader == null)
-                return;
+        //private void ServerHandleReceivedDataTcp(ref StreamReader reader, ref StreamWriter writer, IPEndPoint receivedIpEndPoint)
+        //{
+        //    if (reader == null)
+        //        return;
 
-            try
-            {
-                var allText = reader.ReadToEnd();
-                if (string.IsNullOrEmpty(allText))
-                    return;
+        //    try
+        //    {
+        //        var allText = reader.ReadToEnd();
+        //        if (string.IsNullOrEmpty(allText))
+        //            return;
 
-                if (allText.Length == 4 && allText == "Pong")
-                {
-                    PongTimes.TryRemove(receivedIpEndPoint, out _);
-                    PongTimes.TryAdd(receivedIpEndPoint, DateTime.Now);
-                    writer.Write("Ping");
-                    writer.Flush();
-                    return;
-                }
+        //        if (allText.Length == 4 && allText == "Pong")
+        //        {
+        //            PongTimes.TryRemove(receivedIpEndPoint, out _);
+        //            PongTimes.TryAdd(receivedIpEndPoint, DateTime.Now);
+        //            writer.Write("Ping");
+        //            writer.Flush();
+        //            return;
+        //        }
 
-                if (allText == "GET_PLAYERS")
-                {
-                    if (DataProcessInsurance.Any())
-                    {
-                        var queuedData = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(EnqueuedDataToSend.Select(x => Encoding.UTF8.GetString(x.Item2))));
-                    }
-                }
+        //        if (allText == "GET_PLAYERS")
+        //        {
+        //            if (DataProcessInsurance.Any())
+        //            {
+        //                var queuedData = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(EnqueuedDataToSend.Select(x => Encoding.UTF8.GetString(x.Item2))));
+        //            }
+        //        }
 
-                if (allText == "CHECK_DEAD")
-                {
-                    writer.Write("A COUPLE OF GUYS ARE DEAD LIKE");
+        //        if (allText == "CHECK_DEAD")
+        //        {
+        //            writer.Write("A COUPLE OF GUYS ARE DEAD LIKE");
 
-                    if (DataProcessInsurance.Any())
-                    {
-                        var queuedData = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(DataProcessInsurance.Select(x=>x)));
-                        writer.Write(queuedData);
-                    }
-                }
+        //            if (DataProcessInsurance.Any())
+        //            {
+        //                var queuedData = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(DataProcessInsurance.Select(x=>x)));
+        //                writer.Write(queuedData);
+        //            }
+        //        }
 
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
-            }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Debug.WriteLine(ex);
+        //    }
 
-        }
+        //}
 
         private void ServerHandleReceivedData(byte[] array, IPEndPoint receivedIpEndPoint)
         {
@@ -331,7 +343,6 @@ namespace SIT.Launcher.GameServer
                         PingTimes.TryAdd(receivedIpEndPoint, DateTime.Now);
                         ResetServer();
                         AddNewConnection(receivedIpEndPoint, accountId);
-                        //udpClient.BeginReceive(DataReceivedServer, udpClient);
                         return;
                     }
 
@@ -344,12 +355,16 @@ namespace SIT.Launcher.GameServer
                         PingTimes.TryRemove(receivedIpEndPoint, out _);
                         PingTimes.TryAdd(receivedIpEndPoint, DateTime.Now);
                         AddNewConnection(receivedIpEndPoint, accountId);
-
-                        //udpClient.BeginReceive(DataReceivedServer, udpClient);
                         return;
                     }
 
-                    AddNewConnection(receivedIpEndPoint, null);
+                    if(!ConnectedClientsIPs.ContainsKey(receivedIpEndPoint.ToString()))
+                    {
+                        AddToLog($"Received data from an unknown connection {receivedIpEndPoint.ToString()}. Ignoring.");
+                        return;
+                    }    
+                    //AddNewConnection(receivedIpEndPoint, null);
+
                     //foreach (var client in ConnectedClients.Keys)
                     //{
                     //    foreach (var udpServer in udpReceivers)
@@ -483,7 +498,9 @@ namespace SIT.Launcher.GameServer
         //    }
         //}
 
-        private void AddNewConnection(IPEndPoint receivedIpEndPoint, string playerId, bool isHost = false)
+        bool addingNewConnection = false;
+
+        private async void AddNewConnection(IPEndPoint receivedIpEndPoint, string playerId, bool isHost = false)
         {
             if (receivedIpEndPoint == null)
             {
@@ -491,27 +508,45 @@ namespace SIT.Launcher.GameServer
                 return;
             }
 
+            while (addingNewConnection) { await Task.Delay(1000); }
+
             if (udpReceivers.Count == 0)
                 return;
 
-            if (!ConnectedClients.Keys.Any((IPEndPoint x) => x.ToString() == receivedIpEndPoint.ToString()))
+            addingNewConnection = true;
+
+            if (ConnectedClientsIPs.TryAdd(receivedIpEndPoint.ToString(), playerId))
             {
-                ConnectedClientToReceiverPort.TryAdd(receivedIpEndPoint, (udpReceivers[0], udpReceiverPort + 0));
-                NumberOfConnections++;
-                // continuously attempt to add
-                ConnectedClients.TryAdd(receivedIpEndPoint, playerId);
-
-                if (isHost)
-                    HostConnection = (receivedIpEndPoint, playerId);
-
-                Debug.WriteLine("DataReceivedServer::New Connection from " + receivedIpEndPoint.ToString());
-                Console.WriteLine("DataReceivedServer::New Connection from " + receivedIpEndPoint.ToString());
-                if(OnConnectionReceived != null)
+                //if (!ConnectedClients.Keys.Any((IPEndPoint x) => x.ToString() == receivedIpEndPoint.ToString()))
+                //{
+                    // continuously attempt to add
+                if (ConnectedClients.TryAdd(receivedIpEndPoint, playerId))
                 {
-                    OnConnectionReceived(receivedIpEndPoint);
+                    NumberOfConnections++;
+
+                    if (ConnectedClientToReceiverPort.TryAdd(receivedIpEndPoint, (udpReceivers[0], udpReceiverPort)))
+                    {
+
+                        if (isHost)
+                            HostConnection = (receivedIpEndPoint, playerId);
+
+                        Debug.WriteLine("DataReceivedServer::New Connection from " + receivedIpEndPoint.ToString());
+                        Console.WriteLine("DataReceivedServer::New Connection from " + receivedIpEndPoint.ToString());
+                        AddToLog("DataReceivedServer::New Connection from " + receivedIpEndPoint.ToString());
+                        if (OnConnectionReceived != null)
+                        {
+                            OnConnectionReceived(receivedIpEndPoint);
+                        }
+                        var connectedMessage = "Connected=" + playerId;
+                        var connectedMessageArray = UTF8Encoding.UTF8.GetBytes(connectedMessage);
+                        udpReceivers[0].Send(connectedMessageArray, connectedMessageArray.Length, receivedIpEndPoint);
+
+                    }
                 }
-                AddToLog("DataReceivedServer::New Connection from " + receivedIpEndPoint.ToString());
+                //}
             }
+
+            addingNewConnection = false;
         }
 
         public void AddToLog(string text)
