@@ -138,8 +138,11 @@ namespace SIT.Launcher
                 MessageBox.Show("Server Address must be https!");
                 return;
             }
-            //TarkovRequesting requesting = new TarkovRequesting(null, "https://cooptarkov-server.azurewebsites.net/", false);
-            //TarkovRequesting requesting = new TarkovRequesting(null, "https://192.168.0.31:7777", false);
+            if (ServerAddress.EndsWith("/"))
+            {
+                MessageBox.Show("Server Address is incorrect, you should NOT have a / at the end!");
+                return;
+            }
             TarkovRequesting requesting = new TarkovRequesting(null, ServerAddress, false);
 
             Dictionary<string, string> data = new Dictionary<string, string>();
@@ -179,7 +182,6 @@ namespace SIT.Launcher
                     App.GameVersion = fvi.ProductVersion;
 
                     UpdateButtonText(null);
-                    btnLaunchGame.IsEnabled = true;
 
                     await DownloadAndInstallBepInEx5(openFileDialog.FileName);
 
@@ -218,8 +220,9 @@ namespace SIT.Launcher
 
         private async void StartGame(string sessionId, OpenFileDialog openFileDialog)
         {
-            UpdateButtonText(null);
-            btnLaunchGame.IsEnabled = true;
+            App.LegalityCheck();
+
+            UpdateButtonText("Cleaning client directory");
 
             var battlEyeDirPath = Directory.GetParent(openFileDialog.FileName).FullName + "\\BattlEye";
             if (Directory.Exists(battlEyeDirPath))
@@ -247,6 +250,8 @@ namespace SIT.Launcher
                 File.Delete(uninstallPath);
             }
 
+            UpdateButtonText(null);
+            btnLaunchGame.IsEnabled = true;
             var commandArgs = $"-token={sessionId} -config={{\"BackendUrl\":\"{ServerAddress}\",\"Version\":\"live\"}}";
             Process.Start(openFileDialog.FileName, commandArgs);
             Config.Save();

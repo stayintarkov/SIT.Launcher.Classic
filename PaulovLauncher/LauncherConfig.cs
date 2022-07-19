@@ -66,6 +66,10 @@ namespace SIT.Launcher
             if(File.Exists(App.ApplicationDirectory + "LauncherConfig.json"))
                 launcherConfig = JsonConvert.DeserializeObject<LauncherConfig>(File.ReadAllText(App.ApplicationDirectory + "LauncherConfig.json"));
 
+            if(launcherConfig.ServerInstance.ServerAddress.EndsWith("/"))
+            {
+                launcherConfig.ServerInstance.ServerAddress = launcherConfig.ServerInstance.ServerAddress.Substring(0, launcherConfig.ServerInstance.ServerAddress.Length - 1);
+            }
             return launcherConfig;
         }
 
