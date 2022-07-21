@@ -288,7 +288,7 @@ namespace SIT.Launcher
 
             if (!File.Exists(App.ApplicationDirectory + "\\BepInEx5.zip"))
             {
-                var httpRequest = HttpWebRequest.Create("https://github.com/BepInEx/BepInEx/releases/download/v5.4.19/BepInEx_x64_5.4.19.0.zip");
+                var httpRequest = HttpWebRequest.Create("https://github.com/BepInEx/BepInEx/releases/download/v5.4.20/BepInEx_x64_5.4.20.0.zip");
                 httpRequest.Method = "GET";
                 var response = await httpRequest.GetResponseAsync();
                 if (response != null)
