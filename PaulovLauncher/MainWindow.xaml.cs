@@ -2,6 +2,7 @@
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using Octokit;
+using SIT.Launcher.DeObfus;
 using SIT.Launcher.Windows;
 using System;
 using System.Collections.Generic;
@@ -442,23 +443,26 @@ namespace SIT.Launcher
 
         private async Task<bool> Deobfuscate(string exeLocation)
         {
-            var deobfusFolder = App.ApplicationDirectory + "/DeObfus/";
-            var deobfusApp = deobfusFolder + "de4dot-x64.exe";
+            return await Deobfuscator.DeobfuscateAsync(exeLocation);
 
-            // Discover where Assembly-CSharp is within the Game Folders
-            var assemblyLocation = exeLocation.Replace("EscapeFromTarkov.exe", "");
-            assemblyLocation += "EscapeFromTarkov_Data\\Managed\\Assembly-CSharp.dll";
 
-            // Backup the Assembly-CSharp and place the newest clean one
-            if (!File.Exists(assemblyLocation + ".backup"))
-            {
-                File.Copy(assemblyLocation, assemblyLocation + ".backup");
+            //var deobfusFolder = App.ApplicationDirectory + "/DeObfus/";
+            //var deobfusApp = deobfusFolder + "de4dot-x64.exe";
 
-                List<FileInfo> fileInfos = Directory.GetFiles(App.ApplicationDirectory + "/DeObfus/PatchedAssemblies/").Select(x => new FileInfo(x)).ToList();
-                var lastAssembly = fileInfos.OrderByDescending(x => x.LastWriteTime).FirstOrDefault();
-                lastAssembly.CopyTo(assemblyLocation, true);
-            }
-            return true;
+            //// Discover where Assembly-CSharp is within the Game Folders
+            //var assemblyLocation = exeLocation.Replace("EscapeFromTarkov.exe", "");
+            //assemblyLocation += "EscapeFromTarkov_Data\\Managed\\Assembly-CSharp.dll";
+
+            //// Backup the Assembly-CSharp and place the newest clean one
+            //if (!File.Exists(assemblyLocation + ".backup"))
+            //{
+            //    File.Copy(assemblyLocation, assemblyLocation + ".backup");
+
+            //    List<FileInfo> fileInfos = Directory.GetFiles(App.ApplicationDirectory + "/DeObfus/PatchedAssemblies/").Select(x => new FileInfo(x)).ToList();
+            //    var lastAssembly = fileInfos.OrderByDescending(x => x.LastWriteTime).FirstOrDefault();
+            //    lastAssembly.CopyTo(assemblyLocation, true);
+            //}
+            //return true;
 
             //// Extract the Deobfuscator zip
             //ExtractDeobfuscator();
@@ -533,6 +537,7 @@ namespace SIT.Launcher
         {
             gridPlay.Visibility = Visibility.Collapsed;
             gridCoopServer.Visibility = Visibility.Collapsed;
+            gridTools.Visibility = Visibility.Collapsed;
             gridSettings.Visibility = Visibility.Collapsed;
         }
 
@@ -552,6 +557,22 @@ namespace SIT.Launcher
         {
             CollapseAll();
             gridSettings.Visibility = Visibility.Visible;
+        }
+
+        private void btnToToolsWindow_Click(object sender, RoutedEventArgs e)
+        {
+            CollapseAll();
+            gridTools.Visibility = Visibility.Visible;
+        }
+
+        private async void btnDeobfuscate_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Executable (EscapeFromTarkov.exe)|EscapeFromTarkov.exe;";
+            if (openFileDialog.ShowDialog() == true)
+            {
+                await Deobfuscate(openFileDialog.FileName);
+            }
         }
     }
 }

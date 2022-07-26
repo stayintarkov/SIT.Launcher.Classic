@@ -55,9 +55,13 @@
                     <Label Content="Coop Server" VerticalAlignment="Center" FontSize="16"  />
                 </StackPanel>
             </Button>
-            <!--<Button Background="Transparent" Grid.Column="1">Play</Button>-->
-            <!--<Button Background="Transparent" Grid.Column="2"></Button>-->
-            <Button Background="Transparent" BorderThickness="0" Grid.Column="6" ToolTip="Settings" x:Name="btnSettingsPopup" Click="btnSettingsPopup_Click">
+            <Button Background="Transparent" BorderThickness="0" Grid.Column="3" ToolTip="Tools" x:Name="btnToToolsWindow" Click="btnToToolsWindow_Click">
+                <StackPanel VerticalAlignment="Center"  HorizontalAlignment="Left" Orientation="Horizontal">
+                    <iconPacks:PackIconCodicons Kind="Tools" Height="20" Width="20"  VerticalAlignment="Center"></iconPacks:PackIconCodicons>
+                    <Label Content="Tools" VerticalAlignment="Center" FontSize="16" />
+                </StackPanel>
+            </Button>
+            <Button Background="Transparent" BorderThickness="0" Grid.Column="4" ToolTip="Settings" x:Name="btnSettingsPopup" Click="btnSettingsPopup_Click">
                 <StackPanel VerticalAlignment="Center"  HorizontalAlignment="Left" Orientation="Horizontal">
                     <iconPacks:PackIconCodicons Kind="Gear" Height="20" Width="20"  VerticalAlignment="Center"></iconPacks:PackIconCodicons>
                     <Label Content="Settings" VerticalAlignment="Center" FontSize="16" />
@@ -112,6 +116,16 @@
         </Grid>
         <Grid x:Name="gridCoopServer" Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="2">
             <gameServer:GameServerWindow></gameServer:GameServerWindow>
+        </Grid>
+        <Grid x:Name="gridTools" Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="2">
+            <StackPanel Margin="5">
+                <StackPanel.Resources>
+                    <Style TargetType="{x:Type mah:MetroHeader}">
+                        <Setter Property="Margin" Value="0,5,0,5"/>
+                    </Style>
+                </StackPanel.Resources>
+                <Button Content="Deobfuscate Assembly" x:Name="btnDeobfuscate" Click="btnDeobfuscate_Click"></Button>
+            </StackPanel>
         </Grid>
         <Grid x:Name="gridSettings" Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="2">
             <StackPanel Margin="5">
