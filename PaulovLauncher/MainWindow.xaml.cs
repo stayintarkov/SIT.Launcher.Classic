@@ -441,9 +441,9 @@ namespace SIT.Launcher
             }
         }
 
-        private async Task<bool> Deobfuscate(string exeLocation)
+        private async Task<bool> Deobfuscate(string exeLocation, bool createBackup = true, bool overwriteExisting = true, bool doRemapping = true)
         {
-            return await Deobfuscator.DeobfuscateAsync(exeLocation);
+            return await Deobfuscator.DeobfuscateAsync(exeLocation, createBackup, overwriteExisting, doRemapping);
 
 
             //var deobfusFolder = App.ApplicationDirectory + "/DeObfus/";
@@ -513,9 +513,9 @@ namespace SIT.Launcher
             if (!File.Exists(deobfusFolder + "Deobfuscator.zip"))
                 return;
 
-            if (!File.Exists(deobfusFolder + "de4dot-x64.exe"))
+            if (!File.Exists(deobfusFolder + "/de4dot/" + "de4dot.exe"))
             {
-                System.IO.Compression.ZipFile.ExtractToDirectory(deobfusFolder + "Deobfuscator.zip", deobfusFolder);
+                System.IO.Compression.ZipFile.ExtractToDirectory(deobfusFolder + "Deobfuscator.zip", deobfusFolder + "/de4dot/");
                 File.Delete(deobfusFolder + "Deobfuscator.zip");
             }
         }
@@ -571,7 +571,7 @@ namespace SIT.Launcher
             openFileDialog.Filter = "Executable (EscapeFromTarkov.exe)|EscapeFromTarkov.exe;";
             if (openFileDialog.ShowDialog() == true)
             {
-                await Deobfuscate(openFileDialog.FileName);
+                await Deobfuscate(openFileDialog.FileName, doRemapping: true);
             }
         }
     }

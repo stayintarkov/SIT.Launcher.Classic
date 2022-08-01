@@ -64,18 +64,25 @@ namespace SIT.Launcher.GameServer
                                 && EchoGameServer.Instance.ConnectedClients.TryGetValue(con, out accountId)
                                 )
                             {
-                                var roundTripTime = (EchoGameServer.Instance.PongTimes[con] - EchoGameServer.Instance.PingTimes[con]);
-                                //Console.WriteLine(con.ToString() + $" ({roundTripTime})");
-                                var roundTripTimeInMS = roundTripTime.TotalMilliseconds < 0 ? roundTripTime.TotalMilliseconds * -1 : roundTripTime.TotalMilliseconds;
-                                roundTripTimeInMS = roundTripTimeInMS < 999 ? roundTripTimeInMS : 999;
-                                //if (roundTripTimeInMS < 999)
-                                //{
+                                try
+                                {
+                                    var roundTripTime = (EchoGameServer.Instance.PongTimes[con] - EchoGameServer.Instance.PingTimes[con]);
+                                    //Console.WriteLine(con.ToString() + $" ({roundTripTime})");
+                                    var roundTripTimeInMS = roundTripTime.TotalMilliseconds < 0 ? roundTripTime.TotalMilliseconds * -1 : roundTripTime.TotalMilliseconds;
+                                    roundTripTimeInMS = roundTripTimeInMS < 999 ? roundTripTimeInMS : 999;
+                                    //if (roundTripTimeInMS < 999)
+                                    //{
 
                                     var isHost = EchoGameServer.Instance.HostConnection.HasValue && EchoGameServer.Instance.HostConnection.Value.Item1 == con;
 
                                     txtConnections.Text += $"{con} {(isHost ? "host" : "")} ({(roundTripTimeInMS > 0 ? Math.Round(roundTripTimeInMS) : 0)}ms)" + Environment.NewLine;
 
-                                //}
+                                    //}
+                                }
+                                catch
+                                {
+
+                                }
                             }
                             else
                             {
