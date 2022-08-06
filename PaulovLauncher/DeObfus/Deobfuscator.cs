@@ -1,5 +1,6 @@
 ﻿using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -133,37 +134,79 @@ namespace SIT.Launcher.DeObfus
                 {
                     if (oldAssembly != null)
                     {
-                        // Remap PoolManager
-                        var poolManagerType = oldAssembly.MainModule.GetTypes().Single(x => x.Methods.Any(y => y.Name == "LoadBundlesAndCreatePools"));
-                        if (poolManagerType != null)
-                            poolManagerType.Name = "PoolManager";
+                        AutoRemapperConfig autoRemapperConfig = JsonConvert.DeserializeObject<AutoRemapperConfig>(File.ReadAllText(App.ApplicationDirectory + "//DeObfus/AutoRemapperConfig.json"));
+                        if(autoRemapperConfig.EnableAttemptToRenameAllClasses)
+                        {
+                            foreach(var t in oldAssembly.MainModule.GetTypes())
+                            {
+                                if (!t.Name.Contains("GClass"))
+                                    continue;
 
-                        // Remap Player Inventory
-                        var playerInventory = oldAssembly.MainModule.GetTypes().Single(x =>
-                             x.Methods.Any(y => y.Name == "UpdateTotalWeight")
-                             && x.Methods.Any(y => y.Name == "GetAllItemByTemplate")
-                             && x.Methods.Any(y => y.Name == "GetItemsInSlots")
-                            );
-                        if (playerInventory != null)
-                            playerInventory.Name = "PlayerInventory";
+                                {
+                                    Dictionary<string, int> countOfNames = new Dictionary<string, int>();
+                                    foreach (var f in t.Fields)
+                                    {
+                                        foreach (var n in SplitCamelCase(f.Name))
+                                        {
+                                            if (countOfNames.ContainsKey(n))
+                                                countOfNames[n]++;
+                                            else
+                                                countOfNames.Add(n, 1);
+                                        }
+                                    }
+                                    foreach (var f in t.Methods)
+                                    {
+                                        foreach (var n in SplitCamelCase(f.Name))
+                                        {
+                                            if (countOfNames.ContainsKey(n))
+                                                countOfNames[n]++;
+                                            else
+                                                countOfNames.Add(n, 1);
+                                        }
+                                    }
+                                    foreach (var f in t.Properties)
+                                    {
+                                        foreach (var n in SplitCamelCase(f.Name))
+                                        {
+                                            if (countOfNames.ContainsKey(n))
+                                                countOfNames[n]++;
+                                            else
+                                                countOfNames.Add(n, 1);
+                                        }
+                                    }
 
-                        // Remap Player Equipment
-                        var playerEquipment = oldAssembly.MainModule.GetTypes().Single(x =>
-                             x.Methods.Any(y => y.Name == "GetSlot")
-                             && x.Methods.Any(y => y.Name == "GetContainerSlots")
-                            );
-                        if (playerEquipment != null)
-                            playerEquipment.Name = "PlayerEquipment";
+                                    if (countOfNames.Count > 0 && countOfNames.All(x => x.Value == 1))
+                                        continue;
 
-                        // Remap Damage Info
-                        var damageInfoType = oldAssembly.MainModule.GetTypes().Single(x =>
-                             x.Fields.Any(y => y.Name == "DamageType")
-                             && x.Fields.Any(y => y.Name == "Damage")
-                             && x.Fields.Any(y => y.Name == "IsForwardHit")
-                             && x.Fields.Any(y => y.Name == "ArmorDamage")
-                            );
-                        if (damageInfoType != null)
-                            damageInfoType.Name = "DamageInfo";
+                                    var orderedCount = countOfNames.OrderByDescending(x => x.Value);
+                                }
+                            }
+                        }
+                        
+                        foreach(var config in autoRemapperConfig.DefinedRemapping)
+                        {
+                            try
+                            {
+                                var findType
+                                    = oldAssembly.MainModule.GetTypes()
+                                    .SingleOrDefault(x
+                                        => 
+                                            (config.HasMethods == null || config.HasMethods.Length == 0 || (x.Methods.Count(y => config.HasMethods.Contains(y.Name)) == config.HasMethods.Length))
+                                            &&
+                                            (config.HasFields == null || config.HasFields.Length == 0 || (x.Fields.Count(y => config.HasFields.Contains(y.Name)) == config.HasFields.Length))
+                                            //&&
+                                            //(config.HasFields.Length == 0 || x.Properties.Any(y => config.HasFields.Contains(y.Name)))
+                                        );
+                                if (findType != null)
+                                {
+                                    findType.Name = config.RenameClassNameTo;
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex);
+                            }
+                        }
 
                         oldAssembly.Write(assemblyPath.Replace(".dll", "-remapped.dll"));
                     }
@@ -171,6 +214,13 @@ namespace SIT.Launcher.DeObfus
             }
             File.Copy(assemblyPath.Replace(".dll", "-remapped.dll"), assemblyPath, true);
 
+        }
+
+        public static string[] SplitCamelCase(string input)
+        {
+            return System.Text.RegularExpressions.Regex
+                .Replace(input, "(?<=[a-z])([A-Z])", ",", System.Text.RegularExpressions.RegexOptions.Compiled)
+                .Trim().Split(',');
         }
 
         internal static async Task<bool> DeobfuscateAsync(string exeLocation, bool createBackup = true, bool overwriteExisting = false, bool doRemapping = false)
