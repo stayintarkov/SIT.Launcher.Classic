@@ -187,19 +187,33 @@ namespace SIT.Launcher.DeObfus
                         {
                             try
                             {
-                                var findType
+                                var findTypes
                                     = oldAssembly.MainModule.GetTypes()
-                                    .SingleOrDefault(x
-                                        => 
+                                    .Where(x
+                                        =>
                                             (config.HasMethods == null || config.HasMethods.Length == 0 || (x.Methods.Count(y => config.HasMethods.Contains(y.Name)) == config.HasMethods.Length))
                                             &&
-                                            (config.HasFields == null || config.HasFields.Length == 0 || (x.Fields.Count(y => config.HasFields.Contains(y.Name)) == config.HasFields.Length))
-                                            //&&
-                                            //(config.HasFields.Length == 0 || x.Properties.Any(y => config.HasFields.Contains(y.Name)))
-                                        );
-                                if (findType != null)
+                                            (
+                                                (config.HasFields == null || config.HasFields.Length == 0 || (x.Fields.Count(y => config.HasFields.Contains(y.Name)) == config.HasFields.Length))
+                                                ||
+                                                (config.HasFields == null || config.HasFields.Length == 0 || (x.Properties.Count(y => config.HasFields.Contains(y.Name)) == config.HasFields.Length))
+                                            )
+                                        ).ToList();
+                                if (findTypes.Any())
                                 {
-                                    findType.Name = config.RenameClassNameTo;
+                                    if(findTypes.Count() > 1)
+                                    {
+                                        for(var index = 0; index < findTypes.Count(); index++)
+                                        {
+                                            var t = findTypes[index];
+                                            t.Name = config.RenameClassNameTo + index.ToString();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        var t = findTypes.SingleOrDefault();
+                                        t.Name = config.RenameClassNameTo;
+                                    }
                                 }
                             }
                             catch (Exception ex)

@@ -35,6 +35,42 @@
     {
       "RenameClassNameTo": "RagfairInfo",
       "HasFields": [ "Offers", "Rating", "IsRatingGrowing" ]
+    },
+    {
+      "RenameClassNameTo": "ShotInfo",
+      "ClassName": null,
+      "HasFields": [ "AIR_DENSITY", "MIN_PENETRATION_POWER", "MAX_PENETRATION_POWER", "MAX_RICOCHET_COUNT", "MIN_RICOCHET_ANGLE", "Ammo" ],
+      "HasMethods": []
+    },
+    {
+      "RenameClassNameTo": "GJobYield",
+      "ClassName": null,
+      "HasFields": [ "General", "Low", "Immediate" ],
+      "HasMethods": [ "Priority", "GetYieldDelegate" ]
+    },
+    {
+      "RenameClassNameTo": "SProgress",
+      "ClassName": null,
+      "HasFields": [ "Progress", "Stage" ],
+      "HasMethods": []
+    },
+    {
+      "RenameClassNameTo": "GProgress",
+      "ClassName": null,
+      "HasFields": [ "action_0", "cancellationToken_0" ],
+      "HasMethods": [ "Report" ]
+    },
+    {
+      "RenameClassNameTo": "GFilterCustomization",
+      "ClassName": null,
+      "HasFields": [ "Default" ],
+      "HasMethods": [ "FilterCustomization" ]
+    },
+    {
+      "RenameClassNameTo": "GStatisticsSession",
+      "ClassName": null,
+      "HasFields": [],
+      "HasMethods": [ "BeginStatisticsSession", "EndStatisticsSession" ]
     }
   ]
 }
