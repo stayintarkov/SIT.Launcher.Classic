@@ -37,7 +37,7 @@ namespace SIT.Launcher.GameServer
         public TcpListener tcpServer { get; set; }
         public List<UdpClient> udpReceivers;
         public int CurrentReceiverIndex = 0;
-        public int NumberOfReceivers = 2; // Two Channels. Reliable and Unreliable
+        public int NumberOfReceivers = 1; // Two Channels. Reliable and Unreliable
         public int udpReceiverPort = 7070;
         public DateTime StartupTime = DateTime.Now;
         public bool quit;
@@ -45,10 +45,10 @@ namespace SIT.Launcher.GameServer
         public (IPEndPoint, string)? HostConnection;
         public ConcurrentDictionary<string, string> ConnectedClientsIPs { get; } = new ConcurrentDictionary<string, string>();
         public ConcurrentDictionary<IPEndPoint, string> ConnectedClients { get; } = new ConcurrentDictionary<IPEndPoint, string>();
-        public readonly ConcurrentDictionary<IPEndPoint, (UdpClient, int)> ConnectedClientToReceiverPort = new ConcurrentDictionary<IPEndPoint, (UdpClient, int)>();
-        public readonly ConcurrentDictionary<IPEndPoint, DateTime> ConnectedClientsLastTimeDataReceiver = new ConcurrentDictionary<IPEndPoint, DateTime>();
-        public readonly ConcurrentDictionary<string, IPEndPoint> PlayersToConnectedClients = new ConcurrentDictionary<string, IPEndPoint>();
-        public readonly ConcurrentDictionary<string, int> MethodCallCounts = new ConcurrentDictionary<string, int>();
+        public ConcurrentDictionary<IPEndPoint, (UdpClient, int)> ConnectedClientToReceiverPort { get; } = new ConcurrentDictionary<IPEndPoint, (UdpClient, int)>();
+        public ConcurrentDictionary<IPEndPoint, DateTime> ConnectedClientsLastTimeDataReceiver { get; } = new ConcurrentDictionary<IPEndPoint, DateTime>();
+        public ConcurrentDictionary<string, IPEndPoint> PlayersToConnectedClients { get; } = new ConcurrentDictionary<string, IPEndPoint>();
+        public ConcurrentDictionary<string, int> MethodCallCounts { get; } = new ConcurrentDictionary<string, int>();
         public int TotalNumberOfBytesSentLastSecond = 0;
         public int TotalNumberOfBytesProcessedLastSecond = 0;
         public int TotalNumberOfBytesProcessed = 0;
@@ -183,8 +183,8 @@ namespace SIT.Launcher.GameServer
             foreach (IPEndPoint item in ConnectedClients.Keys)
             {
                 PingTimes.TryRemove(item, out _);
-                udpReceivers[0].Send(array, array.Length, item);
-                //EnqueuedDataToSend.Enqueue((item, array, null));
+                await udpReceivers[0].SendAsync(array, array.Length, item);
+                await Task.Delay(5);
                 PingTimes.TryAdd(item, DateTime.Now);
             }
             UpdatePings();
@@ -198,12 +198,27 @@ namespace SIT.Launcher.GameServer
                 var bytes = ASCIIEncoding.ASCII.GetBytes(JsonConvert.SerializeObject(DataProcessInsurance));
                 EnqueuedDataToSend.Enqueue((null, bytes, null));
             }
-            if(EnqueuedDataToSend.Any())
+            if (EnqueuedDataToSend.Any())
             {
                 var queuedData = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(EnqueuedDataToSend.Select(x => Encoding.UTF8.GetString(x.Item2))));
-                foreach (IPEndPoint item in ConnectedClients.Keys)
-                {
-                    await udpReceivers[0].SendAsync(queuedData, queuedData.Length, item);
+                if (queuedData.Length > 0) 
+                { 
+                    foreach (IPEndPoint item in ConnectedClients.Keys)
+                    {
+                        try
+                        {
+                            //await udpReceivers[0].SendAsync(queuedData, queuedData.Length, item);
+                            udpReceivers[0].BeginSend(queuedData, queuedData.Length
+                                , item
+                                , (IAsyncResult r) => { 
+
+                                }, udpReceivers[0]);
+                        }
+                        catch (Exception ex)
+                        {
+
+                        }
+                    }
                 }
                 EnqueuedDataToSend.Clear();
             }
@@ -274,7 +289,6 @@ namespace SIT.Launcher.GameServer
                     {
                         PongTimes.TryRemove(receivedIpEndPoint, out _);
                         PongTimes.TryAdd(receivedIpEndPoint, DateTime.Now);
-                        EnqueuedDataToSend.Enqueue((receivedIpEndPoint, Encoding.ASCII.GetBytes("Ping"), null));
                         return true;
                     }
 
@@ -309,24 +323,40 @@ namespace SIT.Launcher.GameServer
                         return false;
                     }
 
-                    if (@string.StartsWith("PeopleParity"))
+                    if (@string.StartsWith("PeopleParityRequest="))
                     {
-                        var serializedPlayerSpawnData = JsonConvert.SerializeObject(PlayerSpawnData);
-                        var bytesPlayerSpawnData = UTF8Encoding.UTF8.GetBytes(serializedPlayerSpawnData);
+                        var accountId = @string.Split("=")[1];
+                        var requesterId = @string.Split("=")[2];
+                        //var serializedPlayerSpawnData = JsonConvert.SerializeObject(PlayerSpawnData);
+                        //var bytesPlayerSpawnData = UTF8Encoding.UTF8.GetBytes(serializedPlayerSpawnData);
                         //foreach (var client in ConnectedClients.Keys)
                         //{
                         //    await udpReceivers[0].SendAsync(bytesPlayerSpawnData, bytesPlayerSpawnData.Length, client);
                         //}
-                        await Task.Delay(1000);
+                        //await Task.Delay(1000);
                         foreach (var ps in PlayerSpawnData)
                         {
-                            serializedPlayerSpawnData = JsonConvert.SerializeObject(ps);
-                            bytesPlayerSpawnData = UTF8Encoding.UTF8.GetBytes(serializedPlayerSpawnData);
-                            foreach (var client in ConnectedClients.Keys)
+                            if(ps.ContainsKey("accountId") && ps["accountId"].ToString() == accountId)
                             {
-                                await udpReceivers[0].SendAsync(bytesPlayerSpawnData, bytesPlayerSpawnData.Length, client);
-                                await Task.Delay(1000);
+                                var serializedPlayerSpawnData = JsonConvert.SerializeObject(ps);
+                                var bytesPlayerSpawnData = UTF8Encoding.UTF8.GetBytes(serializedPlayerSpawnData);
+                                if (PlayersToConnectedClients.ContainsKey(requesterId))
+                                {
+                                    //await udpReceivers[0].SendAsync(bytesPlayerSpawnData, bytesPlayerSpawnData.Length, PlayersToConnectedClients[requesterId]);
+                                    EnqueuedDataToSend.Enqueue((PlayersToConnectedClients[requesterId], bytesPlayerSpawnData, requesterId));
+                                }
+                                else
+                                {
+                                    throw new Exception("Attempted to send Player data to an unknown requester!");
+                                }
                             }
+                            //    serializedPlayerSpawnData = JsonConvert.SerializeObject(ps);
+                            //    bytesPlayerSpawnData = UTF8Encoding.UTF8.GetBytes(serializedPlayerSpawnData);
+                            //    foreach (var client in ConnectedClients.Keys)
+                            //    {
+                            //        await udpReceivers[0].SendAsync(bytesPlayerSpawnData, bytesPlayerSpawnData.Length, client);
+                            //        await Task.Delay(1000);
+                            //    }
                         }
                         return true;
                     }
@@ -344,20 +374,16 @@ namespace SIT.Launcher.GameServer
                     //    }
                     //}
 
-                    foreach (var client in ConnectedClients.Keys)
-                    {
-
-                        foreach (var udpServer in udpReceivers)
-                        {
-                            await udpServer.SendAsync(array, array.Length, client);
-                        }
-                    }
+                    
 
                     //EnqueuedDataToSend.Enqueue((receivedIpEndPoint, array, null));
 
                     var dictData = JsonConvert.DeserializeObject<Dictionary<string, object>>(@string);
                     if (dictData != null)
                     {
+                        if (dictData.ContainsKey("method") || dictData.ContainsKey("m"))
+                        {
+                            
 
                         //if (!dictData.ContainsKey("accountId"))
                         //{
@@ -365,8 +391,7 @@ namespace SIT.Launcher.GameServer
                         //    return;
                         //}
 
-                        if (dictData.ContainsKey("method") || dictData.ContainsKey("m"))
-                        {
+                        
 
 
                             if (!dictData.ContainsKey("method"))
@@ -375,6 +400,23 @@ namespace SIT.Launcher.GameServer
                             var method = dictData["method"].ToString();
                             if (!string.IsNullOrEmpty(method))
                             {
+                                // Batch up Rotations, Positions, Move
+                                if(method == "Rotation" || method == "Position" || method == "Move")
+                                {
+                                    EnqueuedDataToSend.Enqueue((null, array, null));
+                                    return true;
+                                }
+
+                                foreach (var client in PlayersToConnectedClients)
+                                {
+                                    foreach (var udpServer in udpReceivers)
+                                    {
+                                        udpServer.BeginSend(array, array.Length, client.Value, (IAsyncResult r) => {
+                                        }, udpServer);
+                                    }
+                                }
+
+
                                 if (!MethodCallCounts.ContainsKey(method))
                                 {
                                     MethodCallCounts.TryAdd(method, 0);
@@ -514,6 +556,7 @@ namespace SIT.Launcher.GameServer
                         }
                         var connectedMessage = "Connected=" + playerId;
                         var connectedMessageArray = UTF8Encoding.UTF8.GetBytes(connectedMessage);
+                        PlayersToConnectedClients.TryAdd(playerId, receivedIpEndPoint);
                         udpReceivers[0].Send(connectedMessageArray, connectedMessageArray.Length, receivedIpEndPoint);
 
                     }
