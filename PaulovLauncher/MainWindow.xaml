@@ -125,19 +125,24 @@
                     </Style>
                 </StackPanel.Resources>
                 <Button Content="Deobfuscate Assembly" x:Name="btnDeobfuscate" Click="btnDeobfuscate_Click"></Button>
+                <Button Content="Deobfuscate Assembly (Browse to Assembly)" x:Name="btnDeobfuscateBrowse" Click="btnDeobfuscateBrowse_Click"></Button>
             </StackPanel>
         </Grid>
         <Grid x:Name="gridSettings" Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="2">
             <StackPanel Margin="5">
                 <StackPanel.Resources>
                     <Style TargetType="{x:Type mah:MetroHeader}">
-                        <Setter Property="Margin" Value="0,5,0,5"/>
+                        <Setter Property="Margin" Value="5,5,0,5"/>
                     </Style>
                 </StackPanel.Resources>
                 <!--<mah:MetroHeader Content="Server Address" Foreground="White" />
         <TextBox Text="{Binding Config.ServerInstance.ServerAddress}"></TextBox>-->
                 <mah:MetroHeader Content="Automatically Install Assembly DLLs" Foreground="White" />
-                <CheckBox IsChecked="{Binding Config.AutomaticallyDeobfuscateDlls}"></CheckBox>
+                <!--<StackPanel Orientation="Horizontal">
+                    <CheckBox IsChecked="{Binding Config.AutomaticallyDeobfuscateDlls}"></CheckBox>
+                    <ComboBox x:Name="cbAssemblyDLLs">
+                    </ComboBox>
+                </StackPanel>-->
                 <mah:MetroHeader Content="Automatically Install SIT" Foreground="White" />
                 <CheckBox IsChecked="{Binding Config.AutomaticallyInstallSIT}"></CheckBox>
                 <mah:MetroHeader Content="Automatically Install Aki Support" Foreground="White" />

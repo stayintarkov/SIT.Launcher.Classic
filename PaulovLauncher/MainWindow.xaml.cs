@@ -45,6 +45,21 @@ namespace SIT.Launcher
             this.DataContext = this;
 
             this.Title = "SIT Launcher - " + App.ProductVersion.ToString();
+
+
+            //if(Directory.Exists(AppContext.BaseDirectory + "/DeObfus/PatchedAssemblies/"))
+            //{
+            //    var patchedAssemblies = Directory.GetFiles(AppContext.BaseDirectory + "/DeObfus/PatchedAssemblies/");
+            //    cbAssemblyDLLs.Items.Clear();
+            //    cbAssemblyDLLs.Items.Add("Latest");
+            //    foreach (var f in patchedAssemblies)
+            //    {
+            //        cbAssemblyDLLs.Items.Add(f);
+            //    }
+            //    cbAssemblyDLLs.SelectedIndex = 0;
+            //}
+
+
         }
 
         public LauncherConfig Config { get; } = LauncherConfig.Instance;
@@ -572,6 +587,16 @@ namespace SIT.Launcher
             if (openFileDialog.ShowDialog() == true)
             {
                 await Deobfuscate(openFileDialog.FileName, doRemapping: true);
+            }
+        }
+
+        private void btnDeobfuscateBrowse_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "DLL (Assembly-CSharp)|Assembly-CSharp*.dll;";
+            if (openFileDialog.ShowDialog() == true)
+            {
+                Deobfuscator.DeobfuscateAssembly(openFileDialog.FileName, Directory.GetParent(openFileDialog.FileName).FullName, doRemapping: true);
             }
         }
     }

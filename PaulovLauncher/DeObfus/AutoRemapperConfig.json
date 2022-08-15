@@ -3,6 +3,13 @@
   "EnableAttemptToRenameAllClasses": true,
   "DefinedRemapping": [
     {
+      "RenameClassNameTo": "ISession",
+      "ClassName": null,
+      "OnlyTargetInterface": true,
+      "HasFields": [],
+      "HasMethods": [ "ChangeNickname", "ValidateNickname", "GetReservedNickname", "GetProfiles", "GetRaidReadyStatus", "StartGameGroupPlayer", "ChatSendMessage" ]
+    },
+    {
       "RenameClassNameTo": "PoolManager",
       "ClassName": null,
       "HasFields": [],
@@ -71,6 +78,43 @@
       "ClassName": null,
       "HasFields": [],
       "HasMethods": [ "BeginStatisticsSession", "EndStatisticsSession" ]
+    },
+    {
+      "RenameClassNameTo": "GInventoryManagement",
+      "ClassName": null,
+      "HasFields": [],
+      "HasMethods": [ "IsLimitedAtAddress", "CheckOverLimit" ]
+    },
+    {
+      "RenameClassNameTo": "GGroupManagement",
+      "ClassName": null,
+      "HasFields": [],
+      "HasMethods": [ "DisbandGroup", "LeaveGroup", "ExitFromMatchMaker" ]
+    },
+    {
+      "RenameClassNameTo": "BotPresets",
+      "ClassName": null,
+      "HasFields": [],
+      "HasMethods": [ "GetNewProfile", "CreateProfile" ]
+    },
+    {
+      "RenameClassNameTo": "TraderInfo",
+      "ClassName": null,
+      "HasFields": [ "MaxLoyaltyLevel" ],
+      "HasMethods": [ "TryGetNextLoyalty", "SetSalesSum" ]
+    },
+    {
+      "RenameClassNameTo": "IAIDetails",
+      "OnlyTargetInterface": true,
+      "ClassName": null,
+      "HasFields": [ "Side", "GroupId", "LookDirection", "Position", "Transform", "WeaponRoot", "GetPlayer" ],
+      "HasMethods": []
+    },
+    {
+      "RenameClassNameTo": "IAIData",
+      "ClassName": null,
+      "HasFields": [ "AskRequests", "AIBossPlayer", "GetFlare", "IAmBoss", "UsingLight", "Player", "PowerOfEquipment" ],
+      "HasMethods": []
     }
   ]
 }

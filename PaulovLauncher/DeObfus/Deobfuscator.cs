@@ -16,12 +16,8 @@ namespace SIT.Launcher.DeObfus
 {
 	internal static class Deobfuscator
 	{
-		internal static bool Deobfuscate(string exeLocation, bool createBackup = true, bool overwriteExisting = false, bool doRemapping = false)
+        internal static bool DeobfuscateAssembly(string assemblyPath, string managedPath, bool createBackup = true, bool overwriteExisting = false, bool doRemapping = false)
         {
-            var assemblyPath = exeLocation.Replace("EscapeFromTarkov.exe", "");
-            var managedPath = Path.Combine(assemblyPath, "EscapeFromTarkov_Data", "Managed");
-            assemblyPath = Path.Combine(managedPath, "Assembly-CSharp.dll");
-
             var executablePath = App.ApplicationDirectory;
             var de4dotLocation = Path.Combine(Path.GetDirectoryName(executablePath), "DeObfus", "de4dot", "de4dot.exe");
 
@@ -93,11 +89,19 @@ namespace SIT.Launcher.DeObfus
             // Do final backup
             if (createBackup)
                 BackupExistingAssembly(assemblyPath);
-            if(overwriteExisting)
+            if (overwriteExisting)
                 OverwriteExistingAssembly(assemblyPath, cleanedDllPath);
-            
 
             return true;
+        }
+
+        internal static bool Deobfuscate(string exeLocation, bool createBackup = true, bool overwriteExisting = false, bool doRemapping = false)
+        {
+            var assemblyPath = exeLocation.Replace("EscapeFromTarkov.exe", "");
+            var managedPath = Path.Combine(assemblyPath, "EscapeFromTarkov_Data", "Managed");
+            assemblyPath = Path.Combine(managedPath, "Assembly-CSharp.dll");
+
+            return DeobfuscateAssembly(assemblyPath, managedPath, createBackup, overwriteExisting, doRemapping);
         }
 
         private static void OverwriteExistingAssembly(string assemblyPath, string cleanedDllPath, bool deleteCleaned = false)
@@ -183,7 +187,7 @@ namespace SIT.Launcher.DeObfus
                             }
                         }
                         
-                        foreach(var config in autoRemapperConfig.DefinedRemapping)
+                        foreach(var config in autoRemapperConfig.DefinedRemapping.Where(x=> !string.IsNullOrEmpty(x.RenameClassNameTo)))
                         {
                             try
                             {
@@ -203,17 +207,50 @@ namespace SIT.Launcher.DeObfus
                                 {
                                     if(findTypes.Count() > 1)
                                     {
+                                        var numberOfChangedIndexes = 0;
                                         for(var index = 0; index < findTypes.Count(); index++)
                                         {
+                                            var newClassName = config.RenameClassNameTo;
                                             var t = findTypes[index];
-                                            t.Name = config.RenameClassNameTo + index.ToString();
+                                            var oldClassName = t.Name;
+                                            if(t.IsInterface && !newClassName.StartsWith("I"))
+                                            {
+                                                newClassName = newClassName.Insert(0, "I");
+                                            }
+                                            newClassName = newClassName + (numberOfChangedIndexes > 0 ? numberOfChangedIndexes.ToString() : "");
+
+                                            if (!config.OnlyTargetInterface || (t.IsInterface && config.OnlyTargetInterface))
+                                            {
+                                                t.Name = newClassName;
+                                                numberOfChangedIndexes++;
+
+                                                Debug.WriteLine($"Remapper: Remapped {oldClassName} to {newClassName}");
+                                                Console.WriteLine($"Remapper: Remapped {oldClassName} to {newClassName}");
+                                            }
+
                                         }
                                     }
                                     else
                                     {
+                                        var newClassName = config.RenameClassNameTo;
                                         var t = findTypes.SingleOrDefault();
-                                        t.Name = config.RenameClassNameTo;
+                                        var oldClassName = t.Name;
+                                        if (t.IsInterface && !newClassName.StartsWith("I"))
+                                            newClassName = newClassName.Insert(0, "I");
+
+                                        if (!config.OnlyTargetInterface || (t.IsInterface && config.OnlyTargetInterface))
+                                        {
+                                            t.Name = newClassName;
+
+                                            Debug.WriteLine($"Remapper: Remapped {oldClassName} to {newClassName}");
+                                            Console.WriteLine($"Remapper: Remapped {oldClassName} to {newClassName}");
+                                        }
                                     }
+                                }
+                                else 
+                                {
+                                    Debug.WriteLine($"Remapper: Failed to remap {config.RenameClassNameTo}");
+                                    Console.WriteLine($"Remapper: Failed to remap {config.RenameClassNameTo}");
                                 }
                             }
                             catch (Exception ex)
