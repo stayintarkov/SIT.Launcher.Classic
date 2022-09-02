@@ -139,52 +139,62 @@ namespace SIT.Launcher.DeObfus
                     if (oldAssembly != null)
                     {
                         AutoRemapperConfig autoRemapperConfig = JsonConvert.DeserializeObject<AutoRemapperConfig>(File.ReadAllText(App.ApplicationDirectory + "//DeObfus/AutoRemapperConfig.json"));
-                        if(autoRemapperConfig.EnableAttemptToRenameAllClasses)
+                        if (autoRemapperConfig.EnableAttemptToRenameAllClasses)
                         {
-                            foreach(var t in oldAssembly.MainModule.GetTypes())
+                            var gclasses = oldAssembly.MainModule.GetTypes().Where(x => x.Name.Contains("GClass"));
+                            var gclassToNameCounts = new Dictionary<string, int>();
+
+                            foreach (var t in oldAssembly.MainModule.GetTypes().Where(x => !x.Name.StartsWith("GClass") && !x.Name.StartsWith("Class")))
                             {
-                                if (!t.Name.Contains("GClass"))
-                                    continue;
-
+                                foreach (var m in t.Methods.Where(x => x.HasParameters && x.Parameters.Any(p => p.ParameterType.Name.StartsWith("GClass"))))
                                 {
-                                    Dictionary<string, int> countOfNames = new Dictionary<string, int>();
-                                    foreach (var f in t.Fields)
+                                    foreach (var p in m.Parameters.Where(x => x.ParameterType.Name.StartsWith("GClass")))
                                     {
-                                        foreach (var n in SplitCamelCase(f.Name))
-                                        {
-                                            if (countOfNames.ContainsKey(n))
-                                                countOfNames[n]++;
-                                            else
-                                                countOfNames.Add(n, 1);
-                                        }
-                                    }
-                                    foreach (var f in t.Methods)
-                                    {
-                                        foreach (var n in SplitCamelCase(f.Name))
-                                        {
-                                            if (countOfNames.ContainsKey(n))
-                                                countOfNames[n]++;
-                                            else
-                                                countOfNames.Add(n, 1);
-                                        }
-                                    }
-                                    foreach (var f in t.Properties)
-                                    {
-                                        foreach (var n in SplitCamelCase(f.Name))
-                                        {
-                                            if (countOfNames.ContainsKey(n))
-                                                countOfNames[n]++;
-                                            else
-                                                countOfNames.Add(n, 1);
-                                        }
-                                    }
+                                        var n = p.ParameterType.Name + "." + p.Name;
+                                        if (!gclassToNameCounts.ContainsKey(n))
+                                            gclassToNameCounts.Add(n, 0);
 
-                                    if (countOfNames.Count > 0 && countOfNames.All(x => x.Value == 1))
-                                        continue;
-
-                                    var orderedCount = countOfNames.OrderByDescending(x => x.Value);
+                                        gclassToNameCounts[n]++;
+                                    }
                                 }
                             }
+
+                            var autoRemappedClassCount = 0;
+                            var orderedGClassCounts = gclassToNameCounts.Where(x => x.Value > 5).OrderByDescending(x => x.Value);
+                            var usedNamesCount = new Dictionary<string, int>();
+                            foreach (var g in orderedGClassCounts)
+                            {
+                                var keySplit = g.Key.Split('.');
+                                var gclassName = keySplit[0];
+                                var gclassNameNew = keySplit[1];
+                                if (gclassNameNew.Length <= 3)
+                                    continue;
+
+                                var t = oldAssembly.MainModule.GetTypes().FirstOrDefault(x => x.Name == gclassName);
+                                if (t == null)
+                                    continue;
+
+                                if (!usedNamesCount.ContainsKey(gclassNameNew))
+                                    usedNamesCount.Add(gclassNameNew, 0);
+
+                                usedNamesCount[gclassNameNew]++;
+
+                                if (usedNamesCount[gclassNameNew] > 1)
+                                    gclassNameNew += usedNamesCount[gclassNameNew];
+
+                                var newClassName = char.ToUpper(gclassNameNew[0]) + gclassNameNew.Substring(1);
+                                if (!oldAssembly.MainModule.GetTypes().Any(x=>x.Name == newClassName))
+                                {
+                                    var oldClassName = t.Name;
+                                    t.Name = newClassName;
+                                    autoRemappedClassCount++;
+                                    Debug.WriteLine($"Remapper: Auto Remapped {oldClassName} to {newClassName}");
+                                    Console.WriteLine($"Remapper: Auto Remapped {oldClassName} to {newClassName}");
+                                }
+                            }
+
+                            Debug.WriteLine($"Remapper: Auto Remapped {autoRemappedClassCount} classes");
+                            Console.WriteLine($"Remapper: Auto Remapped {autoRemappedClassCount} classes");
                         }
                         
                         foreach(var config in autoRemapperConfig.DefinedRemapping.Where(x=> !string.IsNullOrEmpty(x.RenameClassNameTo)))

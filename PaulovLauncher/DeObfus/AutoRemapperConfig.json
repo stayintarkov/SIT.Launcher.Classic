@@ -115,6 +115,24 @@
       "ClassName": null,
       "HasFields": [ "AskRequests", "AIBossPlayer", "GetFlare", "IAmBoss", "UsingLight", "Player", "PowerOfEquipment" ],
       "HasMethods": []
+    },
+    {
+      "RenameClassNameTo": "ProfileData",
+      "ClassName": null,
+      "HasFields": [ "Nickname", "MemberCategory" ],
+      "HasMethods": [ "AddBan", "RemoveBan" ]
+    },
+    {
+      "RenameClassNameTo": "HealthController",
+      "ClassName": null,
+      "HasFields": [],
+      "HasMethods": [ "ChangeEnergy", "ChangeHealth", "ChangeHydration", "DoContusion" ]
+    },
+    {
+      "RenameClassNameTo": "InteractionResult",
+      "ClassName": null,
+      "HasFields": [ "InteractionType" ],
+      "HasMethods": [ ]
     }
   ]
 }
