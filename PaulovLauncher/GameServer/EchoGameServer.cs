@@ -226,61 +226,11 @@ namespace SIT.Launcher.GameServer
             ServerSendOutEnqueuedData();
         }
 
-        //private void ServerHandleReceivedDataTcp(ref StreamReader reader, ref StreamWriter writer, IPEndPoint receivedIpEndPoint)
-        //{
-        //    if (reader == null)
-        //        return;
-
-        //    try
-        //    {
-        //        var allText = reader.ReadToEnd();
-        //        if (string.IsNullOrEmpty(allText))
-        //            return;
-
-        //        if (allText.Length == 4 && allText == "Pong")
-        //        {
-        //            PongTimes.TryRemove(receivedIpEndPoint, out _);
-        //            PongTimes.TryAdd(receivedIpEndPoint, DateTime.Now);
-        //            writer.Write("Ping");
-        //            writer.Flush();
-        //            return;
-        //        }
-
-        //        if (allText == "GET_PLAYERS")
-        //        {
-        //            if (DataProcessInsurance.Any())
-        //            {
-        //                var queuedData = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(EnqueuedDataToSend.Select(x => Encoding.UTF8.GetString(x.Item2))));
-        //            }
-        //        }
-
-        //        if (allText == "CHECK_DEAD")
-        //        {
-        //            writer.Write("A COUPLE OF GUYS ARE DEAD LIKE");
-
-        //            if (DataProcessInsurance.Any())
-        //            {
-        //                var queuedData = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(DataProcessInsurance.Select(x=>x)));
-        //                writer.Write(queuedData);
-        //            }
-        //        }
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Debug.WriteLine(ex);
-        //    }
-
-        //}
-
         bool ProcessingServerData = false;
-        object lockProcessing;
 
         private async Task<bool> ServerHandleReceivedData(byte[] array, IPEndPoint receivedIpEndPoint)
         {
-           
-
-                string @string = Encoding.ASCII.GetString(array);
+            string @string = Encoding.UTF8.GetString(array);
             if (@string.Length > 0)
             {
                 try
@@ -323,167 +273,9 @@ namespace SIT.Launcher.GameServer
                         return false;
                     }
 
-                    if (@string.StartsWith("PeopleParityRequest="))
-                    {
-                        var accountId = @string.Split("=")[1];
-                        var requesterId = @string.Split("=")[2];
-                        //var serializedPlayerSpawnData = JsonConvert.SerializeObject(PlayerSpawnData);
-                        //var bytesPlayerSpawnData = UTF8Encoding.UTF8.GetBytes(serializedPlayerSpawnData);
-                        //foreach (var client in ConnectedClients.Keys)
-                        //{
-                        //    await udpReceivers[0].SendAsync(bytesPlayerSpawnData, bytesPlayerSpawnData.Length, client);
-                        //}
-                        //await Task.Delay(1000);
-                        foreach (var ps in PlayerSpawnData)
-                        {
-                            if(ps.ContainsKey("accountId") && ps["accountId"].ToString() == accountId)
-                            {
-                                var serializedPlayerSpawnData = JsonConvert.SerializeObject(ps);
-                                var bytesPlayerSpawnData = UTF8Encoding.UTF8.GetBytes(serializedPlayerSpawnData);
-                                if (PlayersToConnectedClients.ContainsKey(requesterId))
-                                {
-                                    //await udpReceivers[0].SendAsync(bytesPlayerSpawnData, bytesPlayerSpawnData.Length, PlayersToConnectedClients[requesterId]);
-                                    EnqueuedDataToSend.Enqueue((PlayersToConnectedClients[requesterId], bytesPlayerSpawnData, requesterId));
-                                }
-                                else
-                                {
-                                    throw new Exception("Attempted to send Player data to an unknown requester!");
-                                }
-                            }
-                            //    serializedPlayerSpawnData = JsonConvert.SerializeObject(ps);
-                            //    bytesPlayerSpawnData = UTF8Encoding.UTF8.GetBytes(serializedPlayerSpawnData);
-                            //    foreach (var client in ConnectedClients.Keys)
-                            //    {
-                            //        await udpReceivers[0].SendAsync(bytesPlayerSpawnData, bytesPlayerSpawnData.Length, client);
-                            //        await Task.Delay(1000);
-                            //    }
-                        }
-                        return true;
-                    }
 
 
-                    //AddNewConnection(receivedIpEndPoint, null);
-
-                    //foreach (var client in ConnectedClients.Keys)
-                    //{
-                    //    foreach (var udpServer in udpReceivers)
-                    //    {
-                    //        //udpServer.Send(array, array.Length, client);
-                    //        //udp.Send(new ReadOnlySpan<byte>(array));
-                    //        //udp.BeginSend(array, array.Length, (IAsyncResult r) => { }, client);
-                    //    }
-                    //}
-
-                    
-
-                    //EnqueuedDataToSend.Enqueue((receivedIpEndPoint, array, null));
-
-                    var dictData = JsonConvert.DeserializeObject<Dictionary<string, object>>(@string);
-                    if (dictData != null)
-                    {
-                        if (dictData.ContainsKey("method") || dictData.ContainsKey("m"))
-                        {
-                            
-
-                        //if (!dictData.ContainsKey("accountId"))
-                        //{
-                        //    //AddToLog("Thrown unusable Dictionary: Missing accountId!");
-                        //    return;
-                        //}
-
-                        
-
-
-                            if (!dictData.ContainsKey("method"))
-                                dictData.Add("method", dictData["m"]);
-
-                            var method = dictData["method"].ToString();
-                            if (!string.IsNullOrEmpty(method))
-                            {
-                                // Batch up Rotations, Positions, Move
-                                if(method == "Rotation" || method == "Position" || method == "Move")
-                                {
-                                    EnqueuedDataToSend.Enqueue((null, array, null));
-                                    return true;
-                                }
-
-                                foreach (var client in PlayersToConnectedClients)
-                                {
-                                    foreach (var udpServer in udpReceivers)
-                                    {
-                                        udpServer.BeginSend(array, array.Length, client.Value, (IAsyncResult r) => {
-                                        }, udpServer);
-                                    }
-                                }
-
-
-                                if (!MethodCallCounts.ContainsKey(method))
-                                {
-                                    MethodCallCounts.TryAdd(method, 0);
-                                }
-
-                                if (MethodCallCounts.TryGetValue(method, out int callCount))
-                                {
-                                    callCount++;
-                                    MethodCallCounts[method] = callCount;
-                                }
-
-                                if (OnMethodCall != null)
-                                {
-                                    OnMethodCall(MethodCallCounts);
-                                }
-
-                                if (method == "PlayerSpawn")
-                                {
-                                    PlayerSpawnData.Add(dictData);
-                                }
-
-                                //if (method == "Damage"
-                                //    || method == "Dead"
-                                //    //|| method == "Move"
-                                //    )
-                                //{
-                                //    foreach (var client in ConnectedClients.Keys)
-                                //    {
-                                //        udpReceivers[0].Send(array, array.Length, client);
-                                //        udpReceivers[1].Send(array, array.Length, client);
-                                //    }
-                                //    AddToLog($"Received {method} to {dictData["accountId"]}");
-
-
-
-                                //    return;
-                                //}
-
-                                // Always push Dead calls !
-                                if (method == "Dead" || method == "Damage")
-                                {
-                                    DataProcessInsurance.Enqueue(dictData);
-                                }
-                            }
-
-                            //string accountId = dictData["accountId"].ToString();
-
-                            //if (dictData.ContainsKey("tick"))
-                            //{
-                            //    long ticks = long.Parse(dictData["tick"].ToString());
-                            //    if (!ProcessedEvents.Any(x => x.Item1 == method && x.Item2 == accountId && x.Item3 == ticks))
-                            //        EnqueuedDataToSend.Enqueue((receivedIpEndPoint, array, accountId));
-
-                            //    ProcessedEvents.Add((method, accountId, ticks));
-                            //}
-                            //else
-                            //{
-                            //}
-                            //foreach (var client in ConnectedClients.Keys)
-                            //{
-                            //    udpReceivers[0].Send(array, array.Length, client);
-                            //    udpReceivers[1].Send(array, array.Length, client);
-                            //}
-
-
-                        }
-                    }
+                    return ServerHandleReceivedJsonData(array, receivedIpEndPoint, @string);
 
 
                 }
@@ -495,6 +287,109 @@ namespace SIT.Launcher.GameServer
             }
 
             return true;
+        }
+
+        private bool ServerHandleReceivedJsonData(byte[] array, IPEndPoint receivedIpEndPoint, string @string)
+        {
+            if (!@string.StartsWith("{") && !@string.EndsWith("}"))
+            {
+                AddToLog($"Data is not formatted JSON, wtf!");
+                AddToLog($"====== Here is the data ======");
+                AddToLog($"{@string}");
+                return false;
+            }
+
+            var dictData = JsonConvert.DeserializeObject<Dictionary<string, object>>(@string);
+            if (dictData != null)
+            {
+
+                if (!dictData.ContainsKey("method") && !dictData.ContainsKey("m"))
+                    return false;
+
+                {
+
+
+                    if (!dictData.ContainsKey("method"))
+                        dictData.Add("method", dictData["m"]);
+
+                    var method = dictData["method"].ToString();
+                    if (!string.IsNullOrEmpty(method))
+                    {
+                        if (!MethodCallCounts.ContainsKey(method))
+                        {
+                            MethodCallCounts.TryAdd(method, 0);
+                        }
+
+                        if (MethodCallCounts.TryGetValue(method, out int callCount))
+                        {
+                            callCount++;
+                            MethodCallCounts[method] = callCount;
+                        }
+
+                        if (OnMethodCall != null)
+                        {
+                            OnMethodCall(MethodCallCounts);
+                        }
+
+                        // Batch up Rotations, Positions, Move
+                        //if (method == "Rotation" || method == "Position" || method == "Move")
+                        //{
+                        //    EnqueuedDataToSend.Enqueue((null, array, null));
+                        //    return true;
+                        //}
+
+                        if (method == "PlayerSpawn")
+                        {
+                            if (PlayerSpawnData.Count > 0) // if client, tell these people about server person
+                            {
+                                var firstPlayer = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(PlayerSpawnData.First()));
+                                udpReceivers[0].BeginSend(firstPlayer, firstPlayer.Length, receivedIpEndPoint, (IAsyncResult r) => {
+                                }, udpReceivers[0]);
+                            }
+
+                            PlayerSpawnData.Add(dictData);
+                        }
+
+                        foreach (var client in PlayersToConnectedClients)
+                        {
+                            foreach (var udpServer in udpReceivers)
+                            {
+                                udpServer.BeginSend(array, array.Length, client.Value, (IAsyncResult r) => {
+                                }, udpServer);
+                            }
+                        }
+
+                        // Always push Dead calls !
+                        if (method == "Dead" || method == "Damage")
+                        {
+                            DataProcessInsurance.Enqueue(dictData);
+                        }
+                    }
+
+                    //string accountId = dictData["accountId"].ToString();
+
+                    //if (dictData.ContainsKey("tick"))
+                    //{
+                    //    long ticks = long.Parse(dictData["tick"].ToString());
+                    //    if (!ProcessedEvents.Any(x => x.Item1 == method && x.Item2 == accountId && x.Item3 == ticks))
+                    //        EnqueuedDataToSend.Enqueue((receivedIpEndPoint, array, accountId));
+
+                    //    ProcessedEvents.Add((method, accountId, ticks));
+                    //}
+                    //else
+                    //{
+                    //}
+                    //foreach (var client in ConnectedClients.Keys)
+                    //{
+                    //    udpReceivers[0].Send(array, array.Length, client);
+                    //    udpReceivers[1].Send(array, array.Length, client);
+                    //}
+
+
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
