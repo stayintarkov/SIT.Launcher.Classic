@@ -52,6 +52,7 @@ namespace SIT.Launcher
 
         internal static bool LegalityCheck()
         {
+            string gamefilepath = "";
             byte[] w1 = new byte[198] { 79, 102, 102, 105, 99, 105, 97, 108, 32, 71, 97, 109, 101, 32, 110, 111, 116, 32, 102, 111, 117, 110, 100, 44, 32, 119, 101, 32, 119, 105, 108, 108, 32, 98, 101, 32, 112, 114, 111, 109, 112, 116, 105, 110, 103, 32, 116, 104, 105, 115, 32, 109, 101, 115, 115, 97, 103, 101, 32, 101, 97, 99, 104, 32, 108, 97, 117, 110, 99, 104, 44, 32, 117, 110, 108, 101, 115, 115, 32, 121, 111, 117, 32, 103, 101, 116, 32, 111, 102, 102, 105, 99, 105, 97, 108, 32, 103, 97, 109, 101, 46, 32, 87, 101, 32, 108, 111, 118, 101, 32, 116, 111, 32, 115, 117, 112, 112, 111, 114, 116, 32, 111, 102, 102, 105, 99, 105, 97, 108, 32, 99, 114, 101, 97, 116, 111, 114, 115, 32, 115, 111, 32, 109, 97, 107, 101, 32, 115, 117, 114, 101, 32, 116, 111, 32, 103, 101, 116, 32, 111, 102, 102, 105, 99, 105, 97, 108, 32, 103, 97, 109, 101, 32, 97, 108, 115, 111, 46, 32, 74, 117, 115, 116, 69, 109, 117, 84, 97, 114, 107, 111, 118, 32, 84, 101, 97, 109, 46 };
             byte[] w2 = new byte[23] { 78, 111, 32, 79, 102, 102, 105, 99, 105, 97, 108, 32, 71, 97, 109, 101, 32, 70, 111, 117, 110, 100, 33 };
             try
@@ -71,14 +72,14 @@ namespace SIT.Launcher
                 if (key != null)
                 {
                     //"InstallLocation"
-                    object path = key.GetValue(Encoding.ASCII.GetString(varList[1]));
+                    object path = key.GetValue(Encoding.ASCII.GetString(varList[1])).ToString();
                     //"DisplayVersion"
                     object version = key.GetValue(Encoding.ASCII.GetString(varList[2]));
                     if (path != null && version != null)
                     {
                         var foundGameFiles = path.ToString();
                         var foundGameVersions = version.ToString();
-                        string gamefilepath = Path.Combine(foundGameFiles, Encoding.ASCII.GetString(varList[3]));
+                        gamefilepath = Path.Combine(foundGameFiles, Encoding.ASCII.GetString(varList[3]));
                         if (LC1A(gamefilepath))
                         {
                             if (LC2B(gamefilepath))
@@ -88,11 +89,12 @@ namespace SIT.Launcher
                         }
                     }
                 }
+                MessageBox.Show($"Unable to detect legal copy of Escape from Tarkov in {gamefilepath}. Buy and install the game before using SIT.");
             }
-            catch
+            catch (Exception ex)
             {
+                MessageBox.Show($"ERROR: Unable to detect legal copy of Escape from Tarkov. {ex.Message}");
             }
-            MessageBox.Show("Unable to detect legal copy of Escape from Tarkov. Buy and install the game before using SIT.");
             Application.Current.Shutdown();
             return false;
         }
@@ -100,19 +102,34 @@ namespace SIT.Launcher
         internal static bool LC1A(string gfp)
         {
             var fiGFP = new FileInfo(gfp);
-            return (fiGFP.Exists && fiGFP.Length >= 647 * 1000);
+            //return (fiGFP.Exists && fiGFP.Length >= 647 * 1000);
+            var existance = (fiGFP.Exists && fiGFP.Length >= 100 * 1000);
+            if(!existance)
+                MessageBox.Show("Unable to detect legal copy of Escape from Tarkov. Installed EXE seems of incorrect size.");
+
+            return existance;
         }
 
         internal static bool LC2B(string gfp)
         {
             var fiBE = new FileInfo(gfp.Replace(".exe", "_BE.exe"));
-            return (fiBE.Exists && fiBE.Length >= 1024000);
+            var existance = (fiBE.Exists && fiBE.Length >= 1024000);
+
+            if (!existance)
+                MessageBox.Show("Unable to detect legal copy of Escape from Tarkov. Failed to find BattlEye executable.");
+
+            return existance;
         }
 
         internal static bool LC3C(string gfp)
         {
             var diBattlEye = new DirectoryInfo(gfp.Replace("EscapeFromTarkov.exe", "BattlEye"));
-            return (diBattlEye.Exists);
+            var existance = (diBattlEye.Exists);
+
+            if (!existance)
+                MessageBox.Show("Unable to detect legal copy of Escape from Tarkov. Failed to find BattlEye folder.");
+
+            return existance;
         }
     }
 }
