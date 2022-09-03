@@ -16,24 +16,6 @@
       "HasMethods": [ "LoadBundlesAndCreatePools" ]
     },
     {
-      "RenameClassNameTo": "PlayerInventory",
-      "ClassName": null,
-      "HasFields": [],
-      "HasMethods": [ "UpdateTotalWeight", "GetAllItemByTemplate", "GetItemsInSlots" ]
-    },
-    {
-      "RenameClassNameTo": "PlayerEquipment",
-      "ClassName": null,
-      "HasFields": [],
-      "HasMethods": [ "GetSlot", "GetContainerSlots" ]
-    },
-    {
-      "RenameClassNameTo": "DamageInfo",
-      "ClassName": null,
-      "HasFields": [ "DamageType", "Damage", "IsForwardHit", "ArmorDamage" ],
-      "HasMethods": []
-    },
-    {
       "RenameClassNameTo": "IProgress",
       "ClassName": null,
       "HasFields": [ "Progress", "InitLevelStage" ],
@@ -42,12 +24,6 @@
     {
       "RenameClassNameTo": "RagfairInfo",
       "HasFields": [ "Offers", "Rating", "IsRatingGrowing" ]
-    },
-    {
-      "RenameClassNameTo": "ShotInfo",
-      "ClassName": null,
-      "HasFields": [ "AIR_DENSITY", "MIN_PENETRATION_POWER", "MAX_PENETRATION_POWER", "MAX_RICOCHET_COUNT", "MIN_RICOCHET_ANGLE", "Ammo" ],
-      "HasMethods": []
     },
     {
       "RenameClassNameTo": "GJobYield",
@@ -92,16 +68,16 @@
       "HasMethods": [ "DisbandGroup", "LeaveGroup", "ExitFromMatchMaker" ]
     },
     {
-      "RenameClassNameTo": "BotPresets",
+      "RenameClassNameTo": "BotPresetFactory",
       "ClassName": null,
       "HasFields": [],
       "HasMethods": [ "GetNewProfile", "CreateProfile" ]
     },
     {
-      "RenameClassNameTo": "TraderInfo",
+      "RenameClassNameTo": "BotCreator",
       "ClassName": null,
-      "HasFields": [ "MaxLoyaltyLevel" ],
-      "HasMethods": [ "TryGetNextLoyalty", "SetSalesSum" ]
+      "HasFields": [ "BotsLoading", "BundlesLoading", "StartProfilesLoaded" ],
+      "HasMethods": [ ]
     },
     {
       "RenameClassNameTo": "IAIDetails",
@@ -117,22 +93,10 @@
       "HasMethods": []
     },
     {
-      "RenameClassNameTo": "ProfileData",
-      "ClassName": null,
-      "HasFields": [ "Nickname", "MemberCategory" ],
-      "HasMethods": [ "AddBan", "RemoveBan" ]
-    },
-    {
-      "RenameClassNameTo": "HealthController",
+      "RenameClassNameTo": "GHealthController",
       "ClassName": null,
       "HasFields": [],
       "HasMethods": [ "ChangeEnergy", "ChangeHealth", "ChangeHydration", "DoContusion" ]
-    },
-    {
-      "RenameClassNameTo": "InteractionResult",
-      "ClassName": null,
-      "HasFields": [ "InteractionType" ],
-      "HasMethods": [ ]
     }
   ]
 }
