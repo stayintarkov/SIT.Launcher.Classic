@@ -178,8 +178,9 @@ namespace SIT.Launcher.DeObfus
         /// <param name="autoRemapperConfig"></param>
         private static void RemapByAutoConfiguration(AssemblyDefinition oldAssembly, AutoRemapperConfig autoRemapperConfig)
         {
-            if (autoRemapperConfig.EnableAttemptToRenameAllClasses)
-            {
+            if (!autoRemapperConfig.EnableAutomaticRemapping)
+                return;
+            
                 var gclasses = oldAssembly.MainModule.GetTypes().Where(x => 
                     x.Name.StartsWith("GClass"));
                 var gclassToNameCounts = new Dictionary<string, int>();
@@ -292,8 +293,9 @@ namespace SIT.Launcher.DeObfus
                         || gclassNameNew.StartsWith("Attribute", StringComparison.OrdinalIgnoreCase)
                         || gclassNameNew.StartsWith("Instance", StringComparison.OrdinalIgnoreCase)
                         || Assembly.GetAssembly(typeof(Attribute)).GetTypes().Any(x => x.Name.StartsWith(gclassNameNew, StringComparison.OrdinalIgnoreCase))
+                        || oldAssembly.MainModule.GetTypes().Any(x => x.Name.Equals(gclassNameNew, StringComparison.OrdinalIgnoreCase))
                         )
-                        continue;
+                    continue;
 
                     var t = oldAssembly.MainModule.GetTypes().FirstOrDefault(x => x.Name == gclassName);
                     if (t == null)
@@ -313,6 +315,7 @@ namespace SIT.Launcher.DeObfus
 
                     if (!oldAssembly.MainModule.GetTypes().Any(x => x.Name == newClassName)
                         && !Assembly.GetAssembly(typeof(Attribute)).GetTypes().Any(x => x.Name.StartsWith(newClassName, StringComparison.OrdinalIgnoreCase))
+                        && !oldAssembly.MainModule.GetTypes().Any(x => x.Name.Equals(newClassName, StringComparison.OrdinalIgnoreCase))
                         )
                     {
                         var oldClassName = t.Name;
@@ -322,7 +325,7 @@ namespace SIT.Launcher.DeObfus
                     }
                 }
 
-                foreach (var t in gclasses.Where(x =>
+                foreach (var t in oldAssembly.MainModule.GetTypes().Where(x =>
                     x.Name.StartsWith("GClass", StringComparison.OrdinalIgnoreCase)
                     && !x.Name.Contains("`")
                     && !x.BaseType.FullName.Contains("GClass")
@@ -347,7 +350,7 @@ namespace SIT.Launcher.DeObfus
                             newClassName += usedNamesCount[newClassName];
 
                         t.Name = newClassName;
-                        t.Namespace = t.BaseType.Namespace;
+                        //t.Namespace = t.BaseType.Namespace;
                         renamedClasses.Add(oldClassName, newClassName);
                         Log($"Remapper: Auto Remapped {oldClassName} to {newClassName}");
                     }
@@ -386,27 +389,51 @@ namespace SIT.Launcher.DeObfus
 
                 autoRemappedClassCount = renamedClasses.Count;
                 Log($"Remapper: Auto Remapped {autoRemappedClassCount} classes");
-            }
         }
 
         private static void RemapByDefinedConfiguration(AssemblyDefinition oldAssembly, AutoRemapperConfig autoRemapperConfig)
         {
+            if (!autoRemapperConfig.EnableDefinedRemapping)
+                return;
+
             foreach (var config in autoRemapperConfig.DefinedRemapping.Where(x => !string.IsNullOrEmpty(x.RenameClassNameTo)))
             {
                 try
                 {
                     var findTypes
-                        = oldAssembly.MainModule.GetTypes()
-                        .Where(x
+                        = oldAssembly.MainModule.GetTypes().ToList();
+                    // Filter Types by Class Name Matching
+                    findTypes = findTypes.Where(
+                        x =>
+                            (
+                                config.ClassName == null || config.ClassName.Length == 0 || (x.FullName.Contains(config.ClassName))
+                            )
+                        ).ToList();
+                    // Filter Types by Methods
+                    findTypes = findTypes.Where(x
                             =>
-                                (config.HasMethods == null || config.HasMethods.Length == 0 || (x.Methods.Count(y => config.HasMethods.Contains(y.Name)) == config.HasMethods.Length))
-                                &&
-                                (
-                                    (config.HasFields == null || config.HasFields.Length == 0 || (x.Fields.Count(y => config.HasFields.Contains(y.Name)) == config.HasFields.Length))
-                                    ||
-                                    (config.HasFields == null || config.HasFields.Length == 0 || (x.Properties.Count(y => config.HasFields.Contains(y.Name)) == config.HasFields.Length))
-                                )
+                                (config.HasMethods == null || config.HasMethods.Length == 0
+                                    || (x.Methods.Select(y=>y.Name.Split('.')[y.Name.Split('.').Length-1]).Count(y => config.HasMethods.Contains(y)) >= config.HasMethods.Length))
+
                             ).ToList();
+                    
+                    // Filter Types by Field/Properties
+                    findTypes = findTypes.Where(
+                        x =>
+                                (
+                                    (config.HasFields == null || config.HasFields.Length == 0 || (x.Fields.Count(y => config.HasFields.Contains(y.Name)) >= config.HasFields.Length))
+                                    ||
+                                    (config.HasFields == null || config.HasFields.Length == 0 || (x.Properties.Count(y => config.HasFields.Contains(y.Name)) >= config.HasFields.Length))
+                                )).ToList();
+                    // Filter Types by Class/Interface
+                    findTypes = findTypes.Where(
+                        x =>
+                            (
+                                (!config.IsClass.HasValue || (config.IsClass.HasValue && config.IsClass.Value && x.IsClass))
+                                && (!config.IsInterface.HasValue || (config.IsInterface.HasValue && config.IsInterface.Value && x.IsInterface))
+                            )
+                        ).ToList();
+                    
                     if (findTypes.Any())
                     {
                         if (findTypes.Count() > 1)
@@ -423,14 +450,15 @@ namespace SIT.Launcher.DeObfus
                                 }
                                 newClassName = newClassName + (numberOfChangedIndexes > 0 ? numberOfChangedIndexes.ToString() : "");
 
-                                if (!config.OnlyTargetInterface || (t.IsInterface && config.OnlyTargetInterface))
-                                {
+                                //var targetInterface = config.OnlyTargetInterface.HasValue && config.OnlyTargetInterface.Value;
+                                //if (!targetInterface || (t.IsInterface && targetInterface))
+                                //{
                                     t.Name = newClassName;
                                     numberOfChangedIndexes++;
 
                                     Debug.WriteLine($"Remapper: Remapped {oldClassName} to {newClassName}");
                                     Console.WriteLine($"Remapper: Remapped {oldClassName} to {newClassName}");
-                                }
+                                //}
 
                             }
                         }
@@ -442,13 +470,14 @@ namespace SIT.Launcher.DeObfus
                             if (t.IsInterface && !newClassName.StartsWith("I"))
                                 newClassName = newClassName.Insert(0, "I");
 
-                            if (!config.OnlyTargetInterface || (t.IsInterface && config.OnlyTargetInterface))
-                            {
+                            //var targetInterface = config.OnlyTargetInterface.HasValue && config.OnlyTargetInterface.Value;
+                            //if (!targetInterface || (t.IsInterface && targetInterface))
+                            //{
                                 t.Name = newClassName;
 
                                 Debug.WriteLine($"Remapper: Remapped {oldClassName} to {newClassName}");
                                 Console.WriteLine($"Remapper: Remapped {oldClassName} to {newClassName}");
-                            }
+                            //}
                         }
                     }
                     else

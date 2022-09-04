@@ -1,11 +1,164 @@
 {
+  // Enable/Disable the Automatic System of Remapping via Code
   "EnableAutomaticRemapping": true,
-  "EnableAttemptToRenameAllClasses": true,
+  // Enable/Disable the Defined Mapping list of Remapping - The defined list runs after the Automatic Remap
+  "EnableDefinedRemapping": true,
   "DefinedRemapping": [
+    // ------------------------------------------------------------------------------------------
+    // SPT-Aki Remapping List
+    {
+      "RenameClassNameTo": "BattleeyePatchClass",
+      "ClassName": null,
+      "HasFields": [],
+      "HasMethods": [ "RunValidation" ]
+    },
+    {
+      "RenameClassNameTo": "PostRaidHealthScreenClass",
+      "ClassName": null,
+      "HasFields": [ "exitStatus_0" ],
+      "HasMethods": [ "OnProfileChangeApplied" ]
+    },
+    // not working
+    {
+      "RenameClassNameTo": "SpawnSystemClass",
+      "ClassName": "Class1891",
+      "IsClass": true,
+      "IsInterface": false,
+      "HasFields": [],
+      "HasMethods": []
+    },
+    //    "Class220": "DataHandler",
+    //"Class708": "SslCertPatchClass",
+    //"EFT.Bots.BotControllerSettings": "BotsSettings",
+    {
+      "RenameClassNameTo": "BotsSettings",
+      "ClassName": "BotControllerSettings"
+    },
+    //"EFT.WavesSettings": "WavesSettings",
+    {
+      "RenameClassNameTo": "WavesSettings",
+      "ClassName": "WavesSettings"
+    },
+    //"GClass1079": "GameServerClass",
+    //"GClass1087": "QuestItemClass",
+    //"GClass1092": "InsuredItemClass",
+    //"GClass1111": "LocationSettingsClass",
+    //"GClass1126": "BackendConfigClass",
+    //"GClass1128": "BotPresetClass",
+    //"GClass1154": "BotMemoryClass",
+    //"GClass1236": "LocalizationClass",
+    //"GClass1301": "BotControllerClass",
+    //"GClass1305": "WaveInfo",
+    //"GClass1310": "BotSpawnerClass",
+    //"GClass1313": "GameTimeClass",
+    //"GClass1315": "GameTimerClass",
+    //"GClass1319": "ItemFactory",
+    //"GClass1520": "ProfileStatusClass",
+    //"Attribute0": "ProfileCustomizationClass",
+    //"GClass1534": "InfoClass",
+    //"GClass1545": "SkillsClass",
+    //"GClass1572": "PoolManager",
+    //"GClass1595": "MainMenuController",
+    //"GClass1706": "NotificationClass",
+    {
+      "RenameClassNameTo": "NotificationClass",
+      "HasFields": [ "ShowNotification", "Icon" ]
+    },
+    //"GClass1771": "NotificationManagerClass",
+    //"GClass1784": "TraderClass",
+    //"GClass1787": "WeatherClass",
+    //"GClass1810": "ClientMetrics",
+    //"GClass1816": "MetricsClass",
+    //"GClass1817": "MetricsConfigClass",
+    //"GClass1821": "SynchronizableObjectLogicProcessorClass",
+    //"GClass1822": "AirdropManagerAbstractClass",
+    //"GClass1823": "AirdropManagerClass",
+    //"GClass1826": "AirdropLogicClass",
+    //"GClass1827": "AirplaneLogicClass",
+    //"GClass1850": "QuestDataClass",
+    //"GClass1851": "QuestClass",
+    //"GClass1853": "QuestControllerClass",
+    //"GClass1858": "RawQuestClass",
+    //"GClass1863": "DailyQuestClass",
+    //"GClass1866": "SessionCountersClass",
+    //"GClass1942": "TreatmentDataClass",
+    //"GClass197": "Equipment",
+    //"GClass203": "BotBaseBrainClass",
+    //"GClass204": "BossBullyBrainClass",
+    //"GClass205": "BossKillaBrainClass",
+    //"GClass206": "BossTagillaBrainClass",
+    //"GClass2082": "LootItemClass",
+    //"GClass210": "BossKnightBrainClass",
+    //"GClass211": "ExUsecBrainClass",
+    //"GClass224": "FollowerBigPiperainClass",
+    //"GClass2119": "MagazineClass",
+    //"GClass214": "FollowerBullyBrainClass",
+    //"GClass2152": "EquipmentClass",
+    //"GClass2183": "BulletClass",
+    //"GClass2191": "InventoryClass",
+    //"GClass2204": "TraderControllerClass",
+    //"GClass2207": "InventoryControllerClass",
+    //"GClass225": "RaiderBrainClass",
+    //"GClass228": "BossKojaniyBrainClass",
+    //"GClass242": "ShootPointClass",
+    //"GClass25": "AICoreControllerClass",
+    //"GClass2547": "InsuranceCompanyClass",
+    //"GClass2548": "ItemClass",
+    //"GClass2552": "RagfairSettingsClass",
+    //"GClass2554": "RagFairClass",
+    //"GClass2650": "JobPriority",
+    //"GClass267": "ZoneDangerAreasClass",
+    //"GClass2672`1": "BindableState",
+    //"GClass2686": "BundleLock",
+    //"GClass2687`1": "DependencyGraph",
+    //"GClass295": "BotFollowerClass",
+    //"GClass312": "EnemiesControllerClass",
+    //"GClass326": "BotLayClass",
+    //"GClass350": "BotBrainClass",
+    //"GClass417": "BotTacticClass",
+    //"GClass429": "BotWeaponControllerClass",
+    //"GClass443": "BodyPartClass",
+    //"GClass465": "DeadBodiesControllerClass",
+    //"GClass470": "BotRequestsControllerClass",
+    //"GClass474": "BotsGroupClass",
+    //"GClass477": "BotGroupClass",
+    //"GClass484": "BotSettingsClass",
+    //"GClass492": "AiDataClass",
+    //"GClass495": "BotLoyaltyClass",
+    //"GClass515": "AiTaskManagerClass",
+    //"GClass523": "ScatteringSettingsClass",
+    //"GClass528": "BotDifficultySettingsClass",
+    //"GClass569": "ZoneLeaveControllerClass",
+    //"GClass571": "BotsClass",
+    //"GClass577": "BotsPresets",
+    //"GClass596": "LoggerClass",
+    //"GClass674": "TimerClass",
+    //"GClass879": "DecalMeshClass",
+    //"GClass887": "ChatServerClass",
+    //"GInterface120": "ISession",
+    //"GInterface12": "IBotGame",
+    //"GInterface148": "IConnectionHandler",
+    //"GInterface15": "IBotData",
+    //"GInterface153": "ISynchronizableObject",
+    //"GInterface159": "IEffect",
+    //"GInterface201": "IHealthController",
+    //"GInterface253": "IZones",
+    //"GInterface255": "ISpawnPoints",
+    //"GInterface256": "ISpawnSystem",
+    //"GInterface289": "IEasyBundle",
+    //"GInterface30": "IBackendInterface",
+    //"GInterface290": "IBundleLock",
+    //"GInterface71": "IAIDetails",
+    //"GStruct109": "WeatherSettings",
+    //"GStruct268": "DamageInfo",
+    //"GStruct39": "AirplaneDataPacketStruct" 
+
+
+    // ------------------------------------------------------------------------------------------
+    // SIT Remapping List
     {
       "RenameClassNameTo": "ISession",
-      "ClassName": null,
-      "OnlyTargetInterface": true,
+      "IsInterface": true,
       "HasFields": [],
       "HasMethods": [ "ChangeNickname", "ValidateNickname", "GetReservedNickname", "GetProfiles", "GetRaidReadyStatus", "StartGameGroupPlayer", "ChatSendMessage" ]
     },
@@ -17,6 +170,7 @@
     },
     {
       "RenameClassNameTo": "IProgress",
+      "IsInterface": true,
       "ClassName": null,
       "HasFields": [ "Progress", "InitLevelStage" ],
       "HasMethods": []
@@ -27,13 +181,11 @@
     },
     {
       "RenameClassNameTo": "GJobYield",
-      "ClassName": null,
       "HasFields": [ "General", "Low", "Immediate" ],
       "HasMethods": [ "Priority", "GetYieldDelegate" ]
     },
     {
       "RenameClassNameTo": "SProgress",
-      "ClassName": null,
       "HasFields": [ "Progress", "Stage" ],
       "HasMethods": []
     },
@@ -77,15 +229,15 @@
       "RenameClassNameTo": "BotCreator",
       "ClassName": null,
       "HasFields": [ "BotsLoading", "BundlesLoading", "StartProfilesLoaded" ],
-      "HasMethods": [ ]
-    },
-    {
-      "RenameClassNameTo": "IAIDetails",
-      "OnlyTargetInterface": true,
-      "ClassName": null,
-      "HasFields": [ "Side", "GroupId", "LookDirection", "Position", "Transform", "WeaponRoot", "GetPlayer" ],
       "HasMethods": []
     },
+    //{
+    //  "RenameClassNameTo": "IAIDetails",
+    //  "OnlyTargetInterface": true,
+    //  "ClassName": null,
+    //  "HasFields": [ "Side", "GroupId", "LookDirection", "Position", "Transform", "WeaponRoot", "GetPlayer" ],
+    //  "HasMethods": []
+    //},
     {
       "RenameClassNameTo": "IAIData",
       "ClassName": null,
@@ -98,5 +250,6 @@
       "HasFields": [],
       "HasMethods": [ "ChangeEnergy", "ChangeHealth", "ChangeHydration", "DoContusion" ]
     }
+
   ]
 }

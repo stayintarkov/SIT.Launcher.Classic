@@ -9,7 +9,7 @@ namespace SIT.Launcher.DeObfus
     internal class AutoRemapperConfig
     {
         public bool EnableAutomaticRemapping { get; set; }
-        public bool EnableAttemptToRenameAllClasses { get; set; }
+        public bool EnableDefinedRemapping { get; set; }
         public AutoRemapperInfo[] DefinedRemapping { get; set; }
     }
 }
