@@ -6,12 +6,10 @@
   "DefinedRemapping": [
     // ------------------------------------------------------------------------------------------
     // SPT-Aki Remapping List
-    //{
-    //  "RenameClassNameTo": "BattleeyePatchClass",
-    //  "ClassName": null,
-    //  "HasFields": [],
-    //  "HasMethods": [ "RunValidation" ]
-    //},
+    {
+      "RenameClassNameTo": "BattleeyePatchClass",
+      "HasMethods": [ "RunValidation" ]
+    },
     //{
     //  "RenameClassNameTo": "PostRaidHealthScreenClass",
     //  "ClassName": null,
@@ -58,17 +56,21 @@
     //"GClass1534": "InfoClass",
     //"GClass1545": "SkillsClass",
     //"GClass1572": "PoolManager",
+    {
+      "RenameClassNameTo": "PoolManager",
+      "HasMethods": [ "LoadBundlesAndCreatePools" ]
+    },
     //"GClass1595": "MainMenuController",
-    //{
-    //  "RenameClassNameTo": "MainMenuController",
-    //  "HasFields": [ "HealthController", "InventoryController", "MatchingType", "IsInSession" ],
-    //  "HasMethods": [ "StopAfkMonitor", "OnProfileChangeApplied", "StoreProfile" ]
-    //},
-    ////"GClass1706": "NotificationClass",
-    //{
-    //  "RenameClassNameTo": "NotificationClass",
-    //  "HasFields": [ "ShowNotification", "Icon" ]
-    //},
+    {
+      "RenameClassNameTo": "MainMenuController",
+      "HasFields": [ "HealthController", "InventoryController", "MatchingType", "IsInSession" ],
+      "HasMethods": [ "StopAfkMonitor", "OnProfileChangeApplied", "StoreProfile" ]
+    },
+    //"GClass1706": "NotificationClass",
+    {
+      "RenameClassNameTo": "NotificationClass",
+      "HasFields": [ "ShowNotification", "Icon" ]
+    },
     //"GClass1771": "NotificationManagerClass",
     //"GClass1784": "TraderClass",
     //"GClass1787": "WeatherClass",
@@ -79,7 +81,17 @@
     //"GClass1822": "AirdropManagerAbstractClass",
     //"GClass1823": "AirdropManagerClass",
     //"GClass1826": "AirdropLogicClass",
+    {
+      "RenameClassNameTo": "AirdropLogicClass",
+      "HasFields": [],
+      "HasMethods": [ "Init", "InitStaticObject", "SetSyncObject", "ManualUpdate", "UpdateSyncObjectData", "TakeFromPool", "ReturnToPool" ]
+    },
     //"GClass1827": "AirplaneLogicClass",
+    {
+      "RenameClassNameTo": "AirplaneLogicClass",
+      "HasFields": [ "float_0" ],
+      "HasMethods": [ "Init", "InitStaticObject", "SetSyncObject", "ManualUpdate", "UpdateSyncObjectData", "TakeFromPool", "ReturnToPool", "PlaySpeechFromTime" ]
+    },
     //"GClass1850": "QuestDataClass",
     //"GClass1851": "QuestClass",
     //"GClass1853": "QuestControllerClass",
@@ -112,6 +124,11 @@
     //"GClass2552": "RagfairSettingsClass",
     //"GClass2554": "RagFairClass",
     //"GClass2650": "JobPriority",
+    {
+      "RenameClassNameTo": "JobPriority",
+      "HasFields": [ "General", "Low", "Immediate" ],
+      "HasMethods": [ "Priority", "GetYieldDelegate" ]
+    },
     //"GClass267": "ZoneDangerAreasClass",
     //"GClass2672`1": "BindableState",
     //"GClass2686": "BundleLock",
@@ -127,6 +144,10 @@
     //"GClass470": "BotRequestsControllerClass",
     //"GClass474": "BotsGroupClass",
     //"GClass477": "BotGroupClass",
+    {
+      "RenameClassNameTo": "BotGroupClass",
+      "HasMethods": [ "IsPlayerEnemy", "IsPlayerEnemyByRole", "AddEnemyGroup", "AddEnemyGroupIfAllowed" ]
+    },
     //"GClass484": "BotSettingsClass",
     //"GClass492": "AiDataClass",
     //"GClass495": "BotLoyaltyClass",
@@ -188,11 +209,11 @@
       "RenameClassNameTo": "RagfairInfo",
       "HasFields": [ "Offers", "Rating", "IsRatingGrowing" ]
     },
-    {
-      "RenameClassNameTo": "GJobYield",
-      "HasFields": [ "General", "Low", "Immediate" ],
-      "HasMethods": [ "Priority", "GetYieldDelegate" ]
-    },
+    //{
+    //  "RenameClassNameTo": "GJobYield",
+    //  "HasFields": [ "General", "Low", "Immediate" ],
+    //  "HasMethods": [ "Priority", "GetYieldDelegate" ]
+    //},
     {
       "RenameClassNameTo": "SProgress",
       "HasFields": [ "Progress", "Stage" ],

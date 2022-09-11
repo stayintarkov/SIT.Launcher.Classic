@@ -516,32 +516,36 @@ namespace SIT.Launcher.DeObfus
                                 && (!config.IsInterface.HasValue || (config.IsInterface.HasValue && config.IsInterface.Value && x.IsInterface))
                             )
                         ).ToList();
-                    
+
                     if (findTypes.Any())
                     {
                         if (findTypes.Count() > 1)
                         {
+                            findTypes = findTypes
+                                .OrderBy(x => !x.Name.StartsWith("GClass") && !x.Name.StartsWith("GInterface"))
+                                .ThenBy(x => x.Name.StartsWith("GInterface"))
+                                .ToList();
+
                             var numberOfChangedIndexes = 0;
                             for (var index = 0; index < findTypes.Count(); index++)
                             {
                                 var newClassName = config.RenameClassNameTo;
                                 var t = findTypes[index];
                                 var oldClassName = t.Name;
+
                                 if (t.IsInterface && !newClassName.StartsWith("I"))
                                 {
                                     newClassName = newClassName.Insert(0, "I");
                                 }
-                                newClassName = newClassName + (numberOfChangedIndexes > 0 ? numberOfChangedIndexes.ToString() : "");
 
-                                //var targetInterface = config.OnlyTargetInterface.HasValue && config.OnlyTargetInterface.Value;
-                                //if (!targetInterface || (t.IsInterface && targetInterface))
-                                //{
-                                    t.Name = newClassName;
+                                newClassName = newClassName + (!t.IsInterface && numberOfChangedIndexes > 0 ? numberOfChangedIndexes.ToString() : "");
+
+                                t.Name = newClassName;
+                                if (!t.IsInterface)
                                     numberOfChangedIndexes++;
 
-                                    Debug.WriteLine($"Remapper: Remapped {oldClassName} to {newClassName}");
-                                    Console.WriteLine($"Remapper: Remapped {oldClassName} to {newClassName}");
-                                //}
+                                Debug.WriteLine($"Remapper: Remapped {oldClassName} to {newClassName}");
+                                Console.WriteLine($"Remapper: Remapped {oldClassName} to {newClassName}");
 
                             }
                         }
