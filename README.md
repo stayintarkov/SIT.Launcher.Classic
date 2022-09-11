@@ -20,8 +20,8 @@ No license is provided. This is open source but I would prefer if credit was giv
 # How to use this launcher.
 - Download the zip file from Releases
 - Extract the entire zip file anywhere  except the client directory 
-- Open PaulovLauncher.exe
-- Open Settings (the cog) check install Assembly and install SIT
+- Open SIT.Launcher.exe
+- Open Settings check install Assembly and install SIT
 - Put the server address at the top (normally https://127.0.0.1:443 )
 - Put your username (don't use anything that is used anywhere else)
 - Create a password (don't use anything that is used anywhere else)
