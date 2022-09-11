@@ -179,7 +179,7 @@ namespace SIT.Launcher.GameServer
         public async void UpdatePings()
         {
             await Task.Delay(1000);
-            var array = ASCIIEncoding.ASCII.GetBytes("Ping");
+            var array = Encoding.UTF8.GetBytes("Ping");
             foreach (IPEndPoint item in ConnectedClients.Keys)
             {
                 PingTimes.TryRemove(item, out _);
@@ -195,7 +195,7 @@ namespace SIT.Launcher.GameServer
         {
             if (DataProcessInsurance.Any())
             {
-                var bytes = ASCIIEncoding.ASCII.GetBytes(JsonConvert.SerializeObject(DataProcessInsurance));
+                var bytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(DataProcessInsurance));
                 EnqueuedDataToSend.Enqueue((null, bytes, null));
             }
             if (EnqueuedDataToSend.Any())
