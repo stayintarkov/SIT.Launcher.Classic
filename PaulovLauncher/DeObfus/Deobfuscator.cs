@@ -180,215 +180,288 @@ namespace SIT.Launcher.DeObfus
         {
             if (!autoRemapperConfig.EnableAutomaticRemapping)
                 return;
-            
-                var gclasses = oldAssembly.MainModule.GetTypes().Where(x => 
-                    x.Name.StartsWith("GClass"));
-                var gclassToNameCounts = new Dictionary<string, int>();
 
-                //foreach (var t in oldAssembly.MainModule.GetTypes().Where(x => !x.Name.StartsWith("GClass") && !x.Name.StartsWith("Class")))
-                foreach (var t in oldAssembly.MainModule.GetTypes())
+            var gclasses = oldAssembly.MainModule.GetTypes().Where(x =>
+                x.Name.StartsWith("GClass"));
+            var gclassToNameCounts = new Dictionary<string, int>();
+
+            //foreach (var t in oldAssembly.MainModule.GetTypes().Where(x => !x.Name.StartsWith("GClass") && !x.Name.StartsWith("Class")))
+            foreach (var t in oldAssembly.MainModule.GetTypes())
+            {
+                // --------------------------------------------------------
+                // Renaming by the classes being in methods
+                foreach (var m in t.Methods.Where(x => x.HasParameters
+                    && x.Parameters.Any(p =>
+                    p.ParameterType.Name.StartsWith("GClass")
+                    || p.ParameterType.Name.StartsWith("GStruct")
+                    || p.ParameterType.Name.StartsWith("GInterface")
+                    //|| p.ParameterType.Name.StartsWith("Class")
+
+                    )))
                 {
                     // --------------------------------------------------------
                     // Renaming by the classes being used as Parameters in methods
-                    foreach (var m in t.Methods.Where(x => x.HasParameters
-                        && x.Parameters.Any(p =>
-                        p.ParameterType.Name.StartsWith("GClass")
-                        || p.ParameterType.Name.StartsWith("GStruct")
-                        || p.ParameterType.Name.StartsWith("GInterface")
-
-                        )))
-                    {
-                        foreach (var p in m.Parameters
-                            .Where(x => x.ParameterType.Name.StartsWith("GClass")
-                            || x.ParameterType.Name.StartsWith("GStruct")
-                            || x.ParameterType.Name.StartsWith("GInterface")
-                            ))
-                        {
-                            var n = p.ParameterType.Name
-                                .Replace("[]", "")
-                                .Replace("`1", "")
-                                .Replace("&", "")
-                                .Replace(" ", "")
-                                + "." + p.Name;
-                            if (!gclassToNameCounts.ContainsKey(n))
-                                gclassToNameCounts.Add(n, 0);
-
-                            gclassToNameCounts[n]++;
-                        }
-                    }
-
-                    // --------------------------------------------------------
-                    // Renaming by the classes being used as Members/Properties/Fields in other classes
-                    foreach (var prop in t.Properties.Where(p =>
-                        p.PropertyType.Name.StartsWith("GClass")
-                        || p.PropertyType.Name.StartsWith("GStruct")
-                        || p.PropertyType.Name.StartsWith("GInterface")
+                    foreach (var p in m.Parameters
+                        .Where(x =>
+                        x.ParameterType.Name.StartsWith("GClass")
+                        || x.ParameterType.Name.StartsWith("GStruct")
+                        || x.ParameterType.Name.StartsWith("GInterface")
+                        //|| x.ParameterType.Name.StartsWith("Class")
                         ))
                     {
-                        if (prop.Name.StartsWith("GClass", StringComparison.OrdinalIgnoreCase)
-                        || prop.Name.StartsWith("GStruct", StringComparison.OrdinalIgnoreCase)
-                        || prop.Name.StartsWith("GInterface", StringComparison.OrdinalIgnoreCase))
-                            continue;
-
-                        var n = prop.PropertyType.Name
+                        var n = p.ParameterType.Name
                             .Replace("[]", "")
                             .Replace("`1", "")
                             .Replace("&", "")
                             .Replace(" ", "")
-                            + "." + prop.Name;
+                            + "." + p.Name;
                         if (!gclassToNameCounts.ContainsKey(n))
                             gclassToNameCounts.Add(n, 0);
 
                         gclassToNameCounts[n]++;
-                        // this is shit and needs fixing
-                        if (gclassToNameCounts[n] > 1)
-                        {
-                            gclassToNameCounts[n] = 0;
-                        }
                     }
-
-                    //    foreach (var prop in t.Fields.Where(p =>
-                    //        p.FieldType.Name.StartsWith("GClass")
-                    //        || p.FieldType.Name.StartsWith("GStruct")
-                    //        || p.FieldType.Name.StartsWith("GInterface")
-                    //        ))
-                    //    {
-                    //        if (prop.Name.StartsWith("GClass", StringComparison.OrdinalIgnoreCase)
-                    //        || prop.Name.StartsWith("GStruct", StringComparison.OrdinalIgnoreCase)
-                    //        || prop.Name.StartsWith("GInterface", StringComparison.OrdinalIgnoreCase))
-                    //            continue;
-
-                    //        var n = prop.FieldType.Name
-                    //            .Replace("[]", "")
-                    //            .Replace("`1", "")
-                    //            .Replace("&", "")
-                    //            .Replace(" ", "")
-                    //            + "." + prop.Name;
-                    //        if (!gclassToNameCounts.ContainsKey(n))
-                    //            gclassToNameCounts.Add(n, 0);
-
-                    //        gclassToNameCounts[n]++;
-                    //        // this is shit and needs fixing
-                    //        if (gclassToNameCounts[n] > 1)
-                    //        {
-                    //            gclassToNameCounts[n] = 0;
-                    //        }
-                    //    }
-
 
                 }
 
-                var autoRemappedClassCount = 0;
-                //var orderedGClassCounts = gclassToNameCounts.Where(x => x.Value > 5 && !x.Key.Contains("`")).OrderByDescending(x => x.Value);
-                var orderedGClassCounts = gclassToNameCounts.Where(x => x.Value > 0 && !x.Key.Contains("`")).OrderByDescending(x => x.Value);
-                var usedNamesCount = new Dictionary<string, int>();
-                var renamedClasses = new Dictionary<string, string>();
-                foreach (var g in orderedGClassCounts)
-                {
-                    var keySplit = g.Key.Split('.');
-                    var gclassName = keySplit[0];
-                    var gclassNameNew = keySplit[1];
-                    if (gclassNameNew.Length <= 3
-                        || gclassNameNew.StartsWith("Value", StringComparison.OrdinalIgnoreCase)
-                        || gclassNameNew.StartsWith("Attribute", StringComparison.OrdinalIgnoreCase)
-                        || gclassNameNew.StartsWith("Instance", StringComparison.OrdinalIgnoreCase)
-                        || Assembly.GetAssembly(typeof(Attribute)).GetTypes().Any(x => x.Name.StartsWith(gclassNameNew, StringComparison.OrdinalIgnoreCase))
-                        || oldAssembly.MainModule.GetTypes().Any(x => x.Name.Equals(gclassNameNew, StringComparison.OrdinalIgnoreCase))
-                        )
-                    continue;
 
-                    var t = oldAssembly.MainModule.GetTypes().FirstOrDefault(x => x.Name == gclassName);
-                    if (t == null)
-                        continue;
-
-                    var newClassName = char.ToUpper(gclassNameNew[0]) + gclassNameNew.Substring(1);
-                    if (t.IsInterface)
-                        newClassName = "I" + newClassName;
-
-                    if (!usedNamesCount.ContainsKey(newClassName))
-                        usedNamesCount.Add(newClassName, 0);
-
-                    usedNamesCount[newClassName]++;
-
-                    if (usedNamesCount[newClassName] > 1)
-                        newClassName += usedNamesCount[newClassName];
-
-                    if (!oldAssembly.MainModule.GetTypes().Any(x => x.Name == newClassName)
-                        && !Assembly.GetAssembly(typeof(Attribute)).GetTypes().Any(x => x.Name.StartsWith(newClassName, StringComparison.OrdinalIgnoreCase))
-                        && !oldAssembly.MainModule.GetTypes().Any(x => x.Name.Equals(newClassName, StringComparison.OrdinalIgnoreCase))
-                        )
-                    {
-                        var oldClassName = t.Name;
-                        t.Name = newClassName;
-                        renamedClasses.Add(oldClassName, newClassName);
-                        Log($"Remapper: Auto Remapped {oldClassName} to {newClassName}");
-                    }
-                }
-
-                foreach (var t in oldAssembly.MainModule.GetTypes().Where(x =>
-                    x.Name.StartsWith("GClass", StringComparison.OrdinalIgnoreCase)
-                    && !x.Name.Contains("`")
-                    && !x.BaseType.FullName.Contains("GClass")
-                    && x.BaseType != null
-                    && x.BaseType.FullName != "System.Object"
-                    )
-                    )
-                {
-                    if (t.BaseType.IsDefinition)
-                    {
-                        var oldClassName = t.Name;
-                        var oldNamespace = t.Namespace;
-                        var newClassName = t.BaseType.Name
-                            .Replace("/", "_")
-                            + "Sub";
-                        if (!usedNamesCount.ContainsKey(newClassName))
-                            usedNamesCount.Add(newClassName, 0);
-
-                        usedNamesCount[newClassName]++;
-
-                        if (usedNamesCount[newClassName] > 1)
-                            newClassName += usedNamesCount[newClassName];
-
-                        t.Name = newClassName;
-                        //t.Namespace = t.BaseType.Namespace;
-                        renamedClasses.Add(oldClassName, newClassName);
-                        Log($"Remapper: Auto Remapped {oldClassName} to {newClassName}");
-                    }
-                }
-
-
-                // FIXME: This is breaking something that causes the CustomPlayerLoopSystem to constantly NULL reference. Stupid.
-                // Rename all the properties that have {parametername}_0
-                //foreach (var renamed in renamedClasses)
-                //{
-                //    foreach (var t in oldAssembly.MainModule.GetTypes())
+                //foreach (var m in t.Methods)
+                //{ 
+                //    // --------------------------------------------------------
+                //    // Renaming by the classes by the return typed methods
+                //    if (m.Name.StartsWith("Read") && !m.ReturnType.Name.Contains("void", StringComparison.OrdinalIgnoreCase))
                 //    {
-                //        foreach (var p in t.Properties)
-                //        {
-                //            p.Name = p.Name.Replace(renamed.Key, renamed.Value, StringComparison.OrdinalIgnoreCase);
-                //        }
+                //        var n = m.ReturnType.Name
+                //            .Replace("[]", "")
+                //            .Replace("`1", "")
+                //            .Replace("&", "")
+                //            .Replace(" ", "")
+                //            + "."
+                //            + m.Name.Replace("Read", "", StringComparison.OrdinalIgnoreCase);
+                //        if (!gclassToNameCounts.ContainsKey(n))
+                //            gclassToNameCounts.Add(n, 0);
 
-                //        foreach (var f in t.Fields)
-                //        {
-                //            f.Name = f.Name.Replace(renamed.Key, renamed.Value.ToLower(), StringComparison.OrdinalIgnoreCase);
-                //        }
+                //        gclassToNameCounts[n]++;
                 //    }
                 //}
 
-                Log($"Remapper: Ensuring EFT classes are public");
-                foreach (var t in oldAssembly.MainModule.GetTypes())
+                // --------------------------------------------------------
+                // Renaming by the classes being used as Members/Properties/Fields in other classes
+                foreach (var prop in t.Properties.Where(p =>
+                    p.PropertyType.Name.StartsWith("GClass")
+                    || p.PropertyType.Name.StartsWith("GStruct")
+                    || p.PropertyType.Name.StartsWith("GInterface")
+                    ))
                 {
-                    if (t.IsClass && t.IsDefinition && t.BaseType != null && t.BaseType.FullName != "System.Object")
-                    {
-                        if (!Assembly.GetAssembly(typeof(Attribute))
-                            .GetTypes()
-                            .Any(x => x.Name.StartsWith(t.Name, StringComparison.OrdinalIgnoreCase)))
-                            t.IsPublic = true;
-                    }
+                    // if the property name includes "gclass" or whatever, then ignore it as its useless to us
+                    if (prop.Name.StartsWith("GClass", StringComparison.OrdinalIgnoreCase)
+                        || prop.Name.StartsWith("GStruct", StringComparison.OrdinalIgnoreCase)
+                        || prop.Name.StartsWith("GInterface", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    var n = prop.PropertyType.Name
+                        .Replace("[]", "")
+                        .Replace("`1", "")
+                        .Replace("&", "")
+                        .Replace(" ", "")
+                        + "." + prop.Name;
+                    if (!gclassToNameCounts.ContainsKey(n))
+                        gclassToNameCounts.Add(n, 0);
+
+                    gclassToNameCounts[n]++;
+                    // this is shit and needs fixing
+                    //if (gclassToNameCounts[n] > 1)
+                    //{
+                    //    gclassToNameCounts[n] = 0;
+                    //}
                 }
 
-                autoRemappedClassCount = renamedClasses.Count;
-                Log($"Remapper: Auto Remapped {autoRemappedClassCount} classes");
+                foreach (var prop in t.Fields.Where(p =>
+                    p.FieldType.Name.StartsWith("GClass")
+                    || p.FieldType.Name.StartsWith("GStruct")
+                    || p.FieldType.Name.StartsWith("GInterface")
+                    ))
+                {
+                    if (prop.Name.StartsWith("GClass", StringComparison.OrdinalIgnoreCase)
+                    || prop.Name.StartsWith("GStruct", StringComparison.OrdinalIgnoreCase)
+                    || prop.Name.StartsWith("GInterface", StringComparison.OrdinalIgnoreCase)
+                    || prop.Name.StartsWith("_")
+                    || prop.Name.Contains("_")
+                    || prop.Name.Contains("/")
+                    )
+                        continue;
+
+                    //if(prop.Name == "AirplaneDataPacket")
+                    //{
+
+                    //}
+
+                    var n = prop.FieldType.Name
+                        .Replace("[]", "")
+                        .Replace("`1", "")
+                        .Replace("&", "")
+                        .Replace(" ", "")
+                        + "." + prop.Name;
+                    if (!gclassToNameCounts.ContainsKey(n))
+                        gclassToNameCounts.Add(n, 0);
+
+                    gclassToNameCounts[n]++;
+                    //if (gclassToNameCounts[n] > 1)
+                    //{
+                    //    gclassToNameCounts[n] = 0;
+                    //}
+                }
+
+
+            }
+            
+            var autoRemappedClassCount = 0;
+            
+            // ----------------------------------------------------------------------------------------
+            // Rename classes based on discovery above
+            var orderedGClassCounts = gclassToNameCounts.Where(x => x.Value > 0 && !x.Key.Contains("`")).OrderByDescending(x => x.Value);
+            var usedNamesCount = new Dictionary<string, int>();
+            var renamedClasses = new Dictionary<string, string>();
+            foreach (var g in orderedGClassCounts)
+            {
+                var keySplit = g.Key.Split('.');
+                var gclassName = keySplit[0];
+                var gclassNameNew = keySplit[1];
+                if (gclassNameNew.Length <= 3
+                    || gclassNameNew.StartsWith("Value", StringComparison.OrdinalIgnoreCase)
+                    || gclassNameNew.StartsWith("Attribute", StringComparison.OrdinalIgnoreCase)
+                    || gclassNameNew.StartsWith("Instance", StringComparison.OrdinalIgnoreCase)
+                    || gclassNameNew.StartsWith("_", StringComparison.OrdinalIgnoreCase)
+                    || gclassNameNew.StartsWith("<", StringComparison.OrdinalIgnoreCase)
+                    || Assembly.GetAssembly(typeof(Attribute)).GetTypes().Any(x => x.Name.StartsWith(gclassNameNew, StringComparison.OrdinalIgnoreCase))
+                    || oldAssembly.MainModule.GetTypes().Any(x => x.Name.Equals(gclassNameNew, StringComparison.OrdinalIgnoreCase))
+                    )
+                    continue;
+
+                var t = oldAssembly.MainModule.GetTypes().FirstOrDefault(x => x.Name == gclassName);
+                if (t == null)
+                    continue;
+
+                // Follow standard naming convention, PascalCase all class names
+                var newClassName = char.ToUpper(gclassNameNew[0]) + gclassNameNew.Substring(1);
+                
+                // Following BSG naming convention, begin Abstract classes names with "Abstract"
+                if (t.IsAbstract && !t.IsInterface)
+                    newClassName = "Abstract" + newClassName;
+                // Follow standard naming convention, Interface names begin with "I"
+                else if (t.IsInterface)
+                    newClassName = "I" + newClassName;
+
+                if (!usedNamesCount.ContainsKey(newClassName))
+                    usedNamesCount.Add(newClassName, 0);
+
+                usedNamesCount[newClassName]++;
+
+                if (usedNamesCount[newClassName] > 1)
+                    newClassName += usedNamesCount[newClassName];
+
+                if (!oldAssembly.MainModule.GetTypes().Any(x => x.Name == newClassName)
+                    && !Assembly.GetAssembly(typeof(Attribute)).GetTypes().Any(x => x.Name.StartsWith(newClassName, StringComparison.OrdinalIgnoreCase))
+                    && !oldAssembly.MainModule.GetTypes().Any(x => x.Name.Equals(newClassName, StringComparison.OrdinalIgnoreCase))
+                    )
+                {
+                    var oldClassName = t.Name;
+                    t.Name = newClassName;
+                    renamedClasses.Add(oldClassName, newClassName);
+                    Log($"Remapper: Auto Remapped {oldClassName} to {newClassName}");
+                }
+            }
+            // end of renaming based on discovery
+            // ---------------------------------------------------------------------------------------
+
+            // ------------------------------------------------
+            // Auto rename FirearmController sub classes
+            foreach (var t in oldAssembly.MainModule.GetTypes().Where(x 
+                => 
+                    x.FullName.StartsWith("EFT.Player.FirearmController")
+                    && x.Name.StartsWith("GClass")
+                
+                ))
+            {
+                t.Name.Replace("GClass", "FirearmController");
+            }
+
+            // ------------------------------------------------
+            // Auto rename descriptors
+            foreach (var t in oldAssembly.MainModule.GetTypes())
+            {
+                foreach (var m in t.Methods.Where(x=>x.Name.StartsWith("ReadEFT")))
+                {
+                    if (m.ReturnType.Name.StartsWith("GClass"))
+                    {
+                        var rT = oldAssembly.MainModule.GetTypes().FirstOrDefault(x => x == m.ReturnType);
+                        if (rT != null)
+                        {
+                            var oldTypeName = rT.Name;
+                            rT.Name = m.Name.Replace("ReadEFT", "");
+                            Log($"Remapper: Auto Remapped {oldTypeName} to {rT.Name}");
+
+                        }
+                    }
+                }
+            }
+
+            // Testing stuff here.
+            // Quick hack to name properties properly in EFT.Player
+            foreach(var playerProp in oldAssembly.MainModule.GetTypes().FirstOrDefault(x=>x.FullName == "EFT.Player").Properties)
+            {
+                if(playerProp.Name.StartsWith("GClass", StringComparison.OrdinalIgnoreCase))
+                {
+                    playerProp.Name = playerProp.PropertyType.Name.Replace("Abstract", "");
+                }
+            }
+
+            Log($"Remapper: Ensuring EFT classes are public");
+            foreach (var t in oldAssembly.MainModule.GetTypes())
+            {
+                if (t.IsClass && t.IsDefinition && t.BaseType != null && t.BaseType.FullName != "System.Object")
+                {
+                    if (!Assembly.GetAssembly(typeof(Attribute))
+                        .GetTypes()
+                        .Any(x => x.Name.StartsWith(t.Name, StringComparison.OrdinalIgnoreCase)))
+                        t.IsPublic = true;
+                }
+            }
+
+            Log($"Remapper: Setting EFT methods to public");
+            foreach (var ctf in autoRemapperConfig.TypesToForceAllPublicMethods)
+            {
+                var foundTypes = oldAssembly.MainModule.GetTypes()
+                    .Where(x => x.Namespace.Contains("EFT", StringComparison.OrdinalIgnoreCase))
+                    .Where(x => x.Name.Contains(ctf, StringComparison.OrdinalIgnoreCase));
+                foreach (var t in foundTypes)
+                {
+                    foreach (var m in t.Methods)
+                    {
+                        if (!m.IsPublic)
+                            m.IsPublic = true;
+                    }
+                }
+            }
+
+            Log($"Remapper: Setting EFT fields/properties to public");
+            foreach (var ctf in autoRemapperConfig.TypesToForceAllPublicFieldsAndProperties)
+            {
+                var foundTypes = oldAssembly.MainModule.GetTypes()
+                    .Where(x => x.Namespace.Contains("EFT", StringComparison.OrdinalIgnoreCase))
+                    .Where(x => x.Name.Contains(ctf, StringComparison.OrdinalIgnoreCase));
+                foreach (var t in foundTypes)
+                {
+                    foreach (var m in t.Fields)
+                    {
+                        if (!m.IsPublic)
+                            m.IsPublic = true;
+                    }
+                }
+            }
+
+
+            autoRemappedClassCount = renamedClasses.Count;
+            Log($"Remapper: Auto Remapped {autoRemappedClassCount} classes");
         }
 
         private static void RemapByDefinedConfiguration(AssemblyDefinition oldAssembly, AutoRemapperConfig autoRemapperConfig)
@@ -416,7 +489,17 @@ namespace SIT.Launcher.DeObfus
                                     || (x.Methods.Select(y=>y.Name.Split('.')[y.Name.Split('.').Length-1]).Count(y => config.HasMethods.Contains(y)) >= config.HasMethods.Length))
 
                             ).ToList();
-                    
+                    // Filter Types by Virtual Methods
+                    if (config.HasMethodsVirtual != null && config.HasMethodsVirtual.Length > 0)
+                    {
+                        findTypes = findTypes.Where(x
+                               =>
+                                 (   x.Methods.Count(y => y.IsVirtual) > 0
+                                    && x.Methods.Where(y => y.IsVirtual).Count(y => config.HasMethodsVirtual.Contains(y.Name)) >= config.HasMethodsVirtual.Length
+                                    )
+                               ).ToList();
+                    }
+
                     // Filter Types by Field/Properties
                     findTypes = findTypes.Where(
                         x =>

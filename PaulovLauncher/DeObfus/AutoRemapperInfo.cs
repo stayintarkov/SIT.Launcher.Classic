@@ -18,6 +18,7 @@ namespace SIT.Launcher.DeObfus
         public string[] HasFields { get; set; }
         public string[] HasProperties { get; set; }
         public string[] HasMethods { get; set; }
+        public string[] HasMethodsVirtual { get; set; }
 
         public override string ToString()
         {

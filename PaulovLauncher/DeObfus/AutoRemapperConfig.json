@@ -6,27 +6,27 @@
   "DefinedRemapping": [
     // ------------------------------------------------------------------------------------------
     // SPT-Aki Remapping List
-    {
-      "RenameClassNameTo": "BattleeyePatchClass",
-      "ClassName": null,
-      "HasFields": [],
-      "HasMethods": [ "RunValidation" ]
-    },
-    {
-      "RenameClassNameTo": "PostRaidHealthScreenClass",
-      "ClassName": null,
-      "HasFields": [ "exitStatus_0" ],
-      "HasMethods": [ "OnProfileChangeApplied" ]
-    },
+    //{
+    //  "RenameClassNameTo": "BattleeyePatchClass",
+    //  "ClassName": null,
+    //  "HasFields": [],
+    //  "HasMethods": [ "RunValidation" ]
+    //},
+    //{
+    //  "RenameClassNameTo": "PostRaidHealthScreenClass",
+    //  "ClassName": null,
+    //  "HasFields": [ "exitStatus_0" ],
+    //  "HasMethods": [ "OnProfileChangeApplied" ]
+    //},
     // not working
-    {
-      "RenameClassNameTo": "SpawnSystemClass",
-      "ClassName": "Class1891",
-      "IsClass": true,
-      "IsInterface": false,
-      "HasFields": [],
-      "HasMethods": []
-    },
+    //{
+    //  "RenameClassNameTo": "SpawnSystemClass",
+    //  "ClassName": "Class1891",
+    //  "IsClass": true,
+    //  "IsInterface": false,
+    //  "HasFields": [],
+    //  "HasMethods": []
+    //},
     //    "Class220": "DataHandler",
     //"Class708": "SslCertPatchClass",
     //"EFT.Bots.BotControllerSettings": "BotsSettings",
@@ -59,11 +59,16 @@
     //"GClass1545": "SkillsClass",
     //"GClass1572": "PoolManager",
     //"GClass1595": "MainMenuController",
-    //"GClass1706": "NotificationClass",
-    {
-      "RenameClassNameTo": "NotificationClass",
-      "HasFields": [ "ShowNotification", "Icon" ]
-    },
+    //{
+    //  "RenameClassNameTo": "MainMenuController",
+    //  "HasFields": [ "HealthController", "InventoryController", "MatchingType", "IsInSession" ],
+    //  "HasMethods": [ "StopAfkMonitor", "OnProfileChangeApplied", "StoreProfile" ]
+    //},
+    ////"GClass1706": "NotificationClass",
+    //{
+    //  "RenameClassNameTo": "NotificationClass",
+    //  "HasFields": [ "ShowNotification", "Icon" ]
+    //},
     //"GClass1771": "NotificationManagerClass",
     //"GClass1784": "TraderClass",
     //"GClass1787": "WeatherClass",
@@ -146,6 +151,12 @@
     //"GInterface255": "ISpawnPoints",
     //"GInterface256": "ISpawnSystem",
     //"GInterface289": "IEasyBundle",
+    //{
+    //  "RenameClassNameTo": "IEasyBundle",
+    //  "IsInterface": true,
+    //  "HasFields": [ "Assets", "SameNameAsset" ],
+    //  "HasMethods": []
+    //},
     //"GInterface30": "IBackendInterface",
     //"GInterface290": "IBundleLock",
     //"GInterface71": "IAIDetails",
@@ -164,14 +175,12 @@
     },
     {
       "RenameClassNameTo": "PoolManager",
-      "ClassName": null,
       "HasFields": [],
       "HasMethods": [ "LoadBundlesAndCreatePools" ]
     },
     {
       "RenameClassNameTo": "IProgress",
       "IsInterface": true,
-      "ClassName": null,
       "HasFields": [ "Progress", "InitLevelStage" ],
       "HasMethods": []
     },
@@ -191,65 +200,93 @@
     },
     {
       "RenameClassNameTo": "GProgress",
-      "ClassName": null,
       "HasFields": [ "action_0", "cancellationToken_0" ],
       "HasMethods": [ "Report" ]
     },
     {
       "RenameClassNameTo": "GFilterCustomization",
-      "ClassName": null,
       "HasFields": [ "Default" ],
       "HasMethods": [ "FilterCustomization" ]
     },
     {
       "RenameClassNameTo": "GStatisticsSession",
-      "ClassName": null,
       "HasFields": [],
       "HasMethods": [ "BeginStatisticsSession", "EndStatisticsSession" ]
     },
-    {
-      "RenameClassNameTo": "GInventoryManagement",
-      "ClassName": null,
-      "HasFields": [],
-      "HasMethods": [ "IsLimitedAtAddress", "CheckOverLimit" ]
-    },
+    //{
+    //  "RenameClassNameTo": "GInventoryManagement",
+    //  "HasFields": [],
+    //  "HasMethods": [ "IsLimitedAtAddress", "CheckOverLimit" ]
+    //},
     {
       "RenameClassNameTo": "GGroupManagement",
-      "ClassName": null,
       "HasFields": [],
       "HasMethods": [ "DisbandGroup", "LeaveGroup", "ExitFromMatchMaker" ]
     },
     {
       "RenameClassNameTo": "BotPresetFactory",
-      "ClassName": null,
       "HasFields": [],
       "HasMethods": [ "GetNewProfile", "CreateProfile" ]
     },
     {
       "RenameClassNameTo": "BotCreator",
-      "ClassName": null,
       "HasFields": [ "BotsLoading", "BundlesLoading", "StartProfilesLoaded" ],
       "HasMethods": []
     },
-    //{
-    //  "RenameClassNameTo": "IAIDetails",
-    //  "OnlyTargetInterface": true,
-    //  "ClassName": null,
-    //  "HasFields": [ "Side", "GroupId", "LookDirection", "Position", "Transform", "WeaponRoot", "GetPlayer" ],
-    //  "HasMethods": []
-    //},
     {
       "RenameClassNameTo": "IAIData",
-      "ClassName": null,
       "HasFields": [ "AskRequests", "AIBossPlayer", "GetFlare", "IAmBoss", "UsingLight", "Player", "PowerOfEquipment" ],
       "HasMethods": []
     },
     {
       "RenameClassNameTo": "GHealthController",
-      "ClassName": null,
       "HasFields": [],
       "HasMethods": [ "ChangeEnergy", "ChangeHealth", "ChangeHydration", "DoContusion" ]
+    },
+    {
+      "RenameClassNameTo": "BossSpawnerClass",
+      "HasFields": [ "BossSpawnWaves", "HaveSectants" ],
+      "HasMethods": [ "Run", "Stop" ]
+    },
+    //{
+    //  "RenameClassNameTo": "PlayerGameAction",
+    //  "HasFields": [],
+    //  "HasMethods": [ "PlayerComeToPlace", "AnyEvent", "ExitActivated", "PlaySound", "TrainCome", "GrenadeExplosion", "InteractObject", "Kill", "ThrowGrenade" ]
+    //}
+    {
+      "RenameClassNameTo": "GlobalScreenController",
+      "HasFields": [ "CurrentScreenController" ],
+      "HasMethods": [ "RegisterScreen", "ReleaseScreen", "TryCloseAllScreens" ]
+    },
+    {
+      "RenameClassNameTo": "IKnifeTemplate",
+      "IsInterface": true,
+      "HasFields": [ "KnifeHitDelay", "KnifeHitSlashRate", "KnifeHitStabRate", "KnifeHitRadius" ]
+    },
+    // the auto remapping takes care of this
+    //{
+    //  "RenameClassNameTo": "InteractionResult",
+    //  "HasFields": [ "InteractionType" ]
+    //},
+    {
+      "RenameClassNameTo": "GlobalNetworkReadWriteDescriptors",
+      "HasMethods": [ "ReadEFTGridDescriptor", "ReadEFTGridItemAddressDescriptor" ]
+    },
+    {
+      "RenameClassNameTo": "AbstractFirearmActioner",
+      "HasMethodsVirtual": [ "ShowGesture", "ReloadMag", "BlindFire", "OnFold" ]
     }
 
+
+  ],
+  "DefinedTypesToForcePublic": [
+    "BaseLocalGame"
+  ],
+  "TypesToForceAllPublicMethods": [
+    "BaseLocalGame",
+    "Player"
+  ],
+  "TypesToForceAllPublicFieldsAndProperties": [
+    //"BaseLocalGame"
   ]
 }
