@@ -26,7 +26,17 @@
     //  "HasMethods": []
     //},
     //    "Class220": "DataHandler",
+    {
+      "RenameClassNameTo": "DataHandler",
+      "HasFields": [ "WebDiagnosticsEnabled" ],
+      "HasMethods": [ "RunConnectionDiagnostics" ]
+    },
     //"Class708": "SslCertPatchClass",
+    {
+      "RenameClassNameTo": "SslCertPatchClass",
+      "HasFields": [ "string_0" ],
+      "HasMethods": [ "ValidateCertificate" ]
+    },
     //"EFT.Bots.BotControllerSettings": "BotsSettings",
     {
       "RenameClassNameTo": "BotsSettings",
@@ -38,20 +48,85 @@
       "ClassName": "WavesSettings"
     },
     //"GClass1079": "GameServerClass",
+    {
+      "RenameClassNameTo": "GameServerClass",
+      "IsClass": true,
+      "HasExactFields": true,
+      "HasFields": [ "Ping" ]
+    },
     //"GClass1087": "QuestItemClass",
+    {
+      "RenameClassNameTo": "QuestItemClass",
+      "HasExactFields": true,
+      "HasFields": [ "_id", "_tpl", "parentId" ]
+    },
     //"GClass1092": "InsuredItemClass",
+    {
+      "RenameClassNameTo": "InsuredItemClass",
+      "HasExactFields": true,
+      "HasFields": [ "tid", "itemId" ]
+    },
     //"GClass1111": "LocationSettingsClass",
+    {
+      "RenameClassNameTo": "LocationSettingsClass",
+      "HasFields": [ "locations", "paths" ]
+    },
     //"GClass1126": "BackendConfigClass",
+    {
+      "RenameClassNameTo": "BackendConfigClass",
+      "HasFields": [ "Config", "ItemPresets", "BotPresets", "BotWeaponScatterings" ]
+    },
     //"GClass1128": "BotPresetClass",
+    {
+      "RenameClassNameTo": "BotPresetClass",
+      "HasFields": [ "BotDifficulty", "Role", "UseThis", "VisibleAngle" ]
+    },
     //"GClass1154": "BotMemoryClass",
+    {
+      "RenameClassNameTo": "BotMemoryClass",
+      "HasMethods": [ "Spotted", "LoseVisionCurrentEnemy", "DeleteInfoAboutEnemy", "AddEnemy" ]
+    },
     //"GClass1236": "LocalizationClass",
+    {
+      "RenameClassNameTo": "LocalizationClass",
+      "HasFields": [ "mail", "repeatableQuest", "handbook", "preset", "error", "quest" ]
+    },
     //"GClass1301": "BotControllerClass",
+    {
+      "RenameClassNameTo": "BotControllerClass",
+      "HasMethods": [ "ActivateBotsByWave", "ActivateBotsWithoutWave", "AddEnemyToAllGroups" ]
+    },
     //"GClass1305": "WaveInfo",
+    {
+      "RenameClassNameTo": "WaveInfo",
+      "HasFields": [ "Role", "Limit", "Difficulty" ]
+    },
     //"GClass1310": "BotSpawnerClass",
+    {
+      "RenameClassNameTo": "BotSpawnerClass",
+      "HasFields": [ "BotGame", "Groups", "PlayersCount" ],
+      "HasMethods": [ "GetPlayer", "GetRandomBotZone" ]
+    },
     //"GClass1313": "GameTimeClass",
+    {
+      "RenameClassNameTo": "GameTimeClass",
+      "HasMethods": [ "Calculate", "CalculateTaxonomyDate", "Reset" ]
+    },
     //"GClass1315": "GameTimerClass",
+    {
+      "RenameClassNameTo": "GameTimerClass",
+      "HasMethods": [ "Start", "Stop", "ChangeSessionTime" ]
+    },
     //"GClass1319": "ItemFactory",
+    {
+      "RenameClassNameTo": "ItemFactory",
+      "HasMethods": [ "CreateItem", "CreateFakeStash" ]
+    },
     //"GClass1520": "ProfileStatusClass",
+    {
+      "RenameClassNameTo": "ProfileStatusClass",
+      "HasMethods": [ "IsAppropriateStatusChange" ]
+    },
     //"Attribute0": "ProfileCustomizationClass",
     //"GClass1534": "InfoClass",
     //"GClass1545": "SkillsClass",
@@ -72,14 +147,51 @@
       "HasFields": [ "ShowNotification", "Icon" ]
     },
     //"GClass1771": "NotificationManagerClass",
+    {
+      "RenameClassNameTo": "NotificationManagerClass",
+      "HasFields": [ "ProfileChangeNotifications", "Notifications" ]
+    },
     //"GClass1784": "TraderClass",
+    {
+      "RenameClassNameTo": "TraderClass",
+      "HasFields": [ "LoyaltyLevel", "Standing", "MaxLoyaltyLevel", "AssortmentUpdateTimeout", "CurrentAssortment" ]
+    },
     //"GClass1787": "WeatherClass",
+    {
+      "RenameClassNameTo": "WeatherClass",
+      "HasMethods": [ "GetWeatherTypeByNode" ]
+    },
     //"GClass1810": "ClientMetrics",
+    {
+      "RenameClassNameTo": "ClientMetrics",
+      "HasFields": [ "RenderBinMetricCollector", "GameUpdateBinMetricCollector" ]
+    },
     //"GClass1816": "MetricsClass",
+    {
+      "RenameClassNameTo": "MetricsClass",
+      "HasFields": [ "Settings", "SharedSettings", "HardwareDescription" ]
+    },
     //"GClass1817": "MetricsConfigClass",
+    {
+      "RenameClassNameTo": "MetricsConfigClass",
+      "HasFields": [ "Keys", "NetProcessingBins", "RenderBins", "GameUpdateBins", "MemoryMeasureInterval" ]
+    },
     //"GClass1821": "SynchronizableObjectLogicProcessorClass",
+    {
+      "RenameClassNameTo": "SynchronizableObjectLogicProcessorClass",
+      "HasMethods": [ "GetSyncObjectStrategyByType", "GetSynchronizableObjects" ]
+    },
     //"GClass1822": "AirdropManagerAbstractClass",
+    {
+      "RenameClassNameTo": "AirdropManagerAbstractClass",
+      "HasMethods": [ "TakeAirdropPoint" ]
+    },
     //"GClass1823": "AirdropManagerClass",
+    {
+      "RenameClassNameTo": "AirdropManagerClass",
+      "IsClass": true,
+      "HasMethods": [ "ManualUpdate", "Init", "AddProjectile", "OnFlareSuccessEvent" ]
+    },
     //"GClass1826": "AirdropLogicClass",
     {
       "RenameClassNameTo": "AirdropLogicClass",
@@ -143,25 +255,78 @@
     //"GClass465": "DeadBodiesControllerClass",
     //"GClass470": "BotRequestsControllerClass",
     //"GClass474": "BotsGroupClass",
+    {
+      "RenameClassNameTo": "BotsGroupClass",
+      "HasEvents": [ "OnAddGroup" ],
+      "HasMethods": [ "TryGetValue", "Add", "AddNoKey" ]
+    },
     //"GClass477": "BotGroupClass",
     {
       "RenameClassNameTo": "BotGroupClass",
       "HasMethods": [ "IsPlayerEnemy", "IsPlayerEnemyByRole", "AddEnemyGroup", "AddEnemyGroupIfAllowed" ]
     },
     //"GClass484": "BotSettingsClass",
+    {
+      "RenameClassNameTo": "BotSettingsClass",
+      "HasFields": [ "IsLastPositionChecked", "LastChangeVisionTime" ],
+      "HasMethods": [ "GetPositionForSearch", "SetSuppressEndTime", "IsSuppressed" ]
+    },
     //"GClass492": "AiDataClass",
+    {
+      "RenameClassNameTo": "AiDataClass",
+      "HasMethods": [ "IsBossOrFollowerRequireRevenge", "KillEnemy", "DoMove", "LeavePlace" ]
+    },
     //"GClass495": "BotLoyaltyClass",
+    {
+      "RenameClassNameTo": "BotLoyaltyClass",
+      "HasFields": [ "HostileScavs" ],
+      "HasMethods": [ "KillEnemy", "MarkAsAggressor", "WasAttackedBy", "MarkAsCanBeFreeKilled" ]
+    },
     //"GClass515": "AiTaskManagerClass",
+    {
+      "RenameClassNameTo": "AiTaskManagerClass",
+      "HasFields": [ "MaxTaskPerFrame" ],
+      "HasMethods": [ "AddTask", "CountTasks", "TaskWaitTooLong" ]
+    },
     //"GClass523": "ScatteringSettingsClass",
+    {
+      "RenameClassNameTo": "ScatteringSettingsClass",
+      "HasFields": [ "CurrentScattering" ],
+      "HasMethods": [ "Check", "SetWeapon" ]
+    },
     //"GClass528": "BotDifficultySettingsClass",
+    {
+      "RenameClassNameTo": "BotDifficultySettingsClass",
+      "HasFields": [ "Curv", "Current", "FileSettings", "CurrentScatteringSetting" ],
+      "HasMethods": [ "ApplyPresetLocation", "ApplyPreset" ]
+    },
     //"GClass569": "ZoneLeaveControllerClass",
+    {
+      "RenameClassNameTo": "ZoneLeaveControllerClass",
+      "HasMethods": [ "IsDay", "IsDayByHour", "IsZoneBlockFor", "ClearZone" ]
+    },
     //"GClass571": "BotsClass",
+    {
+      "RenameClassNameTo": "BotsClass",
+      "HasEvents": [ "OnBotAdd" ],
+      "HasMethods": [ "IsDay", "IsDayByHour", "IsZoneBlockFor", "ClearZone" ]
+    },
     //"GClass577": "BotsPresets",
+    {
+      "RenameClassNameTo": "BotsPresets",
+      "HasFields": [ "BundlesLoading" ],
+      "HasMethods": [ "GetNewProfile", "CreateProfile" ]
+    },
     //"GClass596": "LoggerClass",
     //"GClass674": "TimerClass",
     //"GClass879": "DecalMeshClass",
     //"GClass887": "ChatServerClass",
     //"GInterface120": "ISession",
+    {
+      "RenameClassNameTo": "ISession",
+      "IsInterface": true,
+      "HasMethods": [ "ChangeNickname", "ValidateNickname", "GetReservedNickname", "GetProfiles", "GetRaidReadyStatus", "StartGameGroupPlayer", "ChatSendMessage" ]
+    },
     //"GInterface12": "IBotGame",
     //"GInterface148": "IConnectionHandler",
     //"GInterface15": "IBotData",
@@ -169,16 +334,36 @@
     //"GInterface159": "IEffect",
     //"GInterface201": "IHealthController",
     //"GInterface253": "IZones",
+    {
+      "RenameClassNameTo": "IZones",
+      "IsInterface": true,
+      "HasMethods": [ "ZoneNames", "ZoneSpawnPoints", "AllZonesSpawnPoints", "GetBossPosition" ]
+    },
     //"GInterface255": "ISpawnPoints",
+    {
+      "RenameClassNameTo": "ISpawnPoints",
+      "IsInterface": true,
+      "HasMethods": [ "CreateSpawnPoint", "DestroySpawnPoint" ]
+    },
     //"GInterface256": "ISpawnSystem",
+    {
+      "RenameClassNameTo": "ISpawnSystem",
+      "IsInterface": true,
+      "HasMethods": [ "SelectSpawnPoint", "SelectPlayerSavageSpawn", "SelectAISpawnPoints" ]
+    },
     //"GInterface289": "IEasyBundle",
-    //{
-    //  "RenameClassNameTo": "IEasyBundle",
-    //  "IsInterface": true,
-    //  "HasFields": [ "Assets", "SameNameAsset" ],
-    //  "HasMethods": []
-    //},
+    {
+      "RenameClassNameTo": "IEasyBundle",
+      "IsInterface": true,
+      "HasFields": [ "Assets", "SameNameAsset" ]
+    },
     //"GInterface30": "IBackendInterface",
+    {
+      "RenameClassNameTo": "IBackendInterface",
+      "IsInterface": true,
+      "HasFields": [ "Session", "TradingSession" ],
+      "HasMethods": [ "RegisterDevice", "Login", "GetAvailableLanguages" ]
+    },
     //"GInterface290": "IBundleLock",
     //"GInterface71": "IAIDetails",
     //"GStruct109": "WeatherSettings",
@@ -209,11 +394,6 @@
       "RenameClassNameTo": "RagfairInfo",
       "HasFields": [ "Offers", "Rating", "IsRatingGrowing" ]
     },
-    //{
-    //  "RenameClassNameTo": "GJobYield",
-    //  "HasFields": [ "General", "Low", "Immediate" ],
-    //  "HasMethods": [ "Priority", "GetYieldDelegate" ]
-    //},
     {
       "RenameClassNameTo": "SProgress",
       "HasFields": [ "Progress", "Stage" ],
@@ -284,11 +464,6 @@
       "IsInterface": true,
       "HasFields": [ "KnifeHitDelay", "KnifeHitSlashRate", "KnifeHitStabRate", "KnifeHitRadius" ]
     },
-    // the auto remapping takes care of this
-    //{
-    //  "RenameClassNameTo": "InteractionResult",
-    //  "HasFields": [ "InteractionType" ]
-    //},
     {
       "RenameClassNameTo": "GlobalNetworkReadWriteDescriptors",
       "HasMethods": [ "ReadEFTGridDescriptor", "ReadEFTGridItemAddressDescriptor" ]

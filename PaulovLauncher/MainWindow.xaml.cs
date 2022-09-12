@@ -456,62 +456,40 @@ namespace SIT.Launcher
             }
         }
 
+        private void OnDeobfuscateLog(string s)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                txtDeobfuscateLog.Text += s;
+            });
+        }
+
         private async Task<bool> Deobfuscate(string exeLocation, bool createBackup = true, bool overwriteExisting = true, bool doRemapping = true)
         {
-            return await Deobfuscator.DeobfuscateAsync(exeLocation, createBackup, overwriteExisting, doRemapping);
+            //Deobfuscator.OnLog += OnDeobfuscateLog;
+            Dispatcher.Invoke(() =>
+            {
+                txtDeobfuscateLog.Text = String.Empty;
+                txtDeobfuscateLog.Text = "Deobfuscate started!";
+                btnDeobfuscate.IsEnabled = false;
+            });
+            var result = await Deobfuscator.DeobfuscateAsync(exeLocation, createBackup, overwriteExisting, doRemapping);
+            Dispatcher.Invoke(() =>
+            {
+                foreach (var logg in Deobfuscator.Logged)
+                {
+                    txtDeobfuscateLog.Text += logg + Environment.NewLine;
+                }
+                btnDeobfuscate.IsEnabled = true;
+            });
 
+            var deobfuscateLogPath = "DeobfuscateLog.txt";
+            if (File.Exists(deobfuscateLogPath))
+                File.Delete(deobfuscateLogPath);    
 
-            //var deobfusFolder = App.ApplicationDirectory + "/DeObfus/";
-            //var deobfusApp = deobfusFolder + "de4dot-x64.exe";
-
-            //// Discover where Assembly-CSharp is within the Game Folders
-            //var assemblyLocation = exeLocation.Replace("EscapeFromTarkov.exe", "");
-            //assemblyLocation += "EscapeFromTarkov_Data\\Managed\\Assembly-CSharp.dll";
-
-            //// Backup the Assembly-CSharp and place the newest clean one
-            //if (!File.Exists(assemblyLocation + ".backup"))
-            //{
-            //    File.Copy(assemblyLocation, assemblyLocation + ".backup");
-
-            //    List<FileInfo> fileInfos = Directory.GetFiles(App.ApplicationDirectory + "/DeObfus/PatchedAssemblies/").Select(x => new FileInfo(x)).ToList();
-            //    var lastAssembly = fileInfos.OrderByDescending(x => x.LastWriteTime).FirstOrDefault();
-            //    lastAssembly.CopyTo(assemblyLocation, true);
-            //}
-            //return true;
-
-            //// Extract the Deobfuscator zip
-            //ExtractDeobfuscator();
-
-            //// Discover if it needs Deobfuscation
-            ////if (NeedsDeobfuscation(exeLocation))
-            ////{
-            //    // Delete any left over Assembly-CSharp.dll file
-            //    if(File.Exists("Assembly-CSharp.dll"))
-            //        File.Delete("Assembly-CSharp.dll");
-
-            //    // Backup the Assembly-Csharp
-            //    File.Copy(assemblyLocation, assemblyLocation + ".backup", true);
-            //    // Copy the Assembly-Csharp to our folder
-            //    File.Copy(assemblyLocation, "Assembly-CSharp.dll", true);
-
-            //    var commandArgs = "--un-name \"!^<>[a-z0-9]$&!^<>[a-z0-9]__.*$&![A-Z][A-Z]\\$<>.*$&^[a-zA-Z_<{$][a-zA-Z_0-9<>{}$.`-]*$\" \"Assembly-CSharp.dll\"";
-            //    LaunchButtonState = ELaunchButtonState.Deob;
-            //    btnLaunchGame.IsEnabled = false;
-            //    var deobfusProcess = Process.Start(deobfusApp, commandArgs);
-            //    if (deobfusProcess != null)
-            //    {
-            //        await Task.Run(() =>
-            //        {
-            //            while (!deobfusProcess.HasExited) { }
-            //        });
-            //        LaunchButtonState = ELaunchButtonState.Launch;
-            //        btnLaunchGame.IsEnabled = true;
-            //        File.Copy("Assembly-CSharp-cleaned.dll", assemblyLocation, true);
-
-            //        return true;
-            //    }
-            ////}
-            //return false;
+            await File.WriteAllTextAsync(deobfuscateLogPath, txtDeobfuscateLog.Text);
+            //Deobfuscator.OnLog -= OnDeobfuscateLog;
+            return result;
         }
 
         private bool NeedsDeobfuscation(string exeLocation)
@@ -519,7 +497,6 @@ namespace SIT.Launcher
             var assemblyLocation = exeLocation.Replace("EscapeFromTarkov.exe", "");
             assemblyLocation += "EscapeFromTarkov_Data\\Managed\\Assembly-CSharp.dll";
             return !File.Exists(assemblyLocation + ".backup");
-    
         }
 
         private void ExtractDeobfuscator()

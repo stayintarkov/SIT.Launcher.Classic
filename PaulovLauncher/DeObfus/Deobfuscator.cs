@@ -19,6 +19,7 @@ namespace SIT.Launcher.DeObfus
 	{
         public delegate void LogHandler(string text);
         public static event LogHandler OnLog;
+        public static List<string> Logged = new List<string>();
 
         internal static void Log(string text)
         {
@@ -30,6 +31,7 @@ namespace SIT.Launcher.DeObfus
             {
                 Debug.WriteLine(text);
                 Console.WriteLine(text);
+                Logged.Add(text);
             }
         }
 
@@ -110,8 +112,7 @@ namespace SIT.Launcher.DeObfus
                 OverwriteExistingAssembly(assemblyPath, cleanedDllPath);
 
 
-            Debug.WriteLine($"DeObfuscation complete!");
-            Console.WriteLine($"DeObfuscation complete!");
+            Log($"DeObfuscation complete!");
 
             return true;
         }
@@ -469,8 +470,12 @@ namespace SIT.Launcher.DeObfus
             if (!autoRemapperConfig.EnableDefinedRemapping)
                 return;
 
+            int countOfDefinedMappingSucceeded = 0;
+            int countOfDefinedMappingFailed = 0;
+
             foreach (var config in autoRemapperConfig.DefinedRemapping.Where(x => !string.IsNullOrEmpty(x.RenameClassNameTo)))
             {
+                
                 try
                 {
                     var findTypes
@@ -500,22 +505,44 @@ namespace SIT.Launcher.DeObfus
                                ).ToList();
                     }
 
+                    // Filter Types by Events
+                    findTypes = findTypes.Where(x
+                           =>
+                               (config.HasEvents == null || config.HasEvents.Length == 0
+                                   || (x.Events.Select(y => y.Name.Split('.')[y.Name.Split('.').Length - 1]).Count(y => config.HasEvents.Contains(y)) >= config.HasEvents.Length))
+
+                           ).ToList();
+
                     // Filter Types by Field/Properties
                     findTypes = findTypes.Where(
                         x =>
                                 (
-                                    (config.HasFields == null || config.HasFields.Length == 0 || (x.Fields.Count(y => config.HasFields.Contains(y.Name)) >= config.HasFields.Length))
+                                    // fields
+                                    (
+                                    config.HasFields == null || config.HasFields.Length == 0 
+                                    || (!config.HasExactFields && x.Fields.Count(y => config.HasFields.Contains(y.Name)) >= config.HasFields.Length)
+                                    || (config.HasExactFields && x.Fields.Count(y => y.IsDefinition && config.HasFields.Contains(y.Name)) == config.HasFields.Length)
+                                    )
                                     ||
-                                    (config.HasFields == null || config.HasFields.Length == 0 || (x.Properties.Count(y => config.HasFields.Contains(y.Name)) >= config.HasFields.Length))
+                                    // properties
+                                    (
+                                    config.HasFields == null || config.HasFields.Length == 0 
+                                    || (!config.HasExactFields && x.Properties.Count(y => config.HasFields.Contains(y.Name)) >= config.HasFields.Length)
+                                    || (config.HasExactFields && x.Properties.Count(y => y.IsDefinition && config.HasFields.Contains(y.Name)) == config.HasFields.Length)
+
+                                    )
                                 )).ToList();
+
                     // Filter Types by Class/Interface
                     findTypes = findTypes.Where(
                         x =>
                             (
-                                (!config.IsClass.HasValue || (config.IsClass.HasValue && config.IsClass.Value && x.IsClass))
-                                && (!config.IsInterface.HasValue || (config.IsInterface.HasValue && config.IsInterface.Value && x.IsInterface))
+                                (!config.IsClass.HasValue || (config.IsClass.HasValue && config.IsClass.Value && (x.IsClass && !x.IsEnum && !x.IsInterface)))
+                                && (!config.IsInterface.HasValue || (config.IsInterface.HasValue && config.IsInterface.Value && (x.IsInterface && !x.IsEnum && !x.IsClass)))
                             )
                         ).ToList();
+
+                    
 
                     if (findTypes.Any())
                     {
@@ -544,8 +571,8 @@ namespace SIT.Launcher.DeObfus
                                 if (!t.IsInterface)
                                     numberOfChangedIndexes++;
 
-                                Debug.WriteLine($"Remapper: Remapped {oldClassName} to {newClassName}");
-                                Console.WriteLine($"Remapper: Remapped {oldClassName} to {newClassName}");
+                                Log($"Remapper: Remapped {oldClassName} to {newClassName}");
+                                countOfDefinedMappingSucceeded++;
 
                             }
                         }
@@ -557,20 +584,17 @@ namespace SIT.Launcher.DeObfus
                             if (t.IsInterface && !newClassName.StartsWith("I"))
                                 newClassName = newClassName.Insert(0, "I");
 
-                            //var targetInterface = config.OnlyTargetInterface.HasValue && config.OnlyTargetInterface.Value;
-                            //if (!targetInterface || (t.IsInterface && targetInterface))
-                            //{
-                                t.Name = newClassName;
+                            t.Name = newClassName;
 
-                                Debug.WriteLine($"Remapper: Remapped {oldClassName} to {newClassName}");
-                                Console.WriteLine($"Remapper: Remapped {oldClassName} to {newClassName}");
-                            //}
+                            Log($"Remapper: Remapped {oldClassName} to {newClassName}");
+                            countOfDefinedMappingSucceeded++;
                         }
                     }
                     else
                     {
-                        Debug.WriteLine($"Remapper: Failed to remap {config.RenameClassNameTo}");
-                        Console.WriteLine($"Remapper: Failed to remap {config.RenameClassNameTo}");
+                        Log($"Remapper: Failed to remap {config.RenameClassNameTo}");
+                        countOfDefinedMappingFailed++;
+
                     }
                 }
                 catch (Exception ex)
@@ -578,6 +602,9 @@ namespace SIT.Launcher.DeObfus
                     Console.WriteLine(ex);
                 }
             }
+
+            Log($"Defined Remapper: SUCCESS: {countOfDefinedMappingSucceeded}");
+            Log($"Defined Remapper: FAILED: {countOfDefinedMappingFailed}");
         }
 
         public static string[] SplitCamelCase(string input)
