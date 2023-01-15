@@ -1,6 +1,9 @@
 ﻿# Summary
 
-This Launcher is designed to work with the SIT Tarkov Server
+This Launcher is designed to work with the [SPT-AKI Bleeding Edge Server](https://dev.sp-tarkov.com/SPT-AKI/Server)
+
+## SPT-AKI
+You can learn about SPT-Aki [here](https://www.sp-tarkov.com/).
 
 # Disclaimer
 
@@ -13,8 +16,7 @@ No license is provided. This is open source but I would prefer if credit was giv
 # Installation
 - Buy, download and install BattleState Games Escape from Tarkov
 - Copy and paste the latest live BSG Tarkov client (downloaded through their launcher) somewhere (i.e. D:\EmuTarkov)
-- Download latest [SIT Server](https://github.com/paulov-t/Tarkov-Server/releases/) and extract it anywhere
-- Run the Server.exe from the SIT Server
+- Download latest [SPT-AKI Bleeding Edge Server](https://dev.sp-tarkov.com/SPT-AKI/Server) and follow instructions to setup (subject to change)
 - Download and Run the Launcher
 
 # How to use this launcher.
@@ -22,7 +24,7 @@ No license is provided. This is open source but I would prefer if credit was giv
 - Extract the entire zip file anywhere  except the client directory 
 - Open SIT.Launcher.exe
 - Open Settings check install Assembly and install SIT
-- Put the server address at the top (normally https://127.0.0.1:443 )
+- Put the server address at the top (normally http://localhost:6969 )
 - Put your username (don't use anything that is used anywhere else)
 - Create a password (don't use anything that is used anywhere else)
 - Click Launch (Browse to the Offline Tarkov exe!)

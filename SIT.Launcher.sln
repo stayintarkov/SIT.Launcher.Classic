@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.33027.164
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIT.Launcher", "PaulovLauncher\SIT.Launcher.csproj", "{B0B4F14B-4019-4D16-9D6C-F1322BADF185}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIT.Launcher", "SIT.Launcher\SIT.Launcher.csproj", "{B0B4F14B-4019-4D16-9D6C-F1322BADF185}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{96FC0319-99EC-44F8-81D0-DB52297E95E2}"
 	ProjectSection(SolutionItems) = preProject
