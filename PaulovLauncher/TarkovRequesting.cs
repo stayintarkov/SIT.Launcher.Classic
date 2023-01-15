@@ -76,6 +76,67 @@ namespace SIT.Launcher
             var fullUri = url;
             if (!Uri.IsWellFormedUriString(fullUri, UriKind.Absolute))
                 fullUri = RemoteEndPoint + fullUri;
+
+            if (!fullUri.StartsWith("https://") && !fullUri.StartsWith("http://"))
+                fullUri = fullUri.Insert(0, "https://");
+
+            WebRequest request = WebRequest.Create(new Uri(fullUri));
+
+            if (!string.IsNullOrEmpty(Session))
+            {
+                request.Headers.Add("Cookie", $"PHPSESSID={Session}");
+                request.Headers.Add("SessionId", Session);
+            }
+
+            request.Headers.Add("Accept-Encoding", "deflate");
+
+            request.Method = method;
+
+            if (method != "GET" && !string.IsNullOrEmpty(data))
+            {
+                byte[] bytes = (compress) ? SimpleZlib.CompressToBytes(data, zlibConst.Z_BEST_COMPRESSION) : Encoding.UTF8.GetBytes(data);
+
+                request.ContentType = "application/json";
+                request.ContentLength = bytes.Length;
+
+                if (compress)
+                {
+                    request.Headers.Add("content-encoding", "deflate");
+                }
+
+                using (Stream stream = request.GetRequestStream())
+                {
+                    stream.Write(bytes, 0, bytes.Length);
+                }
+            }
+
+            // get response stream
+            try
+            {
+                WebResponse response = request.GetResponse();
+                return response.GetResponseStream();
+            }
+            catch (Exception)
+            {
+                return SendHttp(url, method, data, compress);
+            }
+        }
+
+
+        private Stream SendHttp(string url, string method = "GET", string data = null, bool compress = true)
+        {
+            // disable SSL encryption
+            ServicePointManager.Expect100Continue = true;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+            ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+
+            var fullUri = url;
+            if (!Uri.IsWellFormedUriString(fullUri, UriKind.Absolute))
+                fullUri = RemoteEndPoint + fullUri;
+
+            if (!fullUri.StartsWith("http://"))
+                fullUri = fullUri.Insert(0, "http://");
+
             WebRequest request = WebRequest.Create(new Uri(fullUri));
 
             if (!string.IsNullOrEmpty(Session))
@@ -114,7 +175,7 @@ namespace SIT.Launcher
             }
             catch (Exception e)
             {
-                
+
             }
 
             return null;

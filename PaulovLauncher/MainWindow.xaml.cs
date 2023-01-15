@@ -149,11 +149,7 @@ namespace SIT.Launcher
                 MessageBox.Show("No Server Address Provided");
                 return;
             }
-            if (!ServerAddress.StartsWith("https://"))
-            {
-                MessageBox.Show("Server Address must be https!");
-                return;
-            }
+           
             if (ServerAddress.EndsWith("/"))
             {
                 MessageBox.Show("Server Address is incorrect, you should NOT have a / at the end!");
@@ -164,17 +160,23 @@ namespace SIT.Launcher
             Dictionary<string, string> data = new Dictionary<string, string>();
             data.Add("username", Username);
             data.Add("email", Username);
-            data.Add("edition", "Edge Of Darkness");
-            //data.Add("edition", "Empty");
+            data.Add("edition", "Edge Of Darkness"); // default to EoD
+            //data.Add("edition", "Standard");
             if (string.IsNullOrEmpty(txtPassword.Password))
             {
                 MessageBox.Show("You cannot use an empty Password for your account!");
                 return;
             }
             data.Add("password", txtPassword.Password);
+
+            // connect and get editions
+            //var returnDataConnect = requesting.PostJson("/launcher/server/connect", JsonConvert.SerializeObject(data));
+
+            // attempt to login
             var returnData = requesting.PostJson("/launcher/profile/login", JsonConvert.SerializeObject(data));
+
             // If failed, attempt to register
-            if(returnData == "FAILED")
+            if (returnData == "FAILED")
             {
                 var messageBoxResult = MessageBox.Show("Your account has not been found, would you like to register a new account with these credentials?", "Account", MessageBoxButton.YesNo);
                 if (messageBoxResult == MessageBoxResult.Yes)
@@ -188,7 +190,7 @@ namespace SIT.Launcher
             }
 
             // If all good, launch game with AID
-            if(!string.IsNullOrEmpty(returnData) && returnData != "FAILED" && returnData != "ALREADY_IN_USE" && returnData.StartsWith("AID"))
+            if(!string.IsNullOrEmpty(returnData) && returnData != "FAILED" && returnData != "ALREADY_IN_USE")
             {
                 OpenFileDialog openFileDialog = new OpenFileDialog();
                 openFileDialog.Filter = "Executable (EscapeFromTarkov.exe)|EscapeFromTarkov.exe;";
@@ -206,7 +208,7 @@ namespace SIT.Launcher
                     UpdateButtonText("Installing Aki");
                     await Task.Delay(1000);
                     // Copy Aki Dlls for support
-                    SupportAki(openFileDialog.FileName);
+                    DownloadAndInstallAki(openFileDialog.FileName);
 
                     // Deobfuscate Assembly-CSharp
                     if (Config.AutomaticallyDeobfuscateDlls 
@@ -228,16 +230,38 @@ namespace SIT.Launcher
             {
                 var messageBoxResult = MessageBox.Show("The username/email has already been created, please use another one.", "Account");
             }
-            else
+            else if (returnData.Length != 24) // NewId or something
             {
-                var messageBoxResult = MessageBox.Show("Something went wrong.", "Account");
+                var messageBoxResult = MessageBox.Show("Something went wrong. Maybe the server hasn't been started? Check the logs.", "Account");
             }
         }
 
         private async void StartGame(string sessionId, OpenFileDialog openFileDialog)
         {
             App.LegalityCheck();
+            CleanupDirectory(openFileDialog);
 
+            UpdateButtonText(null);
+            btnLaunchGame.IsEnabled = true;
+            var commandArgs = $"-token={sessionId} -config={{\"BackendUrl\":\"{ServerAddress}\",\"Version\":\"live\"}}";
+            Process.Start(openFileDialog.FileName, commandArgs);
+            Config.Save();
+            WindowState = WindowState.Minimized;
+
+            await Task.Delay(10000);
+
+            if (Config.SendInfoToDiscord)
+                DiscordInterop.DiscordRpcClient.UpdateDetails("In Game");
+            //do
+            //{
+
+            //} while (Process.GetProcessesByName("EscapeFromTarkov") != null);
+            if (Config.SendInfoToDiscord)
+                DiscordInterop.DiscordRpcClient.UpdateDetails("");
+        }
+
+        private void CleanupDirectory(OpenFileDialog openFileDialog)
+        {
             UpdateButtonText("Cleaning client directory");
 
             var battlEyeDirPath = Directory.GetParent(openFileDialog.FileName).FullName + "\\BattlEye";
@@ -265,24 +289,6 @@ namespace SIT.Launcher
             {
                 File.Delete(uninstallPath);
             }
-
-            UpdateButtonText(null);
-            btnLaunchGame.IsEnabled = true;
-            var commandArgs = $"-token={sessionId} -config={{\"BackendUrl\":\"{ServerAddress}\",\"Version\":\"live\"}}";
-            Process.Start(openFileDialog.FileName, commandArgs);
-            Config.Save();
-            WindowState = WindowState.Minimized;
-
-            await Task.Delay(10000);
-
-            if(Config.SendInfoToDiscord)
-                DiscordInterop.DiscordRpcClient.UpdateDetails("In Game");
-            //do
-            //{
-
-            //} while (Process.GetProcessesByName("EscapeFromTarkov") != null);
-            if(Config.SendInfoToDiscord)
-                DiscordInterop.DiscordRpcClient.UpdateDetails("");
         }
 
         private async Task DownloadAndInstallBepInEx5(string exeLocation)
@@ -366,8 +372,10 @@ namespace SIT.Launcher
 
                 var github = new GitHubClient(new ProductHeaderValue("SIT-Launcher"));
                 var user = await github.User.Get("paulov-t");
-                var tarkovCoreReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Tarkov.Core");
+                var tarkovCoreReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Core");
                 var latestCore = tarkovCoreReleases[0];
+                //var tarkovCoreReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Tarkov.Core");
+                //var latestCore = tarkovCoreReleases[0];
                 //var tarkovSPReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Tarkov.SP");
                 //var latestSP = tarkovSPReleases[0];
                 var allAssets = latestCore.Assets.OrderByDescending(x => x.CreatedAt).DistinctBy(x => x.Name);
@@ -433,14 +441,14 @@ namespace SIT.Launcher
             }
             catch (Exception ex)
             {
-                var r = MessageBox.Show("Unable to download SIT", "Error");
+                var r = MessageBox.Show("Unable to download and install SIT", "Error");
             }
 
 
 
         }
 
-        private void SupportAki(string exeLocation)
+        private void DownloadAndInstallAki(string exeLocation)
         {
             // Discover where Assembly-CSharp is within the Game Folders
             var managedPath = exeLocation.Replace("EscapeFromTarkov.exe", "");
@@ -460,17 +468,23 @@ namespace SIT.Launcher
         {
             Dispatcher.Invoke(() =>
             {
-                txtDeobfuscateLog.Text += s;
+                txtDeobfuscateLog.Text += s + Environment.NewLine;
             });
         }
 
         private async Task<bool> Deobfuscate(string exeLocation, bool createBackup = true, bool overwriteExisting = true, bool doRemapping = true)
         {
+            Deobfuscator.Logged.Clear();
+            await Dispatcher.InvokeAsync(() =>
+            {
+                txtDeobfuscateLog.Text = String.Empty;
+            });
             //Deobfuscator.OnLog += OnDeobfuscateLog;
             Dispatcher.Invoke(() =>
             {
                 txtDeobfuscateLog.Text = String.Empty;
-                txtDeobfuscateLog.Text = "Deobfuscate started!";
+                OnDeobfuscateLog("--------------------------------------------------------------------------");
+                OnDeobfuscateLog("Deobfuscate started!" + Environment.NewLine);
                 btnDeobfuscate.IsEnabled = false;
             });
             var result = await Deobfuscator.DeobfuscateAsync(exeLocation, createBackup, overwriteExisting, doRemapping);

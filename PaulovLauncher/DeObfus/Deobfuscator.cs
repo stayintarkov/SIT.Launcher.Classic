@@ -38,69 +38,78 @@ namespace SIT.Launcher.DeObfus
         internal static bool DeobfuscateAssembly(string assemblyPath, string managedPath, bool createBackup = true, bool overwriteExisting = false, bool doRemapping = false)
         {
             var executablePath = App.ApplicationDirectory;
-            var de4dotLocation = Path.Combine(Path.GetDirectoryName(executablePath), "DeObfus", "de4dot", "de4dot.exe");
-
-            string token;
-
-            using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(assemblyPath))
-            {
-                var potentialStringDelegates = new List<MethodDefinition>();
-
-                foreach (var type in assemblyDefinition.MainModule.Types)
-                {
-                    foreach (var method in type.Methods)
-                    {
-                        if (method.ReturnType.FullName != "System.String"
-                            || method.Parameters.Count != 1
-                            || method.Parameters[0].ParameterType.FullName != "System.Int32"
-                            || method.Body == null
-                            || !method.IsStatic)
-                        {
-                            continue;
-                        }
-
-                        if (!method.Body.Instructions.Any(x =>
-                            x.OpCode.Code == Code.Callvirt &&
-                            ((MethodReference)x.Operand).FullName == "System.Object System.AppDomain::GetData(System.String)"))
-                        {
-                            continue;
-                        }
-
-                        potentialStringDelegates.Add(method);
-                    }
-                }
-
-                if (potentialStringDelegates.Count != 1)
-                {
-                    //Program.WriteError($"Expected to find 1 potential string delegate method; found {potentialStringDelegates.Count}. Candidates: {string.Join("\r\n", potentialStringDelegates.Select(x => x.FullName))}");
-                }
-
-                var deobfRid = potentialStringDelegates[0].MetadataToken;
-
-                token = $"0x{((uint)deobfRid.TokenType | deobfRid.RID):x4}";
-
-                Console.WriteLine($"Deobfuscation token: {token}");
-            }
-
-            var process = Process.Start(de4dotLocation,
-                $"--un-name \"!^<>[a-z0-9]$&!^<>[a-z0-9]__.*$&![A-Z][A-Z]\\$<>.*$&^[a-zA-Z_<{{$][a-zA-Z_0-9<>{{}}$.`-]*$\" \"{assemblyPath}\" --strtyp delegate --strtok \"{token}\"");
-
-            process.WaitForExit();
-
-
-            // Fixes "ResolutionScope is null" by rewriting the assembly
             var cleanedDllPath = Path.Combine(Path.GetDirectoryName(assemblyPath), Path.GetFileNameWithoutExtension(assemblyPath) + "-cleaned.dll");
+            var de4dotPath = Path.Combine(Path.GetDirectoryName(executablePath), "DeObfus", "de4dot", "de4dot.exe");
 
-            var resolver = new DefaultAssemblyResolver();
-            resolver.AddSearchDirectory(managedPath);
+            if (!File.Exists(cleanedDllPath))
+            {
+                Log($"Initial Deobfuscation. Firing up de4dot.");
 
-            using (var memoryStream = new MemoryStream(File.ReadAllBytes(cleanedDllPath)))
-            using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(memoryStream, new ReaderParameters()
+                string token;
+
+                using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(assemblyPath))
+                {
+                    var potentialStringDelegates = new List<MethodDefinition>();
+
+                    foreach (var type in assemblyDefinition.MainModule.Types)
+                    {
+                        foreach (var method in type.Methods)
+                        {
+                            if (method.ReturnType.FullName != "System.String"
+                                || method.Parameters.Count != 1
+                                || method.Parameters[0].ParameterType.FullName != "System.Int32"
+                                || method.Body == null
+                                || !method.IsStatic)
+                            {
+                                continue;
+                            }
+
+                            if (!method.Body.Instructions.Any(x =>
+                                x.OpCode.Code == Code.Callvirt &&
+                                ((MethodReference)x.Operand).FullName == "System.Object System.AppDomain::GetData(System.String)"))
+                            {
+                                continue;
+                            }
+
+                            potentialStringDelegates.Add(method);
+                        }
+                    }
+
+                    if (potentialStringDelegates.Count != 1)
+                    {
+                        //Program.WriteError($"Expected to find 1 potential string delegate method; found {potentialStringDelegates.Count}. Candidates: {string.Join("\r\n", potentialStringDelegates.Select(x => x.FullName))}");
+                    }
+
+                    var deobfRid = potentialStringDelegates[0].MetadataToken;
+
+                    token = $"0x{((uint)deobfRid.TokenType | deobfRid.RID):x4}";
+
+                    Console.WriteLine($"Deobfuscation token: {token}");
+                }
+
+                var process = Process.Start(de4dotPath,
+                    $"--un-name \"!^<>[a-z0-9]$&!^<>[a-z0-9]__.*$&![A-Z][A-Z]\\$<>.*$&^[a-zA-Z_<{{$][a-zA-Z_0-9<>{{}}$.`-]*$\" \"{assemblyPath}\" --strtyp delegate --strtok \"{token}\"");
+
+                process.WaitForExit();
+
+
+                // Fixes "ResolutionScope is null" by rewriting the assembly
+
+                var resolver = new DefaultAssemblyResolver();
+                resolver.AddSearchDirectory(managedPath);
+
+                using (var memoryStream = new MemoryStream(File.ReadAllBytes(cleanedDllPath)))
+                using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(memoryStream, new ReaderParameters()
+                {
+                    AssemblyResolver = resolver
+                }))
+                {
+                    assemblyDefinition.Write(cleanedDllPath);
+                }
+            }
+            else
             {
-                AssemblyResolver = resolver
-            }))
-            {
-                assemblyDefinition.Write(cleanedDllPath);
+                Log($"Initial Deobfuscation Ignored. Cleaned DLL already exists.");
             }
 
             if (doRemapping)
@@ -126,13 +135,13 @@ namespace SIT.Launcher.DeObfus
             return DeobfuscateAssembly(assemblyPath, managedPath, createBackup, overwriteExisting, doRemapping);
         }
 
-        private static void OverwriteExistingAssembly(string assemblyPath, string cleanedDllPath, bool deleteCleaned = false)
+        private static void OverwriteExistingAssembly(string assemblyPath, string cleanedDllPath, bool deleteCleaned = true)
         {
             // Do final copy to Assembly
             File.Copy(cleanedDllPath, assemblyPath, true);
-            // Delete -cleaned
-            if(deleteCleaned)
-                File.Delete(cleanedDllPath);
+            //// Delete -cleaned
+            //if(deleteCleaned)
+            //    File.Delete(cleanedDllPath);
         }
 
         private static void BackupExistingAssembly(string assemblyPath)
@@ -151,7 +160,7 @@ namespace SIT.Launcher.DeObfus
             var resolver = new DefaultAssemblyResolver();
             resolver.AddSearchDirectory(managedPath);
 
-            File.Copy(assemblyPath, assemblyPath + ".backup", true);
+            //File.Copy(assemblyPath, assemblyPath + ".backup", true);
 
             var readerParameters = new ReaderParameters { AssemblyResolver = resolver };
             using (var fsAssembly = new FileStream(assemblyPath, FileMode.Open))
@@ -161,15 +170,87 @@ namespace SIT.Launcher.DeObfus
                     if (oldAssembly != null)
                     {
                         AutoRemapperConfig autoRemapperConfig = JsonConvert.DeserializeObject<AutoRemapperConfig>(File.ReadAllText(App.ApplicationDirectory + "//DeObfus/AutoRemapperConfig.json"));
+                        RemapSwitchClassesToPublic(oldAssembly);
                         RemapByAutoConfiguration(oldAssembly, autoRemapperConfig);
                         RemapByDefinedConfiguration(oldAssembly, autoRemapperConfig);
+                        RemapAddSPTUsecAndBear(oldAssembly);
 
                         oldAssembly.Write(assemblyPath.Replace(".dll", "-remapped.dll"));
                     }
                 }
             }
-            File.Copy(assemblyPath.Replace(".dll", "-remapped.dll"), assemblyPath, true);
 
+            File.Copy(assemblyPath.Replace(".dll", "-remapped.dll"), assemblyPath, true);
+            File.Delete(assemblyPath.Replace(".dll", "-remapped.dll"));
+
+        }
+
+        
+
+        private static void RemapAddSPTUsecAndBear(AssemblyDefinition assembly)
+        {
+            long sptUsecValue = 0x80000000;
+            //long usecValue = 0x07;
+            long sptBearValue = 0x100000000;
+            //long bearValue = 0x09;
+
+            var botEnums = assembly.MainModule.GetType("EFT.WildSpawnType");
+
+            if (botEnums.Fields.Any(x => x.Name == "sptUsec"))
+                return;
+
+            var sptUsec = new FieldDefinition("sptUsec",
+                    Mono.Cecil.FieldAttributes.Public | Mono.Cecil.FieldAttributes.Static | Mono.Cecil.FieldAttributes.Literal | Mono.Cecil.FieldAttributes.HasDefault,
+                    botEnums)
+            { Constant = sptUsecValue };
+
+            //var Usec = new FieldDefinition("Usec`",
+            //       Mono.Cecil.FieldAttributes.Public | Mono.Cecil.FieldAttributes.Static | Mono.Cecil.FieldAttributes.Literal | Mono.Cecil.FieldAttributes.HasDefault,
+            //       botEnums)
+            //{ Constant = usecValue };
+
+            var sptBear = new FieldDefinition("sptBear",
+                    Mono.Cecil.FieldAttributes.Public | Mono.Cecil.FieldAttributes.Static | Mono.Cecil.FieldAttributes.Literal | Mono.Cecil.FieldAttributes.HasDefault,
+                    botEnums)
+            { Constant = sptBearValue };
+
+            //var Bear = new FieldDefinition("Bear",
+            //     Mono.Cecil.FieldAttributes.Public | Mono.Cecil.FieldAttributes.Static | Mono.Cecil.FieldAttributes.Literal | Mono.Cecil.FieldAttributes.HasDefault,
+            //     botEnums)
+            //{ Constant = bearValue };
+
+            botEnums.Fields.Add(sptUsec);
+            //botEnums.Fields.Add(Usec);
+            botEnums.Fields.Add(sptBear);
+            //botEnums.Fields.Add(Bear);
+
+            Log($"Remapper: Added SPTUsec and SPTBear to EFT.WildSpawnType");
+        }
+
+        private static void RemapSwitchClassesToPublic(AssemblyDefinition assembly)
+        {
+            int countOfPublications = 0;
+            Log($"Remapper: Ensuring EFT classes are public");
+            foreach (var t in 
+                assembly
+                .MainModule
+                .GetTypes()
+                .Where(x => x.IsNotPublic))
+            {
+                if (t.IsClass 
+                    && t.IsDefinition 
+                    && t.BaseType != null 
+                    && (t.BaseType.FullName != "System.Object" || t.Name.StartsWith("Class"))
+                    && !Assembly.GetAssembly(typeof(Attribute))
+                        .GetTypes()
+                        .Any(x => x.Name.StartsWith(t.Name, StringComparison.OrdinalIgnoreCase))
+                    )
+                {
+                    t.IsPublic = true;
+                    countOfPublications++;
+                }
+            }
+            Log($"Remapper: {countOfPublications} EFT classes have been converted to public");
         }
 
         /// <summary>
@@ -191,38 +272,7 @@ namespace SIT.Launcher.DeObfus
             {
                 // --------------------------------------------------------
                 // Renaming by the classes being in methods
-                foreach (var m in t.Methods.Where(x => x.HasParameters
-                    && x.Parameters.Any(p =>
-                    p.ParameterType.Name.StartsWith("GClass")
-                    || p.ParameterType.Name.StartsWith("GStruct")
-                    || p.ParameterType.Name.StartsWith("GInterface")
-                    //|| p.ParameterType.Name.StartsWith("Class")
-
-                    )))
-                {
-                    // --------------------------------------------------------
-                    // Renaming by the classes being used as Parameters in methods
-                    foreach (var p in m.Parameters
-                        .Where(x =>
-                        x.ParameterType.Name.StartsWith("GClass")
-                        || x.ParameterType.Name.StartsWith("GStruct")
-                        || x.ParameterType.Name.StartsWith("GInterface")
-                        //|| x.ParameterType.Name.StartsWith("Class")
-                        ))
-                    {
-                        var n = p.ParameterType.Name
-                            .Replace("[]", "")
-                            .Replace("`1", "")
-                            .Replace("&", "")
-                            .Replace(" ", "")
-                            + "." + p.Name;
-                        if (!gclassToNameCounts.ContainsKey(n))
-                            gclassToNameCounts.Add(n, 0);
-
-                        gclassToNameCounts[n]++;
-                    }
-
-                }
+                //RemapAutoDiscoverAndCountByMethodParameters(gclassToNameCounts, t);
 
 
                 //foreach (var m in t.Methods)
@@ -247,74 +297,47 @@ namespace SIT.Launcher.DeObfus
 
                 // --------------------------------------------------------
                 // Renaming by the classes being used as Members/Properties/Fields in other classes
-                foreach (var prop in t.Properties.Where(p =>
-                    p.PropertyType.Name.StartsWith("GClass")
-                    || p.PropertyType.Name.StartsWith("GStruct")
-                    || p.PropertyType.Name.StartsWith("GInterface")
-                    ))
-                {
-                    // if the property name includes "gclass" or whatever, then ignore it as its useless to us
-                    if (prop.Name.StartsWith("GClass", StringComparison.OrdinalIgnoreCase)
-                        || prop.Name.StartsWith("GStruct", StringComparison.OrdinalIgnoreCase)
-                        || prop.Name.StartsWith("GInterface", StringComparison.OrdinalIgnoreCase))
-                        continue;
+                RemapAutoDiscoverAndCountByProperties(gclassToNameCounts, t);
 
-                    var n = prop.PropertyType.Name
-                        .Replace("[]", "")
-                        .Replace("`1", "")
-                        .Replace("&", "")
-                        .Replace(" ", "")
-                        + "." + prop.Name;
-                    if (!gclassToNameCounts.ContainsKey(n))
-                        gclassToNameCounts.Add(n, 0);
+                //    foreach (var prop in t.Fields.Where(p =>
+                //        p.FieldType.Name.StartsWith("GClass")
+                //        || p.FieldType.Name.StartsWith("GStruct")
+                //        || p.FieldType.Name.StartsWith("GInterface")
+                //        ))
+                //    {
+                //        if (prop.Name.StartsWith("GClass", StringComparison.OrdinalIgnoreCase)
+                //        || prop.Name.StartsWith("GStruct", StringComparison.OrdinalIgnoreCase)
+                //        || prop.Name.StartsWith("GInterface", StringComparison.OrdinalIgnoreCase)
+                //        || prop.Name.StartsWith("_")
+                //        || prop.Name.Contains("_")
+                //        || prop.Name.Contains("/")
+                //        )
+                //            continue;
 
-                    gclassToNameCounts[n]++;
-                    // this is shit and needs fixing
-                    //if (gclassToNameCounts[n] > 1)
-                    //{
-                    //    gclassToNameCounts[n] = 0;
-                    //}
-                }
+                //        //if(prop.Name == "AirplaneDataPacket")
+                //        //{
 
-                foreach (var prop in t.Fields.Where(p =>
-                    p.FieldType.Name.StartsWith("GClass")
-                    || p.FieldType.Name.StartsWith("GStruct")
-                    || p.FieldType.Name.StartsWith("GInterface")
-                    ))
-                {
-                    if (prop.Name.StartsWith("GClass", StringComparison.OrdinalIgnoreCase)
-                    || prop.Name.StartsWith("GStruct", StringComparison.OrdinalIgnoreCase)
-                    || prop.Name.StartsWith("GInterface", StringComparison.OrdinalIgnoreCase)
-                    || prop.Name.StartsWith("_")
-                    || prop.Name.Contains("_")
-                    || prop.Name.Contains("/")
-                    )
-                        continue;
+                //        //}
 
-                    //if(prop.Name == "AirplaneDataPacket")
-                    //{
+                //        var n = prop.FieldType.Name
+                //            .Replace("[]", "")
+                //            .Replace("`1", "")
+                //            .Replace("&", "")
+                //            .Replace(" ", "")
+                //            + "." + prop.Name;
+                //        if (!gclassToNameCounts.ContainsKey(n))
+                //            gclassToNameCounts.Add(n, 0);
 
-                    //}
-
-                    var n = prop.FieldType.Name
-                        .Replace("[]", "")
-                        .Replace("`1", "")
-                        .Replace("&", "")
-                        .Replace(" ", "")
-                        + "." + prop.Name;
-                    if (!gclassToNameCounts.ContainsKey(n))
-                        gclassToNameCounts.Add(n, 0);
-
-                    gclassToNameCounts[n]++;
-                    //if (gclassToNameCounts[n] > 1)
-                    //{
-                    //    gclassToNameCounts[n] = 0;
-                    //}
-                }
+                //        gclassToNameCounts[n]++;
+                //        //if (gclassToNameCounts[n] > 1)
+                //        //{
+                //        //    gclassToNameCounts[n] = 0;
+                //        //}
+                //    }
 
 
             }
-            
+
             var autoRemappedClassCount = 0;
             
             // ----------------------------------------------------------------------------------------
@@ -367,6 +390,7 @@ namespace SIT.Launcher.DeObfus
                 {
                     var oldClassName = t.Name;
                     t.Name = newClassName;
+                    //t.Namespace = "EFT";
                     renamedClasses.Add(oldClassName, newClassName);
                     Log($"Remapper: Auto Remapped {oldClassName} to {newClassName}");
                 }
@@ -376,11 +400,11 @@ namespace SIT.Launcher.DeObfus
 
             // ------------------------------------------------
             // Auto rename FirearmController sub classes
-            foreach (var t in oldAssembly.MainModule.GetTypes().Where(x 
-                => 
+            foreach (var t in oldAssembly.MainModule.GetTypes().Where(x
+                =>
                     x.FullName.StartsWith("EFT.Player.FirearmController")
                     && x.Name.StartsWith("GClass")
-                
+
                 ))
             {
                 t.Name.Replace("GClass", "FirearmController");
@@ -390,7 +414,7 @@ namespace SIT.Launcher.DeObfus
             // Auto rename descriptors
             foreach (var t in oldAssembly.MainModule.GetTypes())
             {
-                foreach (var m in t.Methods.Where(x=>x.Name.StartsWith("ReadEFT")))
+                foreach (var m in t.Methods.Where(x => x.Name.StartsWith("ReadEFT")))
                 {
                     if (m.ReturnType.Name.StartsWith("GClass"))
                     {
@@ -408,27 +432,27 @@ namespace SIT.Launcher.DeObfus
 
             // Testing stuff here.
             // Quick hack to name properties properly in EFT.Player
-            foreach(var playerProp in oldAssembly.MainModule.GetTypes().FirstOrDefault(x=>x.FullName == "EFT.Player").Properties)
-            {
-                if(playerProp.Name.StartsWith("GClass", StringComparison.OrdinalIgnoreCase))
-                {
-                    playerProp.Name = playerProp.PropertyType.Name.Replace("Abstract", "");
-                }
-            }
+            //foreach(var playerProp in oldAssembly.MainModule.GetTypes().FirstOrDefault(x=>x.FullName == "EFT.Player").Properties)
+            //{
+            //    if(playerProp.Name.StartsWith("GClass", StringComparison.OrdinalIgnoreCase))
+            //    {
+            //        playerProp.Name = playerProp.PropertyType.Name.Replace("Abstract", "");
+            //    }
+            //}
 
-            Log($"Remapper: Ensuring EFT classes are public");
-            foreach (var t in oldAssembly.MainModule.GetTypes())
-            {
-                if (t.IsClass && t.IsDefinition && t.BaseType != null && t.BaseType.FullName != "System.Object")
-                {
-                    if (!Assembly.GetAssembly(typeof(Attribute))
-                        .GetTypes()
-                        .Any(x => x.Name.StartsWith(t.Name, StringComparison.OrdinalIgnoreCase)))
-                        t.IsPublic = true;
-                }
-            }
+            //Log($"Remapper: Ensuring EFT classes are public");
+            //foreach (var t in oldAssembly.MainModule.GetTypes())
+            //{
+            //    if (t.IsClass && t.IsDefinition && t.BaseType != null && t.BaseType.FullName != "System.Object")
+            //    {
+            //        if (!Assembly.GetAssembly(typeof(Attribute))
+            //            .GetTypes()
+            //            .Any(x => x.Name.StartsWith(t.Name, StringComparison.OrdinalIgnoreCase)))
+            //            t.IsPublic = true;
+            //    }
+            //}
 
-            Log($"Remapper: Setting EFT methods to public");
+            //Log($"Remapper: Setting EFT methods to public");
             foreach (var ctf in autoRemapperConfig.TypesToForceAllPublicMethods)
             {
                 var foundTypes = oldAssembly.MainModule.GetTypes()
@@ -444,25 +468,93 @@ namespace SIT.Launcher.DeObfus
                 }
             }
 
-            Log($"Remapper: Setting EFT fields/properties to public");
-            foreach (var ctf in autoRemapperConfig.TypesToForceAllPublicFieldsAndProperties)
-            {
-                var foundTypes = oldAssembly.MainModule.GetTypes()
-                    .Where(x => x.Namespace.Contains("EFT", StringComparison.OrdinalIgnoreCase))
-                    .Where(x => x.Name.Contains(ctf, StringComparison.OrdinalIgnoreCase));
-                foreach (var t in foundTypes)
-                {
-                    foreach (var m in t.Fields)
-                    {
-                        if (!m.IsPublic)
-                            m.IsPublic = true;
-                    }
-                }
-            }
+            //Log($"Remapper: Setting EFT fields/properties to public");
+            //foreach (var ctf in autoRemapperConfig.TypesToForceAllPublicFieldsAndProperties)
+            //{
+            //    var foundTypes = oldAssembly.MainModule.GetTypes()
+            //        .Where(x => x.Namespace.Contains("EFT", StringComparison.OrdinalIgnoreCase))
+            //        .Where(x => x.Name.Contains(ctf, StringComparison.OrdinalIgnoreCase));
+            //    foreach (var t in foundTypes)
+            //    {
+            //        foreach (var m in t.Fields)
+            //        {
+            //            if (!m.IsPublic)
+            //                m.IsPublic = true;
+            //        }
+            //    }
+            //}
 
 
             autoRemappedClassCount = renamedClasses.Count;
             Log($"Remapper: Auto Remapped {autoRemappedClassCount} classes");
+        }
+
+        private static void RemapAutoDiscoverAndCountByProperties(Dictionary<string, int> gclassToNameCounts, TypeDefinition t)
+        {
+            foreach (var prop in t.Properties.Where(p =>
+                                p.PropertyType.Name.StartsWith("GClass")
+                                || p.PropertyType.Name.StartsWith("GStruct")
+                                || p.PropertyType.Name.StartsWith("GInterface")
+                                ))
+            {
+                // if the property name includes "gclass" or whatever, then ignore it as its useless to us
+                if (prop.Name.StartsWith("GClass", StringComparison.OrdinalIgnoreCase)
+                    || prop.Name.StartsWith("GStruct", StringComparison.OrdinalIgnoreCase)
+                    || prop.Name.StartsWith("GInterface", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                var n = prop.PropertyType.Name
+                    .Replace("[]", "")
+                    .Replace("`1", "")
+                    .Replace("&", "")
+                    .Replace(" ", "")
+                    + "." + prop.Name;
+                if (!gclassToNameCounts.ContainsKey(n))
+                    gclassToNameCounts.Add(n, 0);
+
+                gclassToNameCounts[n]++;
+                // this is shit and needs fixing
+                //if (gclassToNameCounts[n] > 1)
+                //{
+                //    gclassToNameCounts[n] = 0;
+                //}
+            }
+        }
+
+        private static void RemapAutoDiscoverAndCountByMethodParameters(Dictionary<string, int> gclassToNameCounts, TypeDefinition t)
+        {
+            foreach (var m in t.Methods.Where(x => x.HasParameters
+                                && x.Parameters.Any(p =>
+                                p.ParameterType.Name.StartsWith("GClass")
+                                || p.ParameterType.Name.StartsWith("GStruct")
+                                || p.ParameterType.Name.StartsWith("GInterface")
+                                //|| p.ParameterType.Name.StartsWith("Class")
+
+                                )))
+            {
+                // --------------------------------------------------------
+                // Renaming by the classes being used as Parameters in methods
+                foreach (var p in m.Parameters
+                    .Where(x =>
+                    x.ParameterType.Name.StartsWith("GClass")
+                    || x.ParameterType.Name.StartsWith("GStruct")
+                    || x.ParameterType.Name.StartsWith("GInterface")
+                    //|| x.ParameterType.Name.StartsWith("Class")
+                    ))
+                {
+                    var n = p.ParameterType.Name
+                        .Replace("[]", "")
+                        .Replace("`1", "")
+                        .Replace("&", "")
+                        .Replace(" ", "")
+                        + "." + p.Name;
+                    if (!gclassToNameCounts.ContainsKey(n))
+                        gclassToNameCounts.Add(n, 0);
+
+                    gclassToNameCounts[n]++;
+                }
+
+            }
         }
 
         private static void RemapByDefinedConfiguration(AssemblyDefinition oldAssembly, AutoRemapperConfig autoRemapperConfig)
@@ -491,7 +583,7 @@ namespace SIT.Launcher.DeObfus
                     findTypes = findTypes.Where(x
                             =>
                                 (config.HasMethods == null || config.HasMethods.Length == 0
-                                    || (x.Methods.Select(y=>y.Name.Split('.')[y.Name.Split('.').Length-1]).Count(y => config.HasMethods.Contains(y)) >= config.HasMethods.Length))
+                                    || (x.Methods.Where(x => !x.IsStatic).Select(y=>y.Name.Split('.')[y.Name.Split('.').Length-1]).Count(y => config.HasMethods.Contains(y)) >= config.HasMethods.Length))
 
                             ).ToList();
                     // Filter Types by Virtual Methods
@@ -504,6 +596,13 @@ namespace SIT.Launcher.DeObfus
                                     )
                                ).ToList();
                     }
+                    // Filter Types by Static Methods
+                    findTypes = findTypes.Where(x
+                            =>
+                                (config.HasMethodsStatic == null || config.HasMethodsStatic.Length == 0
+                                    || (x.Methods.Where(x => x.IsStatic).Select(y => y.Name.Split('.')[y.Name.Split('.').Length - 1]).Count(y => config.HasMethodsStatic.Contains(y)) >= config.HasMethodsStatic.Length))
+
+                            ).ToList();
 
                     // Filter Types by Events
                     findTypes = findTypes.Where(x
@@ -585,6 +684,7 @@ namespace SIT.Launcher.DeObfus
                                 newClassName = newClassName.Insert(0, "I");
 
                             t.Name = newClassName;
+                            //t.Namespace = "EFT";
 
                             Log($"Remapper: Remapped {oldClassName} to {newClassName}");
                             countOfDefinedMappingSucceeded++;
