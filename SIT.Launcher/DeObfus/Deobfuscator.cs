@@ -571,7 +571,11 @@ namespace SIT.Launcher.DeObfus
                 try
                 {
                     var findTypes
-                        = oldAssembly.MainModule.GetTypes().ToList();
+                        = oldAssembly
+                        .MainModule
+                        .GetTypes()
+                        .Where(x => !x.Namespace.StartsWith("System"))
+                        .ToList();
                     // Filter Types by Class Name Matching
                     findTypes = findTypes.Where(
                         x =>
