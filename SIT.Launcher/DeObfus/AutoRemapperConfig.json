@@ -280,21 +280,21 @@
     //  "HasMethods": [ "TryGetValue", "Add", "AddNoKey" ]
     //},
     ////"GClass477": "BotGroupClass",
-    //{
-    //  "RenameClassNameTo": "BotGroupClass",
-    //  "HasMethods": [ "IsPlayerEnemy", "IsPlayerEnemyByRole", "AddEnemyGroup", "AddEnemyGroupIfAllowed" ]
-    //},
+    {
+      "RenameClassNameTo": "BotGroupClass",
+      "HasMethods": [ "IsPlayerEnemy", "IsPlayerEnemyByRole", "AddEnemyGroup", "AddEnemyGroupIfAllowed" ]
+    },
     ////"GClass484": "BotSettingsClass",
-    //{
-    //  "RenameClassNameTo": "BotSettingsClass",
-    //  "HasFields": [ "IsLastPositionChecked", "LastChangeVisionTime" ],
-    //  "HasMethods": [ "GetPositionForSearch", "SetSuppressEndTime", "IsSuppressed" ]
-    //},
+    {
+      "RenameClassNameTo": "BotSettingsClass",
+      "HasFields": [ "IsLastPositionChecked", "LastChangeVisionTime" ],
+      "HasMethods": [ "GetPositionForSearch", "SetSuppressEndTime", "IsSuppressed" ]
+    },
     ////"GClass492": "AiDataClass",
-    //{
-    //  "RenameClassNameTo": "AiDataClass",
-    //  "HasMethods": [ "IsBossOrFollowerRequireRevenge", "KillEnemy", "DoMove", "LeavePlace" ]
-    //},
+    {
+      "RenameClassNameTo": "AiDataClass",
+      "HasMethods": [ "IsBossOrFollowerRequireRevenge", "KillEnemy", "DoMove", "LeavePlace" ]
+    },
     ////"GClass495": "BotLoyaltyClass",
     //{
     //  "RenameClassNameTo": "BotLoyaltyClass",
@@ -330,11 +330,11 @@
     //  "HasEvents": [ "OnBotAdd" ]
     //},
     ////"GClass577": "BotsPresets",
-    //{
-    //  "RenameClassNameTo": "BotsPresets",
-    //  "HasFields": [ "BundlesLoading" ],
-    //  "HasMethods": [ "GetNewProfile", "CreateProfile" ]
-    //},
+    {
+      "RenameClassNameTo": "BotsPresets",
+      "HasFields": [ "BundlesLoading" ],
+      "HasMethods": [ "GetNewProfile", "CreateProfile" ]
+    },
     ////"GClass596": "LoggerClass",
     ////"GClass674": "TimerClass",
     ////"GClass879": "DecalMeshClass",
@@ -468,12 +468,12 @@
     //  "HasMethods": [ "Report" ]
     //},
     {
-      "RenameClassNameTo": "GFilterCustomization",
+      "RenameClassNameTo": "FilterCustomization",
       "HasFields": [ "Default" ],
       "HasMethods": [ "FilterCustomization" ]
     },
     {
-      "RenameClassNameTo": "GStatisticsSession",
+      "RenameClassNameTo": "StatisticsSession",
       "HasFields": [],
       "HasMethods": [ "BeginStatisticsSession", "EndStatisticsSession" ]
     },
@@ -483,7 +483,7 @@
     //  "HasMethods": [ "IsLimitedAtAddress", "CheckOverLimit" ]
     //},
     {
-      "RenameClassNameTo": "GGroupManagement",
+      "RenameClassNameTo": "GroupManagement",
       "HasFields": [],
       "HasMethods": [ "DisbandGroup", "LeaveGroup", "ExitFromMatchMaker" ]
     },
@@ -539,6 +539,11 @@
       "RenameClassNameTo": "ProfileInfo",
       "HasFields": [ "Nickname", "GroupId" ],
       "HasMethods": [ "AddBan", "GetBan" ]
+    },
+    {
+      "RenameClassNameTo": "JobYield",
+      "HasMethodsStatic": [ "Priority", "GetYieldDelegate" ],
+      "HasFields": [ "General" ]
     }
 
 
