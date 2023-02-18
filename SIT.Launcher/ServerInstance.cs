@@ -11,6 +11,6 @@ namespace SIT.Launcher
         public static List<ServerInstance> ServerInstances = new List<ServerInstance>();
 
         public string ServerName { get; set; } = "Local";
-        public string ServerAddress { get; set; } = "https://localhost:443";
+        public string ServerAddress { get; set; } = "http://127.0.0.1:6969";
     }
 }

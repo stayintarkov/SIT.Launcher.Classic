@@ -26,16 +26,18 @@
     </Window.Resources>
     <Grid Margin="10">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="82*"/>
-            <ColumnDefinition Width="307*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="60"></RowDefinition>
             <RowDefinition Height="*">
 
             </RowDefinition>
+            <RowDefinition Height="30"></RowDefinition>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" Opacity="0.9" Grid.ColumnSpan="2">
+        <Grid Grid.Row="0" Opacity="0.9" Grid.ColumnSpan="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
@@ -49,12 +51,12 @@
                     <Label Content="Play" VerticalAlignment="Center" FontSize="16" />
                 </StackPanel>
             </Button>
-            <Button Background="Transparent" BorderThickness="0" IsEnabled="{Binding Config.EnableCoopServer}" Grid.Column="2" ToolTip="Coop Server" x:Name="btnCoopServer" Click="btnCoopServer_Click">
+            <!--<Button Background="Transparent" BorderThickness="0" IsEnabled="{Binding Config.EnableCoopServer}" Grid.Column="2" ToolTip="Coop Server" x:Name="btnCoopServer" Click="btnCoopServer_Click">
                 <StackPanel VerticalAlignment="Center"  HorizontalAlignment="Left" Orientation="Horizontal">
                     <iconPacks:PackIconCodicons Kind="Server" Height="20" Width="20"  VerticalAlignment="Center"></iconPacks:PackIconCodicons>
                     <Label Content="Coop Server" VerticalAlignment="Center" FontSize="16"  />
                 </StackPanel>
-            </Button>
+            </Button>-->
             <Button Background="Transparent" BorderThickness="0" Grid.Column="3" ToolTip="Tools" x:Name="btnToToolsWindow" Click="btnToToolsWindow_Click">
                 <StackPanel VerticalAlignment="Center"  HorizontalAlignment="Left" Orientation="Horizontal">
                     <iconPacks:PackIconCodicons Kind="Tools" Height="20" Width="20"  VerticalAlignment="Center"></iconPacks:PackIconCodicons>
@@ -68,7 +70,7 @@
                 </StackPanel>
             </Button>
         </Grid>
-        <Grid x:Name="gridPlay" Grid.Row="1" Grid.ColumnSpan="2">
+        <Grid x:Name="gridPlay" Grid.Row="1" Grid.ColumnSpan="3">
             <Grid.RowDefinitions>
                 <RowDefinition MinHeight="180"></RowDefinition>
                 <RowDefinition ></RowDefinition>
@@ -114,10 +116,12 @@
                 <Button x:Name="btnLaunchGame" Click="btnLaunchGame_Click" Content="{Binding LaunchButtonText, Mode=TwoWay}"></Button>
             </StackPanel>
         </Grid>
-        <Grid x:Name="gridCoopServer" Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="2">
+        <TextBlock Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="1">Stay in Tarkov - Powered by SPT-AKI Server</TextBlock>
+        <TextBlock Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" x:Name="InstallLocation" Text="{Binding Config.InstallLocation}"></TextBlock>
+        <!--<Grid x:Name="gridCoopServer" Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="3">
             <gameServer:GameServerWindow></gameServer:GameServerWindow>
-        </Grid>
-        <Grid x:Name="gridTools" Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="2">
+        </Grid>-->
+        <Grid x:Name="gridTools" Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="3">
                 <Grid.RowDefinitions>
                     <RowDefinition MinHeight="30" Height="30"></RowDefinition>
                 <RowDefinition MinHeight="30" Height="30"></RowDefinition>
@@ -127,7 +131,7 @@
             <Label Content="Log" Grid.Row="1"></Label>
             <TextBox x:Name="txtDeobfuscateLog" IsReadOnly="True" MaxLines="9999" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" Grid.Row="2"></TextBox>
         </Grid>
-        <Grid x:Name="gridSettings" Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="2">
+        <Grid x:Name="gridSettings" Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="3">
             <StackPanel Margin="5">
                 <StackPanel.Resources>
                     <Style TargetType="{x:Type mah:MetroHeader}">

@@ -41,6 +41,8 @@ namespace SIT.Launcher
 
         public string Username { get; set; }
 
+        public string InstallLocation { get; set; }
+
         public bool AutomaticallyInstallAssemblyDlls { get; set; } = true;
 
         public bool AutomaticallyDeobfuscateDlls { get; set; } = true;
@@ -61,7 +63,7 @@ namespace SIT.Launcher
                 AutomaticallyInstallAssemblyDlls = true,
                 AutomaticallyInstallSIT = true,
                 AutomaticallyInstallAkiSupport = true,
-                ServerInstance = new ServerInstance() { ServerAddress = "https://localhost:443" }
+                ServerInstance = new ServerInstance() { ServerAddress = "http://localhost:6969" }
             };
             if(File.Exists(App.ApplicationDirectory + "LauncherConfig.json"))
                 launcherConfig = JsonConvert.DeserializeObject<LauncherConfig>(File.ReadAllText(App.ApplicationDirectory + "LauncherConfig.json"));
