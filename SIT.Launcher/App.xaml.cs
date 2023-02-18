@@ -46,7 +46,7 @@ namespace SIT.Launcher
                 _ = new DiscordInterop().StartDiscordClient("V." + ProductVersion);
             }
 
-            LegalityCheck();
+            //LegalityCheck();
         }
 
 
