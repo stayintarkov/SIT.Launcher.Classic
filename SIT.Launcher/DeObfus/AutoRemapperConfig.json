@@ -220,7 +220,13 @@
     ////"GClass210": "BossKnightBrainClass",
     ////"GClass211": "ExUsecBrainClass",
     ////"GClass224": "FollowerBigPiperainClass",
-    ////"GClass2119": "MagazineClass",
+    //"GClass2119": "MagazineClass",
+    {
+      "RenameClassNameTo": "MagazineClass",
+      "HasFields": [],
+      "HasMethods": [ "GetAmmoCountByLevel" ],
+      "HasMethodsVirtual": [ "FirstRealAmmo" ]
+    },
     ////"GClass214": "FollowerBullyBrainClass",
     ////"GClass2152": "EquipmentClass",
     //{
@@ -232,6 +238,11 @@
     ////"GClass2191": "InventoryClass",
     ////"GClass2204": "TraderControllerClass",
     ////"GClass2207": "InventoryControllerClass",
+    //{
+    //  "RenameClassNameTo": "InventoryControllerClass",
+    //  "HasFields": [ "Cartridges", "ItemInteractionButtons", "ItemInteractionButtons", "CheckTimeModifier" ],
+    //  "HasMethods": [ "GetAmmoCountByLevel" ]
+    //},
     ////"GClass225": "RaiderBrainClass",
     ////"GClass228": "BossKojaniyBrainClass",
     ////"GClass242": "ShootPointClass",
@@ -544,6 +555,25 @@
       "RenameClassNameTo": "JobYield",
       "HasMethodsStatic": [ "Priority", "GetYieldDelegate" ],
       "HasFields": [ "General" ]
+    },
+    {
+      "RenameClassNameTo": "PacketItemInteraction",
+      "HasMethods": [ "Serialize", "Deserialize" ],
+      "HasFields": [ "HasInteraction", "EInteractionType" ]
+    },
+    {
+      "RenameClassNameTo": "InteractionResult",
+      "HasFields": [ "InteractionType" ]
+    },
+    {
+      "RenameClassNameTo": "GridItemAddress",
+      "HasFields": [ "Item", "ContainerName", "Grid" ],
+      "HasMethods": [ "AddWithoutRestrictions" ]
+    },
+    {
+      "RenameClassNameTo": "UnderbarrelWeapon",
+      "HasFields": [ "Chambers", "UseAmmoWithoutShell" ],
+      "HasMethods": [ "GetBarrelDeviation" ]
     }
 
 
