@@ -1,0 +1,44 @@
+﻿<Window x:Class="SIT.Launcher.Windows.NewInstallationWizard"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SIT.Launcher.Windows"
+        mc:Ignorable="d"
+        Title="SIT - New Installation Wizard" Height="450" Width="800"
+        
+        BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
+                      BorderThickness="1"
+                 Background="Black"
+         Foreground="White"
+       WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Grid x:Name="gridNewInstall">
+            <Grid.RowDefinitions>
+                <RowDefinition></RowDefinition>
+                <RowDefinition></RowDefinition>
+                <RowDefinition></RowDefinition>
+            </Grid.RowDefinitions>
+            <StackPanel>
+                <Label Content="New Install" HorizontalAlignment="Stretch" FontSize="24" Foreground="White" HorizontalContentAlignment="Center"></Label>
+                <TextBlock Text="The launcher has not detected an existing EFT Offline installation. Please browse to your EFT Offline installation OR create a new install from your Official EFT Installation." TextWrapping="Wrap" HorizontalAlignment="Center" FontSize="18" Foreground="White"></TextBlock>
+            </StackPanel>
+            <StackPanel Grid.Row="1">
+                <Label Content="Create from Official Installation" HorizontalAlignment="Center" FontSize="24" Foreground="White"></Label>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
+                    <Label Content="Browse to Official Installation" HorizontalAlignment="Center" FontSize="20" Foreground="White"></Label>
+                    <Label Content="|" HorizontalAlignment="Center" FontSize="20" Foreground="White"></Label>
+                    <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Content="Browse"></Button>
+                </StackPanel>
+            </StackPanel>
+            <StackPanel Grid.Row="2">
+                <Label Content="Create from Existing Installation" HorizontalAlignment="Center" FontSize="24" Foreground="White"></Label>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" >
+                    <Label Content="Browse to Existing Installation" HorizontalAlignment="Center" FontSize="20" Foreground="White"></Label>
+                    <Label Content="|" HorizontalAlignment="Center" FontSize="20" Foreground="White"></Label>
+                    <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Content="Browse"></Button>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>
