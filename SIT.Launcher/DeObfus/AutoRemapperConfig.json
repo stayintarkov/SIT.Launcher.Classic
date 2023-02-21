@@ -92,10 +92,10 @@
     //  "HasFields": [ "mail", "repeatableQuest", "handbook", "preset", "error", "quest" ]
     //},
     //"GClass1301": "BotControllerClass",
-    //{
-    //  "RenameClassNameTo": "BotControllerClass",
-    //  "HasMethods": [ "ActivateBotsByWave", "ActivateBotsWithoutWave", "AddEnemyToAllGroups" ]
-    //},
+    {
+      "RenameClassNameTo": "BotControllerClass",
+      "HasMethods": [ "ActivateBotsByWave", "ActivateBotsWithoutWave", "AddEnemyToAllGroups" ]
+    },
     ////"GClass1305": "WaveInfo",
     //{
     //  "RenameClassNameTo": "WaveInfo",
@@ -117,11 +117,11 @@
     //  "RenameClassNameTo": "GameTimerClass",
     //  "HasMethods": [ "Start", "Stop", "ChangeSessionTime" ]
     //},
-    ////"GClass1319": "ItemFactory",
-    //{
-    //  "RenameClassNameTo": "ItemFactory",
-    //  "HasMethods": [ "CreateItem", "CreateFakeStash" ]
-    //},
+    //"GClass1319": "ItemFactory",
+    {
+      "RenameClassNameTo": "ItemFactory",
+      "HasMethods": [ "CreateItem", "CreateFakeStash" ]
+    },
     //"GClass1520": "ProfileStatusClass",
     //{
     //  "RenameClassNameTo": "ProfileStatusClass",
@@ -162,10 +162,10 @@
     //  "HasMethods": [ "GetWeatherTypeByNode" ]
     //},
     ////"GClass1810": "ClientMetrics",
-    //{
-    //  "RenameClassNameTo": "ClientMetrics",
-    //  "HasFields": [ "RenderBinMetricCollector", "GameUpdateBinMetricCollector" ]
-    //},
+    {
+      "RenameClassNameTo": "ClientMetrics",
+      "HasFields": [ "RenderBinMetricCollector", "GameUpdateBinMetricCollector", "MaxRttBinMetricCollector", "MaxLossBinMetricCollector", "MaxClientServerTimeDiffBinMetricCollector" ]
+    },
     ////"GClass1816": "MetricsClass",
     //{
     //  "RenameClassNameTo": "MetricsClass",
@@ -177,33 +177,38 @@
     //  "HasFields": [ "Keys", "NetProcessingBins", "RenderBins", "GameUpdateBins", "MemoryMeasureInterval" ]
     //},
     ////"GClass1821": "SynchronizableObjectLogicProcessorClass",
-    //{
-    //  "RenameClassNameTo": "SynchronizableObjectLogicProcessorClass",
-    //  "HasMethods": [ "GetSyncObjectStrategyByType", "GetSynchronizableObjects" ]
-    //},
+    {
+      "RenameClassNameTo": "SynchronizableObjectLogicProcessorClass",
+      "HasMethods": [ "GetSyncObjectStrategyByType", "GetSynchronizableObjects" ]
+    },
     ////"GClass1822": "AirdropManagerAbstractClass",
-    ////{
-    ////  "RenameClassNameTo": "AirdropManagerAbstractClass",
-    ////  "HasMethods": [ "TakeAirdropPoint" ]
-    ////},
+    {
+      "RenameClassNameTo": "AirdropManagerAbstractClass",
+      "HasMethods": [ "TakeAirdropPoint" ]
+    },
     ////"GClass1823": "AirdropManagerClass",
     ////{
     ////  "RenameClassNameTo": "AirdropManagerClass",
     ////  "IsClass": true,
     ////  "HasMethods": [ "ManualUpdate", "Init", "AddProjectile", "OnFlareSuccessEvent" ]
     ////},
-    ////"GClass1826": "AirdropLogicClass",
-    ////{
-    ////  "RenameClassNameTo": "AirdropLogicClass",
-    ////  "HasFields": [],
-    ////  "HasMethods": [ "Init", "InitStaticObject", "SetSyncObject", "ManualUpdate", "UpdateSyncObjectData", "TakeFromPool", "ReturnToPool" ]
-    ////},
+    //"GClass1826": "AirdropLogicClass",
+    {
+      "RenameClassNameTo": "AirdropLogicClass",
+      "OnlyRemapFirstFoundType": true,
+      "IsClass": true,
+      "HasFields": [],
+      "HasMethods": [ "Init", "InitStaticObject", "SetSyncObject", "ManualUpdate", "UpdateSyncObjectData", "TakeFromPool", "ReturnToPool" ]
+    },
     ////"GClass1827": "AirplaneLogicClass",
-    ////{
-    ////  "RenameClassNameTo": "AirplaneLogicClass",
-    ////  "HasFields": [ "float_0" ],
-    ////  "HasMethods": [ "Init", "InitStaticObject", "SetSyncObject", "ManualUpdate", "UpdateSyncObjectData", "TakeFromPool", "ReturnToPool", "PlaySpeechFromTime" ]
-    ////},
+    {
+      "RenameClassNameTo": "AirplaneLogicClass",
+      "OnlyRemapFirstFoundType": true,
+      "IsClass": true,
+      "MustBeGClass": true,
+      "HasFields": [],
+      "HasMethods": [ "Init", "InitStaticObject", "SetSyncObject", "ManualUpdate", "UpdateSyncObjectData", "TakeFromPool", "ReturnToPool" ]
+    },
     ////"GClass1850": "QuestDataClass",
     ////"GClass1851": "QuestClass",
     ////"GClass1853": "QuestControllerClass",
@@ -234,7 +239,12 @@
     //  "HasFields": [ "slot_0" ],
     //  "HasMethods": [ "GetSlot" ]
     //},
-    ////"GClass2183": "BulletClass",
+    //"GClass2183": "BulletClass",
+    {
+      "RenameClassNameTo": "BulletClass",
+      "HasFields": [ "MinFragmentsCount", "MaxFragmentsCount", "ammoShiftChance", "ProjectileCount", "InitialSpeed" ],
+      "HasMethods": [ "Clone" ]
+    },
     ////"GClass2191": "InventoryClass",
     ////"GClass2204": "TraderControllerClass",
     ////"GClass2207": "InventoryControllerClass",
@@ -251,12 +261,12 @@
     ////"GClass2548": "ItemClass",
     ////"GClass2552": "RagfairSettingsClass",
     ////"GClass2554": "RagFairClass",
-    ////"GClass2650": "JobPriority",
-    //{
-    //  "RenameClassNameTo": "JobPriority",
-    //  "HasFields": [ "General", "Low", "Immediate" ],
-    //  "HasMethods": [ "Priority", "GetYieldDelegate" ]
-    //},
+    //"GClass2650": "JobPriority",
+    {
+      "RenameClassNameTo": "JobPriority",
+      "HasFields": [ "General", "Low", "Immediate" ],
+      "HasMethodsStatic": [ "GetYieldDelegate" ]
+    },
     ////"GClass267": "ZoneDangerAreasClass",
     ////"GClass2672`1": "BindableState",
     ////"GClass2686": "BundleLock",
@@ -402,11 +412,25 @@
       "IsInterface": true,
       "HasMethods": [ "SelectSpawnPoint", "SelectPlayerSavageSpawn", "SelectAISpawnPoints" ]
     },
-    ////"GInterface289": "IEasyBundle",
+    {
+      "RenameClassNameTo": "EasyBundle",
+      "HasFields": [ "DependencyKeys", "Assets", "SameNameAsset", "Progress", "LoadState" ],
+      "HasMethods": [ "Load", "Unload" ]
+    },
     {
       "RenameClassNameTo": "IEasyBundle",
       "IsInterface": true,
       "HasFields": [ "Assets", "SameNameAsset" ]
+    },
+    {
+      "RenameClassNameTo": "ABindableState",
+      "IsClass": true,
+      "HasFields": [ "HasHandlers", "HasCheckChanges", "Handlers" ],
+      "HasMethods": [ "Bind" ]
+    },
+    {
+      "RenameClassNameTo": "BindableState",
+      "InheritsClass": "ABindableState"
     },
     ////"GInterface30": "IBackendInterface",
     //{
@@ -443,6 +467,10 @@
       "RenameClassNameTo": "BotSettingsValuesClass",
       "HasFields": [ "IsBoss", "IsFollower", "IsHostileToEverybody", "CountAsBoss", "ScavRoleKey", "PhraseTag" ]
 
+    },
+    {
+      "RenameClassNameTo": "LayerMaskClass",
+      "HasFields": [ "HighPolyWithTerrainMask", "DisablerCullingObjectLayerMask", "AudioControllerStepLayerMask", "TriggersMask" ]
     },
 
 
@@ -551,11 +579,11 @@
       "HasFields": [ "Nickname", "GroupId" ],
       "HasMethods": [ "AddBan", "GetBan" ]
     },
-    {
-      "RenameClassNameTo": "JobYield",
-      "HasMethodsStatic": [ "Priority", "GetYieldDelegate" ],
-      "HasFields": [ "General" ]
-    },
+    //{
+    //  "RenameClassNameTo": "JobYield",
+    //  "HasMethodsStatic": [ "Priority", "GetYieldDelegate" ],
+    //  "HasFields": [ "General" ]
+    //},
     {
       "RenameClassNameTo": "PacketItemInteraction",
       "HasMethods": [ "Serialize", "Deserialize" ],

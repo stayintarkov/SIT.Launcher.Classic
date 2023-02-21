@@ -567,7 +567,8 @@ namespace SIT.Launcher.DeObfus
 
             foreach (var config in autoRemapperConfig.DefinedRemapping.Where(x => !string.IsNullOrEmpty(x.RenameClassNameTo)))
             {
-                
+
+
                 try
                 {
                     var findTypes
@@ -576,6 +577,25 @@ namespace SIT.Launcher.DeObfus
                         .GetTypes()
                         .Where(x => !x.Namespace.StartsWith("System"))
                         .ToList();
+
+                    findTypes = findTypes.Where(
+                       x =>
+                           (
+                               !config.MustBeGClass.HasValue
+                               || (config.MustBeGClass.Value && x.Name.StartsWith("GClass"))
+                           )
+                       ).ToList();
+
+
+                    // Filter Types by Inherits Class
+                    findTypes = findTypes.Where(
+                        x =>
+                            (
+                                config.InheritsClass == null || config.InheritsClass.Length == 0
+                                || (x.BaseType != null && x.BaseType.Name == config.InheritsClass)
+                            )
+                        ).ToList();
+
                     // Filter Types by Class Name Matching
                     findTypes = findTypes.Where(
                         x =>
@@ -641,20 +661,42 @@ namespace SIT.Launcher.DeObfus
                         x =>
                             (
                                 (!config.IsClass.HasValue || (config.IsClass.HasValue && config.IsClass.Value && (x.IsClass && !x.IsEnum && !x.IsInterface)))
-                                && (!config.IsInterface.HasValue || (config.IsInterface.HasValue && config.IsInterface.Value && (x.IsInterface && !x.IsEnum && !x.IsClass)))
                             )
                         ).ToList();
 
-                    
+                    findTypes = findTypes.Where(
+                       x =>
+                           (
+                                (!config.IsInterface.HasValue || (config.IsInterface.HasValue && config.IsInterface.Value && (x.IsInterface && !x.IsEnum && !x.IsClass)))
+                           )
+                       ).ToList();
+
+                    // Filter Types by Constructor
+                    findTypes = findTypes.Where(x
+                            =>
+                                (config.HasConstructorArgs == null || config.HasConstructorArgs.Length == 0
+                                    || (x.Methods.Where(x => x.IsConstructor).Where(y => y.Parameters.Any(z => config.HasConstructorArgs.Contains(z.Name))).Count() >= config.HasMethodsStatic.Length))
+
+                            ).ToList();
+
 
                     if (findTypes.Any())
                     {
-                        if (findTypes.Count() > 1)
+                        var onlyRemapFirstFoundType = config.OnlyRemapFirstFoundType.HasValue && config.OnlyRemapFirstFoundType.Value;
+                        if (findTypes.Count() > 1 && !onlyRemapFirstFoundType)
                         {
                             findTypes = findTypes
                                 .OrderBy(x => !x.Name.StartsWith("GClass") && !x.Name.StartsWith("GInterface"))
                                 .ThenBy(x => x.Name.StartsWith("GInterface"))
                                 .ToList();
+
+//#if DEBUG
+//                            if (findTypes.Any(x => x.BaseType != null && x.BaseType.Name == "ABindableState"))
+//                            {
+
+
+//                            }
+//#endif
 
                             var numberOfChangedIndexes = 0;
                             for (var index = 0; index < findTypes.Count(); index++)
@@ -682,7 +724,7 @@ namespace SIT.Launcher.DeObfus
                         else
                         {
                             var newClassName = config.RenameClassNameTo;
-                            var t = findTypes.SingleOrDefault();
+                            var t = findTypes.FirstOrDefault();
                             var oldClassName = t.Name;
                             if (t.IsInterface && !newClassName.StartsWith("I"))
                                 newClassName = newClassName.Insert(0, "I");
