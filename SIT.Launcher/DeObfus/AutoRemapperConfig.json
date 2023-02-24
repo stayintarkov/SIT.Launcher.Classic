@@ -92,15 +92,15 @@
     //  "HasFields": [ "mail", "repeatableQuest", "handbook", "preset", "error", "quest" ]
     //},
     //"GClass1301": "BotControllerClass",
-    {
-      "RenameClassNameTo": "BotControllerClass",
-      "HasMethods": [ "ActivateBotsByWave", "ActivateBotsWithoutWave", "AddEnemyToAllGroups" ]
-    },
-    ////"GClass1305": "WaveInfo",
     //{
-    //  "RenameClassNameTo": "WaveInfo",
-    //  "HasFields": [ "Role", "Limit", "Difficulty" ]
+    //  "RenameClassNameTo": "BotControllerClass",
+    //  "HasMethods": [ "ActivateBotsByWave", "ActivateBotsWithoutWave", "AddEnemyToAllGroups" ]
     //},
+    //"GClass1305": "WaveInfo",
+    {
+      "RenameClassNameTo": "WaveInfo",
+      "HasFields": [ "Role", "Limit", "Difficulty" ]
+    },
     ////"GClass1310": "BotSpawnerClass",
     //{
     //  "RenameClassNameTo": "BotSpawnerClass",
@@ -156,11 +156,11 @@
     //  "RenameClassNameTo": "TraderClass",
     //  "HasFields": [ "LoyaltyLevel", "Standing", "MaxLoyaltyLevel", "AssortmentUpdateTimeout", "CurrentAssortment" ]
     //},
-    ////"GClass1787": "WeatherClass",
-    //{
-    //  "RenameClassNameTo": "WeatherClass",
-    //  "HasMethods": [ "GetWeatherTypeByNode" ]
-    //},
+    //"GClass1787": "WeatherClass",
+    {
+      "RenameClassNameTo": "WeatherClass",
+      "HasMethods": [ "GetWeatherTypeByNode" ]
+    },
     ////"GClass1810": "ClientMetrics",
     {
       "RenameClassNameTo": "ClientMetrics",
@@ -211,7 +211,14 @@
     },
     ////"GClass1850": "QuestDataClass",
     ////"GClass1851": "QuestClass",
-    ////"GClass1853": "QuestControllerClass",
+    //"GClass1853": "QuestControllerClass",
+    {
+      "RenameClassNameTo": "QuestControllerClass",
+      "OnlyRemapFirstFoundType": true,
+      "IsClass": true,
+      "HasFields": [],
+      "HasMethods": [ "GetItemsForCondition", "AcceptQuest", "CheckExitConditionCounters" ]
+    },
     ////"GClass1858": "RawQuestClass",
     ////"GClass1863": "DailyQuestClass",
     ////"GClass1866": "SessionCountersClass",
@@ -382,12 +389,12 @@
       "HasMethods": [ "PrepareToLoadBackend", "ChooseProfile" ]
     },
     ////"GInterface153": "ISynchronizableObject",
-    ////"GInterface159": "IEffect",
-    //{
-    //  "RenameClassNameTo": "IEffect",
-    //  "IsInterface": true,
-    //  "HasFields": [ "Type", "BodyPart", "State", "CurStateTimeLeft", "WorkStateTime", "Strength" ],
-    //},
+    //"GInterface159": "IEffect",
+    {
+      "RenameClassNameTo": "IEffect",
+      "IsInterface": true,
+      "HasFields": [ "Type", "BodyPart", "State", "CurStateTimeLeft", "WorkStateTime", "Strength" ]
+    },
     ////"GInterface201": "IHealthController",
     //{
     //  "RenameClassNameTo": "IHealthController",
@@ -471,6 +478,18 @@
     {
       "RenameClassNameTo": "LayerMaskClass",
       "HasFields": [ "HighPolyWithTerrainMask", "DisablerCullingObjectLayerMask", "AudioControllerStepLayerMask", "TriggersMask" ]
+    },
+    {
+      "RenameClassNameTo": "RecodableItemClass",
+      "HasMethods": [ "InitializeHandler", "IsEncoded", "IsInitializedHandler", "OnAddRecodableItem", "OnRemoveRecodableItem" ]
+    },
+    {
+      "RenameClassNameTo": "RadioTransmitterHandlerClass",
+      "HasMethods": [ "OnGetRadioTransmitterStatusFromClient", "OnPlayerAddRecodableHandler", "OnPlayerRemoveRecodableHandler" ]
+    },
+    {
+      "RenameClassNameTo": "ExfiltrationControllerClass",
+      "HasMethods": [ "AssignScavIdToPoint", "GetScavExfiltrationMask", "InitAllExfiltrationPoints", "ScavExfiltrationClaim" ]
     },
 
 
