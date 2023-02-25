@@ -26,6 +26,7 @@ namespace SIT.Launcher.DeObfus
         public string[] HasEvents { get; set; }
         public string[] HasConstructorArgs { get; set; }
         public string InheritsClass { get; set; }
+        public string IsNestedInClass { get; set; }
         public bool? OnlyRemapFirstFoundType { get; set; }
         public bool? MustBeGClass { get; set; }
 

@@ -31,10 +31,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	</Resource>
-    <None Include="AkiSupport\Aki.Common.dll">
+    <Content Include="AkiSupport\Aki.Common.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	</None>
+	</Content>
     <Content Include="AkiSupport\Aki.Reflection.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	<ExcludeFromSingleFile>true</ExcludeFromSingleFile>

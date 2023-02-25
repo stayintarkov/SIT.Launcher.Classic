@@ -497,54 +497,29 @@
     // ------------------------------------------------------------------------------------------
     // SIT Remapping List
     //{
-    //  "RenameClassNameTo": "ISession",
+    //  "RenameClassNameTo": "IProgress",
     //  "IsInterface": true,
+    //  "HasFields": [ "Progress", "InitLevelStage" ]
+    //},
+    //{
+    //  "RenameClassNameTo": "SProgress",
+    //  "HasFields": [ "Progress", "Stage" ]
+    //},
+    //{
+    //  "RenameClassNameTo": "FilterCustomization",
+    //  "HasFields": [ "Default" ],
+    //  "HasMethods": [ "FilterCustomization" ]
+    //},
+    //{
+    //  "RenameClassNameTo": "StatisticsSession",
     //  "HasFields": [],
-    //  "HasMethods": [ "ChangeNickname", "ValidateNickname", "GetReservedNickname", "GetProfiles", "GetRaidReadyStatus", "StartGameGroupPlayer", "ChatSendMessage" ]
+    //  "HasMethods": [ "BeginStatisticsSession", "EndStatisticsSession" ]
     //},
     //{
-    //  "RenameClassNameTo": "PoolManager",
+    //  "RenameClassNameTo": "GroupManagement",
     //  "HasFields": [],
-    //  "HasMethods": [ "LoadBundlesAndCreatePools" ]
+    //  "HasMethods": [ "DisbandGroup", "LeaveGroup", "ExitFromMatchMaker" ]
     //},
-    {
-      "RenameClassNameTo": "IProgress",
-      "IsInterface": true,
-      "HasFields": [ "Progress", "InitLevelStage" ]
-    },
-    //{
-    //  "RenameClassNameTo": "RagfairInfo",
-    //  "HasFields": [ "Offers", "Rating", "IsRatingGrowing" ]
-    //},
-    {
-      "RenameClassNameTo": "SProgress",
-      "HasFields": [ "Progress", "Stage" ]
-    },
-    //{
-    //  "RenameClassNameTo": "GProgress",
-    //  "HasFields": [ "action_0", "cancellationToken_0" ],
-    //  "HasMethods": [ "Report" ]
-    //},
-    {
-      "RenameClassNameTo": "FilterCustomization",
-      "HasFields": [ "Default" ],
-      "HasMethods": [ "FilterCustomization" ]
-    },
-    {
-      "RenameClassNameTo": "StatisticsSession",
-      "HasFields": [],
-      "HasMethods": [ "BeginStatisticsSession", "EndStatisticsSession" ]
-    },
-    //{
-    //  "RenameClassNameTo": "GInventoryManagement",
-    //  "HasFields": [],
-    //  "HasMethods": [ "IsLimitedAtAddress", "CheckOverLimit" ]
-    //},
-    {
-      "RenameClassNameTo": "GroupManagement",
-      "HasFields": [],
-      "HasMethods": [ "DisbandGroup", "LeaveGroup", "ExitFromMatchMaker" ]
-    },
     //{
     //  "RenameClassNameTo": "BotPresetFactory",
     //  "HasFields": [],
@@ -621,7 +596,45 @@
       "RenameClassNameTo": "UnderbarrelWeapon",
       "HasFields": [ "Chambers", "UseAmmoWithoutShell" ],
       "HasMethods": [ "GetBarrelDeviation" ]
+    },
+    {
+      "RenameClassNameTo": "MagazineTemplate",
+      // As MagazineClass and the MagazineTemplate are so close in fields, only find the first GClass version
+      "OnlyRemapFirstFoundType": true,
+      "MustBeGClass": true,
+      "HasFields": [ "Cartridges", "LoadUnloadModifier", "CheckTimeModifier", "CheckOverride", "ReloadMagType" ]
+    },
+    // Rename the main Backend Server Connection that sends/receives to the Backend Server
+    {
+      "RenameClassNameTo": "BackendServerConnection",
+      "OnlyRemapFirstFoundType": true,
+      "HasEvents": [ "OnSessionError" ],
+      "HasMethods": [ "CreateProfile", "GetProfileStatus", "GetGlobalConfig", "GetClientSettingsConfig", "SendMetrics" ],
+      "HasFields": [ "Profile", "AllProfiles", "BackEndConfig", "SocialNetwork", "ChatServers" ]
+    },
+    // 13.0.3 Squad Player
+    {
+      "RenameClassNameTo": "SquadPlayer",
+      "OnlyRemapFirstFoundType": true,
+      "MustBeGClass": true,
+      "HasFields": [ "IsLeader", "IsReady", "Info", "PlayerVisualRepresentation", "AccountId" ]
+    },
+    // 13.0.3 Squad Grouping
+    {
+      "RenameClassNameTo": "SquadGroupRaid",
+      "OnlyRemapFirstFoundType": true,
+      "MustBeGClass": true,
+      "HasFields": [ "Players", "RaidSettings" ]
     }
+    // Offline Raid Screen Controller
+    //{
+    //  "RenameClassNameTo": "OfflineRaidScreenController",
+    //  "OnlyRemapFirstFoundType": true,
+    //  "IsNestedInClass": "MatchmakerOfflineRaidScreen",
+    //  //"MustBeGClass": true,
+    //  //"HasFields": [ "ProfileInfo", "RaidSettings" ]
+    //}
+
 
 
   ],

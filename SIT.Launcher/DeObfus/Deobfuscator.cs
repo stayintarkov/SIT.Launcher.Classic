@@ -21,9 +21,17 @@ namespace SIT.Launcher.DeObfus
         public static event LogHandler OnLog;
         public static List<string> Logged = new List<string>();
 
+        private static ILogger NestedLogger { get; set; }
+
         internal static void Log(string text)
         {
-            if(OnLog != null)
+            if (NestedLogger != null) 
+            {
+                NestedLogger.Log(text);
+                return;
+            }
+
+            if (OnLog != null)
             {
                 OnLog(text);
             }
@@ -170,8 +178,8 @@ namespace SIT.Launcher.DeObfus
                     if (oldAssembly != null)
                     {
                         AutoRemapperConfig autoRemapperConfig = JsonConvert.DeserializeObject<AutoRemapperConfig>(File.ReadAllText(App.ApplicationDirectory + "//DeObfus/AutoRemapperConfig.json"));
-                        RemapSwitchClassesToPublic(oldAssembly);
                         RemapByAutoConfiguration(oldAssembly, autoRemapperConfig);
+                        RemapSwitchClassesToPublic(oldAssembly, autoRemapperConfig);
                         RemapByDefinedConfiguration(oldAssembly, autoRemapperConfig);
                         RemapAddSPTUsecAndBear(oldAssembly);
 
@@ -227,28 +235,32 @@ namespace SIT.Launcher.DeObfus
             Log($"Remapper: Added SPTUsec and SPTBear to EFT.WildSpawnType");
         }
 
-        private static void RemapSwitchClassesToPublic(AssemblyDefinition assembly)
+        private static void RemapSwitchClassesToPublic(AssemblyDefinition assembly, AutoRemapperConfig autoRemapperConfig)
         {
+            //if (!autoRemapperConfig.EnableAutomaticRemapping)
+            //    return;
+
             int countOfPublications = 0;
             Log($"Remapper: Ensuring EFT classes are public");
-            foreach (var t in 
-                assembly
+            var nonPublicTypes = assembly
                 .MainModule
                 .GetTypes()
-                .Where(x => x.IsNotPublic))
-            {
-                if (t.IsClass 
-                    && t.IsDefinition 
-                    && t.BaseType != null 
-                    && (t.BaseType.FullName != "System.Object" || t.Name.StartsWith("Class"))
+                .Where(x => x.IsNotPublic).ToList();
+
+            var nonPublicClasses = nonPublicTypes.Where(t =>
+                t.IsClass
+                    && t.IsDefinition
+                    && t.BaseType != null
+                    //&& (t.BaseType.FullName != "System.Object")
                     && !Assembly.GetAssembly(typeof(Attribute))
                         .GetTypes()
                         .Any(x => x.Name.StartsWith(t.Name, StringComparison.OrdinalIgnoreCase))
-                    )
-                {
-                    t.IsPublic = true;
-                    countOfPublications++;
-                }
+                    ).ToList();
+
+            foreach (var t in nonPublicClasses)
+            {
+                t.IsPublic = true;
+                countOfPublications++;
             }
             Log($"Remapper: {countOfPublications} EFT classes have been converted to public");
         }
@@ -495,12 +507,15 @@ namespace SIT.Launcher.DeObfus
                                 p.PropertyType.Name.StartsWith("GClass")
                                 || p.PropertyType.Name.StartsWith("GStruct")
                                 || p.PropertyType.Name.StartsWith("GInterface")
+                                || p.PropertyType.Name.StartsWith("Class")
                                 ))
             {
                 // if the property name includes "gclass" or whatever, then ignore it as its useless to us
                 if (prop.Name.StartsWith("GClass", StringComparison.OrdinalIgnoreCase)
                     || prop.Name.StartsWith("GStruct", StringComparison.OrdinalIgnoreCase)
-                    || prop.Name.StartsWith("GInterface", StringComparison.OrdinalIgnoreCase))
+                    || prop.Name.StartsWith("GInterface", StringComparison.OrdinalIgnoreCase)
+                    || prop.Name.StartsWith("Class", StringComparison.OrdinalIgnoreCase)
+                    )
                     continue;
 
                 var n = prop.PropertyType.Name
@@ -575,6 +590,7 @@ namespace SIT.Launcher.DeObfus
                         = oldAssembly
                         .MainModule
                         .GetTypes()
+                        .OrderBy(x => x.Name)
                         .Where(x => !x.Namespace.StartsWith("System"))
                         .ToList();
 
@@ -583,6 +599,16 @@ namespace SIT.Launcher.DeObfus
                            (
                                !config.MustBeGClass.HasValue
                                || (config.MustBeGClass.Value && x.Name.StartsWith("GClass"))
+                           )
+                       ).ToList();
+
+                    findTypes = findTypes.Where(
+                       x =>
+                           (
+                               string.IsNullOrEmpty(config.IsNestedInClass)
+                               || (!string.IsNullOrEmpty(config.IsNestedInClass) && x.FullName.Contains(config.IsNestedInClass + "+", StringComparison.OrdinalIgnoreCase))
+                               || (!string.IsNullOrEmpty(config.IsNestedInClass) && x.FullName.Contains(config.IsNestedInClass + ".", StringComparison.OrdinalIgnoreCase))
+                               || (!string.IsNullOrEmpty(config.IsNestedInClass) && x.FullName.Contains(config.IsNestedInClass + "/", StringComparison.OrdinalIgnoreCase))
                            )
                        ).ToList();
 
@@ -760,10 +786,10 @@ namespace SIT.Launcher.DeObfus
                 .Trim().Split(',');
         }
 
-        internal static async Task<bool> DeobfuscateAsync(string exeLocation, bool createBackup = true, bool overwriteExisting = false, bool doRemapping = false)
+        internal static async Task<bool> DeobfuscateAsync(string exeLocation, bool createBackup = true, bool overwriteExisting = false, bool doRemapping = false, ILogger logger = null)
 		{
+            NestedLogger = logger;
 			return await Task.Run(() => { return Deobfuscate(exeLocation, createBackup, overwriteExisting, doRemapping); });
-
 		}
 	}
 }

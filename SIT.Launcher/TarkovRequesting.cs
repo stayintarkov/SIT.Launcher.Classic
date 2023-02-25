@@ -1,5 +1,6 @@
 ﻿//using ComponentAce.Compression.Libs.zlib;
 using ComponentAce.Compression.Libs.zlib;
+using Octokit.Internal;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,6 +8,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,10 +19,22 @@ namespace SIT.Launcher
         public string Session;
         public string RemoteEndPoint;
         public bool isUnity;
+
+        private static HttpClient httpClient;
+
         public TarkovRequesting(string session, string remoteEndPoint, bool isUnity = true)
         {
             Session = session;
             RemoteEndPoint = remoteEndPoint;
+            httpClient = new()
+            {
+                BaseAddress = new Uri(RemoteEndPoint),
+            };
+
+            httpClient.DefaultRequestHeaders.Add("Cookie", $"PHPSESSID={Session}");
+            httpClient.DefaultRequestHeaders.Add("SessionId", Session);
+            httpClient.DefaultRequestHeaders.Add("Accept-Encoding", "deflate");
+            httpClient.Timeout = new TimeSpan(0,0,1);
         }
 
         //private static byte[] CompressFile(Stream stream)
@@ -81,6 +95,15 @@ namespace SIT.Launcher
                 fullUri = fullUri.Insert(0, "https://");
 
             WebRequest request = WebRequest.Create(new Uri(fullUri));
+            //new HttpClient().PostAsync(fullUri);
+
+            //if (compress)
+            //    httpClient.DefaultRequestHeaders.Add("content-encoding", "deflate");
+            //else
+            //    httpClient.DefaultRequestHeaders.Remove("content-encoding");
+            //var reqMessage = new HttpRequestMessage(HttpMethod.Post, new Uri(fullUri));
+            //reqMessage.Headers.Add("content-encoding", "deflate");
+            //var httpClientResponse = httpClient.Send(reqMessage);
 
             if (!string.IsNullOrEmpty(Session))
             {
@@ -173,7 +196,7 @@ namespace SIT.Launcher
                 WebResponse response = request.GetResponse();
                 return response.GetResponseStream();
             }
-            catch (Exception e)
+            catch (Exception)
             {
 
             }

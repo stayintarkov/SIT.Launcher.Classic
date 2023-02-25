@@ -30,7 +30,7 @@ namespace SIT.Launcher
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : MetroWindow
+    public partial class MainWindow : MetroWindow, ILogger
     {
         public MainWindow()
         {
@@ -181,21 +181,7 @@ namespace SIT.Launcher
             // If all good, launch game with AID
             if(!string.IsNullOrEmpty(returnData) && returnData != "FAILED" && returnData != "ALREADY_IN_USE")
             {
-                if (string.IsNullOrEmpty(Config.InstallLocation))
-                {
-                    OpenFileDialog openFileDialog = new OpenFileDialog();
-                    openFileDialog.Filter = "Executable (EscapeFromTarkov.exe)|EscapeFromTarkov.exe;";
-                    if (openFileDialog.ShowDialog() == true)
-                    {
-                        var fvi = FileVersionInfo.GetVersionInfo(openFileDialog.FileName);
-                        App.GameVersion = fvi.ProductVersion;
-                        Config.InstallLocation = openFileDialog.FileName;
-
-                        UpdateButtonText(null);
-
-                        await DownloadInstallAndStartGame(returnData);
-                    }
-                }
+                BrowseForOfflineGame();
 
                 // Check that above actually did something
                 if (!string.IsNullOrEmpty(Config.InstallLocation) && Config.InstallLocation.EndsWith(".exe"))
@@ -211,6 +197,23 @@ namespace SIT.Launcher
             else if (returnData.Length != 24) // NewId or something
             {
                 var messageBoxResult = MessageBox.Show("Something went wrong. Maybe the server hasn't been started? Check the logs.", "Account");
+            }
+        }
+
+        private void BrowseForOfflineGame()
+        {
+            if (string.IsNullOrEmpty(Config.InstallLocation) || !File.Exists(Config.InstallLocation))
+            {
+                OpenFileDialog openFileDialog = new OpenFileDialog();
+                openFileDialog.Filter = "Executable (EscapeFromTarkov.exe)|EscapeFromTarkov.exe;";
+                if (openFileDialog.ShowDialog() == true)
+                {
+                    var fvi = FileVersionInfo.GetVersionInfo(openFileDialog.FileName);
+                    App.GameVersion = fvi.ProductVersion;
+                    Config.InstallLocation = openFileDialog.FileName;
+
+                    UpdateButtonText(null);
+                }
             }
         }
 
@@ -306,11 +309,12 @@ namespace SIT.Launcher
         private async Task DownloadAndInstallBepInEx5(string exeLocation)
         {
             var baseGamePath = Directory.GetParent(exeLocation).FullName;
-            var bepinexPath = exeLocation.Replace("EscapeFromTarkov.exe", "");
-            bepinexPath += "BepInEx";
+            var bepinexPath = System.IO.Path.Combine(exeLocation.Replace("EscapeFromTarkov.exe", "BepInEx"));
+            var bepinexWinHttpDLL = exeLocation.Replace("EscapeFromTarkov.exe", "winhttp.dll");
 
+            var bepinexCorePath = System.IO.Path.Combine(bepinexPath, "core");
             var bepinexPluginsPath = System.IO.Path.Combine(bepinexPath, "plugins");
-            if (Directory.Exists(bepinexPluginsPath))
+            if (Directory.Exists(bepinexCorePath) && Directory.Exists(bepinexPluginsPath) && File.Exists(bepinexWinHttpDLL))
                 return;
 
             UpdateButtonText("Installing BepInEx");
@@ -449,7 +453,7 @@ namespace SIT.Launcher
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 var r = MessageBox.Show("Unable to download and install SIT", "Error");
             }
@@ -458,30 +462,48 @@ namespace SIT.Launcher
 
         }
 
+        private string GetBepInExPluginsPath(string exeLocation)
+        {
+            var baseGamePath = Directory.GetParent(exeLocation).FullName;
+            var bepinexPath = System.IO.Path.Combine(exeLocation.Replace("EscapeFromTarkov.exe", "BepInEx"));
+            var bepinexPluginsPath = System.IO.Path.Combine(bepinexPath, "plugins");
+            return bepinexPluginsPath;
+        }
+
         private void DownloadAndInstallAki(string exeLocation)
         {
             //UpdateButtonText("Installing Aki");
 
+            var bepinexPluginsPath = GetBepInExPluginsPath(exeLocation);
+
             // Discover where Assembly-CSharp is within the Game Folders
             var managedPath = exeLocation.Replace("EscapeFromTarkov.exe", "");
             managedPath += "EscapeFromTarkov_Data\\Managed\\";
+
+            List<FileInfo> fiAkiFiles = Directory.GetFiles(App.ApplicationDirectory + "/AkiSupport/").Select(x => new FileInfo(x)).ToList();
+
             DirectoryInfo diManaged = new DirectoryInfo(managedPath);
             if (diManaged.Exists)
             {
-                List<FileInfo> fiAkiFiles = Directory.GetFiles(App.ApplicationDirectory + "/AkiSupport/").Select(x => new FileInfo(x)).ToList();
                 foreach(var fileInfo in fiAkiFiles)
                 {
-                    fileInfo.CopyTo(managedPath + fileInfo.Name, true);
+                    fileInfo.CopyTo(System.IO.Path.Combine(managedPath, fileInfo.Name), true);
                 }
+            }
+
+            foreach (var fileInfo in fiAkiFiles)
+            {
+                fileInfo.CopyTo(System.IO.Path.Combine(bepinexPluginsPath, fileInfo.Name), true);
             }
         }
 
         private void OnDeobfuscateLog(string s)
         {
-            Dispatcher.Invoke(() =>
-            {
-                txtDeobfuscateLog.Text += s + Environment.NewLine;
-            });
+            //Dispatcher.Invoke(() =>
+            //{
+            //    txtDeobfuscateLog.Text += s + Environment.NewLine;
+            //});
+            Log(s);
         }
 
         private async Task<bool> Deobfuscate(string exeLocation, bool createBackup = true, bool overwriteExisting = true, bool doRemapping = true)
@@ -492,20 +514,20 @@ namespace SIT.Launcher
                 txtDeobfuscateLog.Text = String.Empty;
             });
             //Deobfuscator.OnLog += OnDeobfuscateLog;
-            Dispatcher.Invoke(() =>
+            await Dispatcher.InvokeAsync(() =>
             {
                 txtDeobfuscateLog.Text = String.Empty;
                 OnDeobfuscateLog("--------------------------------------------------------------------------");
                 OnDeobfuscateLog("Deobfuscate started!" + Environment.NewLine);
                 btnDeobfuscate.IsEnabled = false;
             });
-            var result = await Deobfuscator.DeobfuscateAsync(exeLocation, createBackup, overwriteExisting, doRemapping);
-            Dispatcher.Invoke(() =>
+            var result = await Deobfuscator.DeobfuscateAsync(exeLocation, createBackup, overwriteExisting, doRemapping, this);
+            await Dispatcher.InvokeAsync(() =>
             {
-                foreach (var logg in Deobfuscator.Logged)
-                {
-                    txtDeobfuscateLog.Text += logg + Environment.NewLine;
-                }
+                //foreach (var logg in Deobfuscator.Logged)
+                //{
+                //    txtDeobfuscateLog.Text += logg + Environment.NewLine;
+                //}
                 btnDeobfuscate.IsEnabled = true;
             });
 
@@ -585,13 +607,14 @@ namespace SIT.Launcher
 
         private async void btnDeobfuscate_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Executable (EscapeFromTarkov.exe)|EscapeFromTarkov.exe;";
-            if (openFileDialog.ShowDialog() == true)
+            BrowseForOfflineGame();
+            if (!string.IsNullOrEmpty(Config.InstallLocation) && Config.InstallLocation.EndsWith(".exe"))
             {
-                await Deobfuscate(openFileDialog.FileName, doRemapping: true);
-                CleanupDirectory(openFileDialog.FileName);
+                CleanupDirectory(Config.InstallLocation);
+                await Deobfuscate(Config.InstallLocation, doRemapping: true);
             }
+
+            UpdateButtonText(null);
         }
 
         private void btnDeobfuscateBrowse_Click(object sender, RoutedEventArgs e)
@@ -602,6 +625,15 @@ namespace SIT.Launcher
             {
                 Deobfuscator.DeobfuscateAssembly(openFileDialog.FileName, Directory.GetParent(openFileDialog.FileName).FullName, doRemapping: true);
             }
+        }
+
+        public async void Log(string message)
+        {
+            await Dispatcher.InvokeAsync(() =>
+            {
+                txtDeobfuscateLog.Text += message + Environment.NewLine;
+                txtDeobfuscateLog.ScrollToEnd();
+            });
         }
     }
 }
