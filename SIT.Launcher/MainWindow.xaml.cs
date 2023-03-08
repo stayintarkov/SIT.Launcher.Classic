@@ -178,8 +178,14 @@ namespace SIT.Launcher
         {
             var returnData = LoginToServer();
 
+            if (string.IsNullOrEmpty(returnData))
+            {
+                var messageBoxResult = MessageBox.Show("Something went wrong. Maybe the server hasn't been started? Check the logs.", "Account");
+                return;
+            }
+
             // If all good, launch game with AID
-            if(!string.IsNullOrEmpty(returnData) && returnData != "FAILED" && returnData != "ALREADY_IN_USE")
+            if (!string.IsNullOrEmpty(returnData) && returnData != "FAILED" && returnData != "ALREADY_IN_USE")
             {
                 BrowseForOfflineGame();
 
@@ -234,10 +240,13 @@ namespace SIT.Launcher
             if (Config.AutomaticallyDeobfuscateDlls
                 && NeedsDeobfuscation(installLocation))
             {
-                if (await Deobfuscate(installLocation))
-                {
-                    StartGame(sessionId, installLocation);
-                }
+                MessageBox.Show("Your game has not been deobfuscated and no client mods have been installed to allow OFFLINE play. Please install SIT or manually deobfuscate.");
+                //if (await Deobfuscate(installLocation))
+                //{
+                //    StartGame(sessionId, installLocation);
+                //}
+                UpdateButtonText(null);
+                btnLaunchGame.IsEnabled = true;
             }
             else
             {
@@ -337,7 +346,7 @@ namespace SIT.Launcher
                 }
             }
 
-            System.IO.Compression.ZipFile.ExtractToDirectory(App.ApplicationDirectory + "\\BepInEx5.zip", baseGamePath);
+            System.IO.Compression.ZipFile.ExtractToDirectory(App.ApplicationDirectory + "\\BepInEx5.zip", baseGamePath, true);
             if (!Directory.Exists(bepinexPluginsPath))
             {
                 Directory.CreateDirectory(bepinexPluginsPath);
