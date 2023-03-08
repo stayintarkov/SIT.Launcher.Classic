@@ -120,6 +120,7 @@
     //"GClass1319": "ItemFactory",
     {
       "RenameClassNameTo": "ItemFactory",
+      "OnlyRemapFirstFoundType": true,
       "HasMethods": [ "CreateItem", "CreateFakeStash" ]
     },
     //"GClass1520": "ProfileStatusClass",
@@ -138,8 +139,8 @@
     //"GClass1595": "MainMenuController",
     {
       "RenameClassNameTo": "MainMenuController",
-      "HasFields": [ "HealthController", "InventoryController", "MatchingType", "IsInSession" ],
-      "HasMethods": [ "StopAfkMonitor", "OnProfileChangeApplied" ]
+      "HasFields": [ "HealthController", "InventoryController", "GroupId", "MatchingType", "IsInSession" ],
+      "HasMethods": [ "OnProfileChangeApplied", "ShowScreen", "StopAfkMonitor", "StoreProfile", "Unsubscribe" ]
     },
     ////"GClass1706": "NotificationClass",
     {
@@ -179,7 +180,7 @@
     ////"GClass1821": "SynchronizableObjectLogicProcessorClass",
     {
       "RenameClassNameTo": "SynchronizableObjectLogicProcessorClass",
-      "HasMethods": [ "GetSyncObjectStrategyByType", "GetSynchronizableObjects" ]
+      "HasMethods": [ "GetSyncObjectStrategyByType" ]
     },
     ////"GClass1822": "AirdropManagerAbstractClass",
     {
@@ -432,11 +433,12 @@
     {
       "RenameClassNameTo": "ABindableState",
       "IsClass": true,
-      "HasFields": [ "HasHandlers", "HasCheckChanges", "Handlers" ],
-      "HasMethods": [ "Bind" ]
+      "HasFields": [ "HasHandlers", "HasCheckChanges", "Handlers", "Value" ],
+      "HasMethods": [ "Bind", "BindWithoutValue", "Subscribe", "Unbind" ]
     },
     {
       "RenameClassNameTo": "BindableState",
+      "OnlyRemapFirstFoundType": true,
       "InheritsClass": "ABindableState"
     },
     ////"GInterface30": "IBackendInterface",
