@@ -95,10 +95,28 @@ namespace SIT.Launcher.DeObfus
                     Console.WriteLine($"Deobfuscation token: {token}");
                 }
 
-                var process = Process.Start(de4dotPath,
-                    $"--un-name \"!^<>[a-z0-9]$&!^<>[a-z0-9]__.*$&![A-Z][A-Z]\\$<>.*$&^[a-zA-Z_<{{$][a-zA-Z_0-9<>{{}}$.`-]*$\" \"{assemblyPath}\" --strtyp delegate --strtok \"{token}\"");
+                ProcessStartInfo psi = new ProcessStartInfo();
+                psi.FileName = de4dotPath;
+                psi.UseShellExecute = false;
+                psi.RedirectStandardError = true;
+                psi.RedirectStandardOutput = true;
+                psi.CreateNoWindow = true;
+                psi.Arguments = $"--un-name \"!^<>[a-z0-9]$&!^<>[a-z0-9]__.*$&![A-Z][A-Z]\\$<>.*$&^[a-zA-Z_<{{$][a-zA-Z_0-9<>{{}}$.`-]*$\" \"{assemblyPath}\" --strtyp delegate --strtok \"{token}\"";
 
-                process.WaitForExit();
+                Process proc = Process.Start(psi);
+                proc.WaitForExit();
+                string errorOutput = proc.StandardError.ReadToEnd();
+                string standardOutput = proc.StandardOutput.ReadToEnd();
+                if (proc.ExitCode != 0)
+                {
+
+                }
+
+                //    var process = Process.Start(de4dotPath,
+                //    $"--un-name \"!^<>[a-z0-9]$&!^<>[a-z0-9]__.*$&![A-Z][A-Z]\\$<>.*$&^[a-zA-Z_<{{$][a-zA-Z_0-9<>{{}}$.`-]*$\" \"{assemblyPath}\" --strtyp delegate --strtok \"{token}\""
+                //    );
+
+                //process.WaitForExit();
 
 
                 // Fixes "ResolutionScope is null" by rewriting the assembly
@@ -686,7 +704,7 @@ namespace SIT.Launcher.DeObfus
                     findTypes = findTypes.Where(
                         x =>
                             (
-                                (!config.IsClass.HasValue || (config.IsClass.HasValue && config.IsClass.Value && (x.IsClass && !x.IsEnum && !x.IsInterface)))
+                                (!config.IsClass.HasValue || (config.IsClass.HasValue && config.IsClass.Value && ((x.IsClass || x.IsAbstract) && !x.IsEnum && !x.IsInterface)))
                             )
                         ).ToList();
 
