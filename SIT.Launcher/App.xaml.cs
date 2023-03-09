@@ -41,10 +41,10 @@ namespace SIT.Launcher
 
         public App()
         {
-            if (Config.SendInfoToDiscord)
-            {
-                _ = new DiscordInterop().StartDiscordClient("V." + ProductVersion);
-            }
+            //if (Config.SendInfoToDiscord)
+            //{
+            //    _ = new DiscordInterop().StartDiscordClient("V." + ProductVersion);
+            //}
 
             //LegalityCheck();
         }

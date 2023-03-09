@@ -11,34 +11,49 @@ using System.Threading.Tasks;
 
 namespace SIT.Launcher
 {
-    public class DiscordInterop
-    {
-        public static DiscordRPC DiscordRpcClient;
+    //public class DiscordInterop
+    //{
+    //    private static DiscordRPC discordClient;
 
-        public async Task<DiscordRPC> StartDiscordClient(string productVersion = "")
-        {
-            return await Task.Run(() =>
-            {
-                if (DiscordRpcClient == null)
-                {
-                    DiscordRpcClient = new DiscordRPC("983769140684791808");
-                    DiscordRpcClient.Logger = new NetDiscordRpc.Core.Logger.NullLogger();
-                    DiscordRpcClient.Initialize();
-                    DiscordRpcClient.SetPresence(new RichPresence()
-                    {
-                        Details = "Main Menu",
-                        State = productVersion,
-                    });
-                    DiscordRpcClient.Invoke();
+    //    public static DiscordRPC DiscordRpcClient
+    //    {
+    //        get 
+    //        {
+    //            if (discordClient == null)
+    //            {
+    //                var p = new DiscordInterop().StartDiscordClient().Result;
+    //                discordClient = p;
+    //            }
+    //            return discordClient; 
+    //        }
+    //        set { discordClient = value; }
+    //    }
 
-                }
-                return DiscordRpcClient;
-            });
-        }
 
-        public DiscordRPC GetDiscordRPC()
-        {
-            return StartDiscordClient().Result;
-        }
-    }
+    //    public async Task<DiscordRPC> StartDiscordClient(string productVersion = "")
+    //    {
+    //        return await Task.Run(() =>
+    //        {
+    //            if (DiscordRpcClient == null)
+    //            {
+    //                DiscordRpcClient = new DiscordRPC("983769140684791808");
+    //                DiscordRpcClient.Logger = new NetDiscordRpc.Core.Logger.NullLogger();
+    //                DiscordRpcClient.Initialize();
+    //                DiscordRpcClient.SetPresence(new RichPresence()
+    //                {
+    //                    Details = "Main Menu",
+    //                    State = productVersion,
+    //                });
+    //                DiscordRpcClient.Invoke();
+
+    //            }
+    //            return DiscordRpcClient;
+    //        });
+    //    }
+
+    //    public DiscordRPC GetDiscordRPC()
+    //    {
+    //        return StartDiscordClient().Result;
+    //    }
+    //}
 }

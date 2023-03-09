@@ -269,14 +269,14 @@ namespace SIT.Launcher
 
             await Task.Delay(10000);
 
-            if (Config.SendInfoToDiscord)
-                DiscordInterop.DiscordRpcClient.UpdateDetails("In Game");
-            //do
-            //{
+            //if (Config.SendInfoToDiscord)
+            //    DiscordInterop.DiscordRpcClient.UpdateDetails("In Game");
+            ////do
+            ////{
 
-            //} while (Process.GetProcessesByName("EscapeFromTarkov") != null);
-            if (Config.SendInfoToDiscord)
-                DiscordInterop.DiscordRpcClient.UpdateDetails("");
+            ////} while (Process.GetProcessesByName("EscapeFromTarkov") != null);
+            //if (Config.SendInfoToDiscord)
+            //    DiscordInterop.DiscordRpcClient.UpdateDetails("");
         }
 
         private void CleanupDirectory(string installLocation)
@@ -370,8 +370,8 @@ namespace SIT.Launcher
 
             btnLaunchGame.Content = LaunchButtonText;
 
-            if(Config.SendInfoToDiscord)
-                DiscordInterop.DiscordRpcClient.UpdateDetails(text);
+            //if(Config.SendInfoToDiscord)
+            //    DiscordInterop.DiscordRpcClient.UpdateDetails(text);
 
         }
 
