@@ -199,7 +199,7 @@ namespace SIT.Launcher.DeObfus
                         RemapByAutoConfiguration(oldAssembly, autoRemapperConfig);
                         RemapSwitchClassesToPublic(oldAssembly, autoRemapperConfig);
                         RemapByDefinedConfiguration(oldAssembly, autoRemapperConfig);
-                        RemapAddSPTUsecAndBear(oldAssembly);
+                        RemapAddSPTUsecAndBear(oldAssembly, autoRemapperConfig);
 
                         oldAssembly.Write(assemblyPath.Replace(".dll", "-remapped.dll"));
                     }
@@ -213,8 +213,11 @@ namespace SIT.Launcher.DeObfus
 
         
 
-        private static void RemapAddSPTUsecAndBear(AssemblyDefinition assembly)
+        private static void RemapAddSPTUsecAndBear(AssemblyDefinition assembly, AutoRemapperConfig config)
         {
+            if (!config.EnableAddSPTUsecBearToDll)
+                return;
+
             long sptUsecValue = 0x80000000;
             //long usecValue = 0x07;
             long sptBearValue = 0x100000000;

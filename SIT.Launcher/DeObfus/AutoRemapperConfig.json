@@ -577,11 +577,6 @@
       "HasFields": [ "Nickname", "GroupId" ],
       "HasMethods": [ "AddBan", "GetBan" ]
     },
-    //{
-    //  "RenameClassNameTo": "JobYield",
-    //  "HasMethodsStatic": [ "Priority", "GetYieldDelegate" ],
-    //  "HasFields": [ "General" ]
-    //},
     {
       "RenameClassNameTo": "PacketItemInteraction",
       "HasMethods": [ "Serialize", "Deserialize" ],
@@ -685,5 +680,7 @@
   ],
   "TypesToForceAllPublicFieldsAndProperties": [
     //"BaseLocalGame"
-  ]
+  ],
+  // Add SptUsec and SptBear to the Dll
+  "EnableAddSPTUsecBearToDll": true
 }

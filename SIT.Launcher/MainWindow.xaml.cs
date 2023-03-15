@@ -544,7 +544,8 @@ namespace SIT.Launcher
             {
                 foreach (var fileInfo in fiAkiBepinexPatchersFiles)
                 {
-                    var existingPath = System.IO.Path.Combine(bepinexPatchersPath, fileInfo.Name);
+                    //var existingPath = System.IO.Path.Combine(bepinexPatchersPath, fileInfo.Name); // Patcher is causing problems
+                    var existingPath = System.IO.Path.Combine(bepinexPluginsPath, fileInfo.Name);
 
                     // DO NOT OVERWRITE IF NEWER VERSION OF AKI EXISTS IN DIRECTORY
                     var existingFI = new FileInfo(existingPath);

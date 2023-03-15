@@ -10,11 +10,16 @@ namespace SIT.Launcher.DeObfus
     {
         public bool EnableAutomaticRemapping { get; set; }
         public bool EnableDefinedRemapping { get; set; }
+
+
         public AutoRemapperInfo[] DefinedRemapping { get; set; }
 
         public bool EnableForceAllTypesPublic { get; set; }
         public string[] DefinedTypesToForcePublic { get; set; }
         public string[] TypesToForceAllPublicMethods { get; set; }
         public string[] TypesToForceAllPublicFieldsAndProperties { get; set; }
+
+        public bool EnableAddSPTUsecBearToDll { get; set; }
+
     }
 }
