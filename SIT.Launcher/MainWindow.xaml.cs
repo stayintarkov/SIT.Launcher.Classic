@@ -493,7 +493,8 @@ namespace SIT.Launcher
 
         private void DownloadAndInstallAki(string exeLocation)
         {
-            //UpdateButtonText("Installing Aki");
+            if (!Config.AutomaticallyInstallAkiSupport)
+                return;
 
             var bepinexPluginsPath = GetBepInExPluginsPath(exeLocation);
             var bepinexPatchersPath = GetBepInExPatchersPath(exeLocation);
