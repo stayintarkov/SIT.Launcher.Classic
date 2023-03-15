@@ -16,6 +16,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="AkiSupport\Bepinex\aki-core.dll" />
+    <None Remove="AkiSupport\Bepinex\aki-custom.dll" />
+    <None Remove="AkiSupport\Bepinex\Patchers\aki_PrePatch.dll" />
     <None Remove="DeObfus\AutoRemapperConfig.json" />
     <None Remove="DeObfus\de4dot\AssemblyData.dll" />
     <None Remove="DeObfus\de4dot\de4dot.blocks.dll" />
@@ -31,11 +34,20 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	</Resource>
-    <Content Include="AkiSupport\Aki.Common.dll">
+    <Content Include="AkiSupport\Bepinex\Patchers\aki_PrePatch.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AkiSupport\Bepinex\Plugins\aki-core.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AkiSupport\Bepinex\Plugins\aki-custom.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AkiSupport\Managed\Aki.Common.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	</Content>
-    <Content Include="AkiSupport\Aki.Reflection.dll">
+    <Content Include="AkiSupport\Managed\Aki.Reflection.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	</Content>

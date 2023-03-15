@@ -471,39 +471,89 @@ namespace SIT.Launcher
 
         }
 
-        private string GetBepInExPluginsPath(string exeLocation)
+        private string GetBepInExPath(string exeLocation)
         {
             var baseGamePath = Directory.GetParent(exeLocation).FullName;
             var bepinexPath = System.IO.Path.Combine(exeLocation.Replace("EscapeFromTarkov.exe", "BepInEx"));
-            var bepinexPluginsPath = System.IO.Path.Combine(bepinexPath, "plugins");
+            return bepinexPath;
+        }
+
+        private string GetBepInExPluginsPath(string exeLocation)
+        {
+            var bepinexPluginsPath = System.IO.Path.Combine(GetBepInExPath(exeLocation), "plugins");
             return bepinexPluginsPath;
         }
+
+        private string GetBepInExPatchersPath(string exeLocation)
+        {
+            var bepinexPluginsPath = System.IO.Path.Combine(GetBepInExPath(exeLocation), "patchers");
+            return bepinexPluginsPath;
+        }
+
 
         private void DownloadAndInstallAki(string exeLocation)
         {
             //UpdateButtonText("Installing Aki");
 
             var bepinexPluginsPath = GetBepInExPluginsPath(exeLocation);
+            var bepinexPatchersPath = GetBepInExPatchersPath(exeLocation);
 
             // Discover where Assembly-CSharp is within the Game Folders
             var managedPath = exeLocation.Replace("EscapeFromTarkov.exe", "");
             managedPath += "EscapeFromTarkov_Data\\Managed\\";
 
-            List<FileInfo> fiAkiFiles = Directory.GetFiles(App.ApplicationDirectory + "/AkiSupport/").Select(x => new FileInfo(x)).ToList();
+            List<FileInfo> fiAkiManagedFiles = Directory.GetFiles(App.ApplicationDirectory + "/AkiSupport/Managed").Select(x => new FileInfo(x)).ToList();
 
             DirectoryInfo diManaged = new DirectoryInfo(managedPath);
             if (diManaged.Exists)
             {
-                foreach(var fileInfo in fiAkiFiles)
+                foreach(var fileInfo in fiAkiManagedFiles)
                 {
-                    fileInfo.CopyTo(System.IO.Path.Combine(managedPath, fileInfo.Name), true);
+                    var path = System.IO.Path.Combine(managedPath, fileInfo.Name);
+
+                    // DO NOT OVERWRITE IF NEWER VERSION OF AKI EXISTS IN DIRECTORY
+                    var existingFI = new FileInfo(path);
+                    if (existingFI.Exists && existingFI.LastWriteTime > fileInfo.LastWriteTime)
+                        return;
+
+                    fileInfo.CopyTo(path, true);
                 }
             }
 
-            foreach (var fileInfo in fiAkiFiles)
+            List<FileInfo> fiAkiBepinexPluginsFiles = Directory.GetFiles(App.ApplicationDirectory + "/AkiSupport/Bepinex/Plugins").Select(x => new FileInfo(x)).ToList();
+            DirectoryInfo diBepinex = new DirectoryInfo(bepinexPluginsPath);
+            if (diBepinex.Exists)
             {
-                fileInfo.CopyTo(System.IO.Path.Combine(bepinexPluginsPath, fileInfo.Name), true);
+                foreach (var fileInfo in fiAkiBepinexPluginsFiles)
+                {
+                    var existingPath = System.IO.Path.Combine(bepinexPluginsPath, fileInfo.Name);
+
+                    // DO NOT OVERWRITE IF NEWER VERSION OF AKI EXISTS IN DIRECTORY
+                    var existingFI = new FileInfo(existingPath);
+                    if (existingFI.Exists && existingFI.LastWriteTime > fileInfo.LastWriteTime)
+                        return;
+
+                    fileInfo.CopyTo(existingPath, true);
+                }
             }
+
+            List<FileInfo> fiAkiBepinexPatchersFiles = Directory.GetFiles(App.ApplicationDirectory + "/AkiSupport/Bepinex/Patchers").Select(x => new FileInfo(x)).ToList();
+            DirectoryInfo diBepinexPatchers = new DirectoryInfo(bepinexPatchersPath);
+            if (diBepinexPatchers.Exists)
+            {
+                foreach (var fileInfo in fiAkiBepinexPatchersFiles)
+                {
+                    var existingPath = System.IO.Path.Combine(bepinexPatchersPath, fileInfo.Name);
+
+                    // DO NOT OVERWRITE IF NEWER VERSION OF AKI EXISTS IN DIRECTORY
+                    var existingFI = new FileInfo(existingPath);
+                    if (existingFI.Exists && existingFI.LastWriteTime > fileInfo.LastWriteTime)
+                        return;
+
+                    fileInfo.CopyTo(existingPath, true);
+                }
+            }
+
         }
 
         private void OnDeobfuscateLog(string s)

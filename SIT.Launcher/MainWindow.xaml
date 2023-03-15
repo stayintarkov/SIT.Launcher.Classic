@@ -139,7 +139,7 @@
                 </StackPanel.Resources>
                 <!--<mah:MetroHeader Content="Server Address" Foreground="White" />
         <TextBox Text="{Binding Config.ServerInstance.ServerAddress}"></TextBox>-->
-                <mah:MetroHeader Content="Automatically Install Assembly DLLs" Foreground="White" />
+                <!--<mah:MetroHeader Content="Automatically Install Assembly DLLs" Foreground="White" />-->
                 <!--<StackPanel Orientation="Horizontal">
                     <CheckBox IsChecked="{Binding Config.AutomaticallyDeobfuscateDlls}"></CheckBox>
                     <ComboBox x:Name="cbAssemblyDLLs">
@@ -149,10 +149,10 @@
                 <CheckBox IsChecked="{Binding Config.AutomaticallyInstallSIT}"></CheckBox>
                 <mah:MetroHeader Content="Automatically Install Aki Support" Foreground="White" />
                 <CheckBox IsChecked="{Binding Config.AutomaticallyInstallAkiSupport}"></CheckBox>
-                <mah:MetroHeader Content="Send Activity to Discord" Foreground="White" />
+                <!--<mah:MetroHeader Content="Send Activity to Discord" Foreground="White" />
                 <CheckBox IsChecked="{Binding Config.SendInfoToDiscord}"></CheckBox>
                 <mah:MetroHeader Content="Enable Coop Server" Foreground="White" />
-                <CheckBox IsChecked="{Binding Config.EnableCoopServer}"></CheckBox>
+                <CheckBox IsChecked="{Binding Config.EnableCoopServer}"></CheckBox>-->
             </StackPanel>
         </Grid>
     </Grid>
