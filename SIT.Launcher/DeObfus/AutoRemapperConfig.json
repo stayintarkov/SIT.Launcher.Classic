@@ -92,10 +92,12 @@
     //  "HasFields": [ "mail", "repeatableQuest", "handbook", "preset", "error", "quest" ]
     //},
     //"GClass1301": "BotControllerClass",
-    //{
-    //  "RenameClassNameTo": "BotControllerClass",
-    //  "HasMethods": [ "ActivateBotsByWave", "ActivateBotsWithoutWave", "AddEnemyToAllGroups" ]
-    //},
+    {
+      "RenameClassNameTo": "BotControllerClass",
+      "IsClass": true,
+      "HasFields": [ "BotsCountWithDelayed", "IsEnable", "BotGame" ],
+      "HasMethods": [ "ActivateBotsByWave", "ActivateBotsWithoutWave", "AddEnemyToAllGroups", "BotDied", "SpawnBossDebug", "SpawnBotDebugClient", "SpawnBotDebugServer" ]
+    },
     //"GClass1305": "WaveInfo",
     {
       "RenameClassNameTo": "WaveInfo",
@@ -636,7 +638,41 @@
     //  //"MustBeGClass": true,
     //  //"HasFields": [ "ProfileInfo", "RaidSettings" ]
     //}
-
+    ,
+    {
+      "RenameClassNameTo": "IFilterCustomization",
+      "IsInterface": true,
+      "HasMethods": [ "FilterCustomization" ]
+    },
+    {
+      "RenameClassNameTo": "FilterCustomizationClass",
+      "IsClass": true,
+      "MustBeGClass": true,
+      "HasMethods": [ "FilterCustomization" ]
+    },
+    {
+      "RenameClassNameTo": "AStatisticsManager",
+      "IsClass": true,
+      "HasMethodsVirtual": [ "BeginStatisticsSession", "ExperienceGained", "LogDamage", "OnBodyPartRestored", "OnBodyPartRestored", "OnHealthChanged" ]
+    },
+    {
+      "RenameClassNameTo": "AStatisticsManagerForPlayer",
+      "IsClass": true,
+      "HasFields": [ "CurrentSessionLength" ],
+      "HasMethodsStatic": [ "ForeachItems" ],
+      "HasMethods": [ "BeginStatisticsSession" ]
+    },
+    {
+      "RenameClassNameTo": "StatisticsManagerForPlayer",
+      "IsClass": true,
+      "MustBeGClass": true,
+      "HasMethods": [ "ShowStatNotification" ]
+    },
+    {
+      "RenameClassNameTo": "BackendConfigManager",
+      "HasFields": [],
+      "HasMethodsStatic": [ "LoadApplicationConfig" ]
+    }
 
 
   ],
