@@ -327,10 +327,10 @@ namespace SIT.Launcher
                 return;
 
             UpdateButtonText("Installing BepInEx");
-            await Task.Delay(1000);
+            await Task.Delay(500);
 
             UpdateButtonText("Downloading BepInEx");
-            await Task.Delay(1000);
+            await Task.Delay(500);
 
             if (!File.Exists(App.ApplicationDirectory + "\\BepInEx5.zip"))
             {
@@ -345,6 +345,8 @@ namespace SIT.Launcher
                     await File.WriteAllBytesAsync(App.ApplicationDirectory + "\\BepInEx5.zip", ms.ToArray());
                 }
             }
+
+            UpdateButtonText("Installing BepInEx");
 
             System.IO.Compression.ZipFile.ExtractToDirectory(App.ApplicationDirectory + "\\BepInEx5.zip", baseGamePath, true);
             if (!Directory.Exists(bepinexPluginsPath))
@@ -395,12 +397,8 @@ namespace SIT.Launcher
 
                 var github = new GitHubClient(new ProductHeaderValue("SIT-Launcher"));
                 var user = await github.User.Get("paulov-t");
-                var tarkovCoreReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Core");
-                var latestCore = tarkovCoreReleases[0];
-                //var tarkovCoreReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Tarkov.Core");
-                //var latestCore = tarkovCoreReleases[0];
-                //var tarkovSPReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Tarkov.SP");
-                //var latestSP = tarkovSPReleases[0];
+                var tarkovCoreReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Core", new ApiOptions() { });
+                var latestCore = tarkovCoreReleases.First(x => x.Prerelease == Config.AutomaticallyInstallSITPreRelease);
                 var allAssets = latestCore.Assets.OrderByDescending(x => x.CreatedAt).DistinctBy(x => x.Name);
                 var allAssetsCount = allAssets.Count();
                 var assetIndex = 0;
@@ -408,21 +406,15 @@ namespace SIT.Launcher
                 {
                     var httpClient = new HttpClient();
                     var response = await httpClient.GetAsync(A.BrowserDownloadUrl);
-                    //var httpRequest = HttpWebRequest.Create(A.BrowserDownloadUrl);
-                    //httpRequest.Method = "GET";
-                    //var response = await httpRequest.GetResponseAsync();
                     if (response != null)
                     {
                         var ms = new MemoryStream();
-                        //var rStream = response.GetResponseStream();
-                        //rStream.CopyTo(ms);
                         await response.Content.CopyToAsync(ms);
 
                         var deliveryPath = App.ApplicationDirectory + "\\ClientMods\\" + A.Name;
                         var fiDelivery = new FileInfo(deliveryPath);
                         await File.WriteAllBytesAsync(deliveryPath, ms.ToArray());
                     }
-                    UpdateButtonText($"Downloading SIT ({assetIndex}/{allAssetsCount})");
                     assetIndex++;
                 }
 
@@ -525,6 +517,14 @@ namespace SIT.Launcher
             DirectoryInfo diBepinex = new DirectoryInfo(bepinexPluginsPath);
             if (diBepinex.Exists)
             {
+                // Delete any existing plugins in BepInEx folder. They won't work with SIT.
+                List<FileInfo> fiAkiExistingPlugins = Directory.GetFiles(bepinexPluginsPath).Where(x => x.StartsWith("aki-", StringComparison.OrdinalIgnoreCase)).Select(x => new FileInfo(x)).ToList();
+                foreach (var fileInfo in fiAkiExistingPlugins)
+                {
+                    fileInfo.Delete();
+                }
+
+                // Install any compatible Plugins from SIT Launcher
                 foreach (var fileInfo in fiAkiBepinexPluginsFiles)
                 {
                     var existingPath = System.IO.Path.Combine(bepinexPluginsPath, fileInfo.Name);

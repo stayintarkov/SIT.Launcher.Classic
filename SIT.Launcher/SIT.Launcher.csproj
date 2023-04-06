@@ -33,9 +33,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	</Resource>
-    <Content Include="AkiSupport\Bepinex\Plugins\aki-core.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="AkiSupport\Managed\Aki.Common.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
@@ -451,6 +448,7 @@
 
   <ItemGroup>
     <Folder Include="AkiSupport\Bepinex\Patchers\" />
+    <Folder Include="AkiSupport\Bepinex\Plugins\" />
   </ItemGroup>
 
 </Project>

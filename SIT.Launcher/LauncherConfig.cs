@@ -48,6 +48,7 @@ namespace SIT.Launcher
         public bool AutomaticallyDeobfuscateDlls { get; set; } = true;
 
         public bool AutomaticallyInstallSIT { get; set; } = true;
+        public bool AutomaticallyInstallSITPreRelease { get; set; } = false;
 
         public bool AutomaticallyInstallAkiSupport { get; set; } = true;
 
