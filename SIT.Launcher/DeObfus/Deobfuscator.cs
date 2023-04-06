@@ -49,94 +49,23 @@ namespace SIT.Launcher.DeObfus
             var cleanedDllPath = Path.Combine(Path.GetDirectoryName(assemblyPath), Path.GetFileNameWithoutExtension(assemblyPath) + "-cleaned.dll");
             var de4dotPath = Path.Combine(Path.GetDirectoryName(executablePath), "DeObfus", "de4dot", "de4dot.exe");
 
-            if (!File.Exists(cleanedDllPath))
+            De4DotDeobfuscate(assemblyPath, managedPath, cleanedDllPath, de4dotPath);
+          
+            var resolver = new DefaultAssemblyResolver();
+            resolver.AddSearchDirectory(managedPath);
+
+            using (var memoryStream = new MemoryStream(File.ReadAllBytes(cleanedDllPath)))
             {
-                Log($"Initial Deobfuscation. Firing up de4dot.");
-
-                string token;
-
-                using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(assemblyPath))
-                {
-                    var potentialStringDelegates = new List<MethodDefinition>();
-
-                    foreach (var type in assemblyDefinition.MainModule.Types)
+                using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(memoryStream
+                    , new ReaderParameters()
                     {
-                        foreach (var method in type.Methods)
-                        {
-                            if (method.ReturnType.FullName != "System.String"
-                                || method.Parameters.Count != 1
-                                || method.Parameters[0].ParameterType.FullName != "System.Int32"
-                                || method.Body == null
-                                || !method.IsStatic)
-                            {
-                                continue;
-                            }
-
-                            if (!method.Body.Instructions.Any(x =>
-                                x.OpCode.Code == Code.Callvirt &&
-                                ((MethodReference)x.Operand).FullName == "System.Object System.AppDomain::GetData(System.String)"))
-                            {
-                                continue;
-                            }
-
-                            potentialStringDelegates.Add(method);
-                        }
-                    }
-
-                    if (potentialStringDelegates.Count != 1)
+                        AssemblyResolver = resolver
+                    }))
                     {
-                        //Program.WriteError($"Expected to find 1 potential string delegate method; found {potentialStringDelegates.Count}. Candidates: {string.Join("\r\n", potentialStringDelegates.Select(x => x.FullName))}");
+                        assemblyDefinition.Write(cleanedDllPath);
                     }
-
-                    var deobfRid = potentialStringDelegates[0].MetadataToken;
-
-                    token = $"0x{((uint)deobfRid.TokenType | deobfRid.RID):x4}";
-
-                    Console.WriteLine($"Deobfuscation token: {token}");
-                }
-
-                ProcessStartInfo psi = new ProcessStartInfo();
-                psi.FileName = de4dotPath;
-                psi.UseShellExecute = false;
-                psi.RedirectStandardError = true;
-                psi.RedirectStandardOutput = true;
-                psi.CreateNoWindow = true;
-                psi.Arguments = $"--un-name \"!^<>[a-z0-9]$&!^<>[a-z0-9]__.*$&![A-Z][A-Z]\\$<>.*$&^[a-zA-Z_<{{$][a-zA-Z_0-9<>{{}}$.`-]*$\" \"{assemblyPath}\" --strtyp delegate --strtok \"{token}\"";
-
-                Process proc = Process.Start(psi);
-                proc.WaitForExit();
-                string errorOutput = proc.StandardError.ReadToEnd();
-                string standardOutput = proc.StandardOutput.ReadToEnd();
-                if (proc.ExitCode != 0)
-                {
-
-                }
-
-                //    var process = Process.Start(de4dotPath,
-                //    $"--un-name \"!^<>[a-z0-9]$&!^<>[a-z0-9]__.*$&![A-Z][A-Z]\\$<>.*$&^[a-zA-Z_<{{$][a-zA-Z_0-9<>{{}}$.`-]*$\" \"{assemblyPath}\" --strtyp delegate --strtok \"{token}\""
-                //    );
-
-                //process.WaitForExit();
-
-
-                // Fixes "ResolutionScope is null" by rewriting the assembly
-
-                var resolver = new DefaultAssemblyResolver();
-                resolver.AddSearchDirectory(managedPath);
-
-                using (var memoryStream = new MemoryStream(File.ReadAllBytes(cleanedDllPath)))
-                using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(memoryStream, new ReaderParameters()
-                {
-                    AssemblyResolver = resolver
-                }))
-                {
-                    assemblyDefinition.Write(cleanedDllPath);
-                }
             }
-            else
-            {
-                Log($"Initial Deobfuscation Ignored. Cleaned DLL already exists.");
-            }
+            
 
             if (doRemapping)
                 RemapKnownClasses(managedPath, cleanedDllPath);
@@ -159,6 +88,76 @@ namespace SIT.Launcher.DeObfus
             assemblyPath = Path.Combine(managedPath, "Assembly-CSharp.dll");
 
             return DeobfuscateAssembly(assemblyPath, managedPath, createBackup, overwriteExisting, doRemapping);
+        }
+
+        private static void De4DotDeobfuscate(string assemblyPath, string managedPath, string cleanedDllPath, string de4dotPath)
+        {
+            if (File.Exists(cleanedDllPath))
+            {
+                Log($"Initial Deobfuscation Ignored. Cleaned DLL already exists.");
+                return;
+            }
+
+            Log($"Initial Deobfuscation. Firing up de4dot.");
+
+            string token;
+
+            using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(assemblyPath))
+            {
+                var potentialStringDelegates = new List<MethodDefinition>();
+
+                foreach (var type in assemblyDefinition.MainModule.Types)
+                {
+                    foreach (var method in type.Methods)
+                    {
+                        if (method.ReturnType.FullName != "System.String"
+                            || method.Parameters.Count != 1
+                            || method.Parameters[0].ParameterType.FullName != "System.Int32"
+                            || method.Body == null
+                            || !method.IsStatic)
+                        {
+                            continue;
+                        }
+
+                        if (!method.Body.Instructions.Any(x =>
+                            x.OpCode.Code == Code.Callvirt &&
+                            ((MethodReference)x.Operand).FullName == "System.Object System.AppDomain::GetData(System.String)"))
+                        {
+                            continue;
+                        }
+
+                        potentialStringDelegates.Add(method);
+                    }
+                }
+
+                if (potentialStringDelegates.Count != 1)
+                {
+                    //Program.WriteError($"Expected to find 1 potential string delegate method; found {potentialStringDelegates.Count}. Candidates: {string.Join("\r\n", potentialStringDelegates.Select(x => x.FullName))}");
+                }
+
+                var deobfRid = potentialStringDelegates[0].MetadataToken;
+
+                token = $"0x{((uint)deobfRid.TokenType | deobfRid.RID):x4}";
+
+                Console.WriteLine($"Deobfuscation token: {token}");
+            }
+
+            ProcessStartInfo psi = new ProcessStartInfo();
+            psi.FileName = de4dotPath;
+            psi.UseShellExecute = false;
+            psi.RedirectStandardError = true;
+            psi.RedirectStandardOutput = true;
+            psi.CreateNoWindow = true;
+            psi.Arguments = $"--un-name \"!^<>[a-z0-9]$&!^<>[a-z0-9]__.*$&![A-Z][A-Z]\\$<>.*$&^[a-zA-Z_<{{$][a-zA-Z_0-9<>{{}}$.`-]*$\" \"{assemblyPath}\" --strtyp delegate --strtok \"{token}\"";
+
+            Process proc = Process.Start(psi);
+            proc.WaitForExit();
+            string errorOutput = proc.StandardError.ReadToEnd();
+            string standardOutput = proc.StandardOutput.ReadToEnd();
+            if (proc.ExitCode != 0)
+            {
+
+            }
         }
 
         private static void OverwriteExistingAssembly(string assemblyPath, string cleanedDllPath, bool deleteCleaned = true)
@@ -218,15 +217,22 @@ namespace SIT.Launcher.DeObfus
             if (!config.EnableAddSPTUsecBearToDll)
                 return;
 
-            long sptUsecValue = 0x80000000;
+            long sptUsecValue = 99; // 0x80000000;
             //long usecValue = 0x07;
-            long sptBearValue = 0x100000000;
+            long sptBearValue = 100; // 0x100000000;
             //long bearValue = 0x09;
 
             var botEnums = assembly.MainModule.GetType("EFT.WildSpawnType");
 
             if (botEnums.Fields.Any(x => x.Name == "sptUsec"))
                 return;
+
+            //long v = 0;
+            //foreach(var f in botEnums.Fields)
+            //{
+            //    f.Constant = v;
+            //    v++;
+            //}
 
             var sptUsec = new FieldDefinition("sptUsec",
                     Mono.Cecil.FieldAttributes.Public | Mono.Cecil.FieldAttributes.Static | Mono.Cecil.FieldAttributes.Literal | Mono.Cecil.FieldAttributes.HasDefault,
