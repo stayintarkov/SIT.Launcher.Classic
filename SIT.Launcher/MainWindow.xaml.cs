@@ -323,8 +323,7 @@ namespace SIT.Launcher
 
             var bepinexCorePath = System.IO.Path.Combine(bepinexPath, "core");
             var bepinexPluginsPath = System.IO.Path.Combine(bepinexPath, "plugins");
-            if (Directory.Exists(bepinexCorePath) && Directory.Exists(bepinexPluginsPath) && File.Exists(bepinexWinHttpDLL))
-                return;
+            
 
             UpdateButtonText("Installing BepInEx");
             await Task.Delay(500);
@@ -334,17 +333,18 @@ namespace SIT.Launcher
 
             if (!File.Exists(App.ApplicationDirectory + "\\BepInEx5.zip"))
             {
-                var httpRequest = HttpWebRequest.Create("https://github.com/BepInEx/BepInEx/releases/download/v5.4.21/BepInEx_x64_5.4.21.0.zip");
-                httpRequest.Method = "GET";
-                var response = await httpRequest.GetResponseAsync();
-                if (response != null)
+                using (var ms = new MemoryStream())
                 {
-                    var ms = new MemoryStream();
-                    var rStream = response.GetResponseStream();
-                    rStream.CopyTo(ms);
-                    await File.WriteAllBytesAsync(App.ApplicationDirectory + "\\BepInEx5.zip", ms.ToArray());
+                    using (var rStream = await new HttpClient().GetStreamAsync("https://github.com/BepInEx/BepInEx/releases/download/v5.4.21/BepInEx_x64_5.4.21.0.zip")) // response.GetResponseStream();
+                    {
+                        rStream.CopyTo(ms);
+                        await File.WriteAllBytesAsync(App.ApplicationDirectory + "\\BepInEx5.zip", ms.ToArray());
+                    }
                 }
             }
+
+            if (Directory.Exists(bepinexCorePath) && Directory.Exists(bepinexPluginsPath) && File.Exists(bepinexWinHttpDLL))
+                return;
 
             UpdateButtonText("Installing BepInEx");
 
@@ -422,7 +422,7 @@ namespace SIT.Launcher
 
                 UpdateButtonText("Installing SIT");
 
-                foreach (var clientModDLL in Directory.GetFiles(App.ApplicationDirectory + "\\ClientMods\\"))
+                foreach (var clientModDLL in Directory.GetFiles(App.ApplicationDirectory + "\\ClientMods\\").Where(x => !x.Contains("DONOTDELETE")))
                 {
                     if (clientModDLL.Contains("Assembly-CSharp"))
                     {
@@ -637,16 +637,16 @@ namespace SIT.Launcher
         private void CollapseAll()
         {
             gridPlay.Visibility = Visibility.Collapsed;
-            //gridCoopServer.Visibility = Visibility.Collapsed;
+            gridServer.Visibility = Visibility.Collapsed;
             gridTools.Visibility = Visibility.Collapsed;
             gridSettings.Visibility = Visibility.Collapsed;
         }
 
-        private void btnCoopServer_Click(object sender, RoutedEventArgs e)
-        {
-            CollapseAll();
-            //gridCoopServer.Visibility = Visibility.Visible;
-        }
+        //private void btnCoopServer_Click(object sender, RoutedEventArgs e)
+        //{
+        //    CollapseAll();
+        //    //gridCoopServer.Visibility = Visibility.Visible;
+        //}
 
         private void btnPlay_Click(object sender, RoutedEventArgs e)
         {
@@ -694,6 +694,54 @@ namespace SIT.Launcher
             {
                 txtDeobfuscateLog.Text += message + Environment.NewLine;
                 txtDeobfuscateLog.ScrollToEnd();
+            });
+        }
+
+        private void btnServer_Click(object sender, RoutedEventArgs e)
+        {
+            CollapseAll();
+            gridServer.Visibility = Visibility.Visible;
+        }
+
+        private void btnServerEXE_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btnServerCommand_Click(object sender, RoutedEventArgs e)
+        {
+            FolderBrowserEx.FolderBrowserDialog folderBrowserDialog = new FolderBrowserEx.FolderBrowserDialog();
+            if(folderBrowserDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                Process p = new Process();
+                p.StartInfo.UseShellExecute = false;
+                p.StartInfo.RedirectStandardOutput = true;
+                p.StartInfo.RedirectStandardError = true;
+                p.StartInfo.RedirectStandardInput = true;
+                p.StartInfo.FileName = "CMD.exe";
+                p.StartInfo.Arguments = @"\C npm i";
+                p.OutputDataReceived += process_OutputDataReceived;
+                p.Start();
+                p.WaitForExit();
+
+
+                //p.StartInfo.FileName = @"c:\node\node.exe"; //Path to node installed folder****
+                //string argument = @"\\ bundle\main.js";
+                //p.StartInfo.Arguments = @argument;
+                //p.Start();
+
+                //Process.Start("CMD.exe", @"/C npm i");
+                //Process.Start("CMD.exe", @"/C npm run run:server");
+                
+            }
+        }
+
+        private void process_OutputDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            Dispatcher.Invoke(() => {
+
+                txtServerLog.Text += e.Data ?? e.Data;
+            
             });
         }
     }

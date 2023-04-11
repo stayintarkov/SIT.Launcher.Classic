@@ -18,6 +18,8 @@
   <ItemGroup>
     <None Remove="AkiSupport\Bepinex\aki-core.dll" />
     <None Remove="AkiSupport\Bepinex\aki-custom.dll" />
+    <None Remove="AkiSupport\Bepinex\Patchers\DONOTDELETE.txt" />
+    <None Remove="AkiSupport\Bepinex\Plugins\DONOTDELETE.txt" />
     <None Remove="DeObfus\AutoRemapperConfig.json" />
     <None Remove="DeObfus\de4dot\AssemblyData.dll" />
     <None Remove="DeObfus\de4dot\de4dot.blocks.dll" />
@@ -33,6 +35,14 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	</Resource>
+    <Content Include="AkiSupport\Bepinex\Patchers\DONOTDELETE.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+    <Content Include="AkiSupport\Bepinex\Plugins\DONOTDELETE.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
     <Content Include="AkiSupport\Managed\Aki.Common.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
@@ -424,6 +434,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FolderBrowserEx" Version="1.0.1" />
     <PackageReference Include="MahApps.Metro" Version="2.4.9" />
     <PackageReference Include="MahApps.Metro.IconPacks" Version="4.11.0" />
     <PackageReference Include="MahApps.Metro.IconPacks.MaterialDesign" Version="4.11.0" />
@@ -444,11 +455,6 @@
     <None Update="AddNewServerDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="AkiSupport\Bepinex\Patchers\" />
-    <Folder Include="AkiSupport\Bepinex\Plugins\" />
   </ItemGroup>
 
 </Project>

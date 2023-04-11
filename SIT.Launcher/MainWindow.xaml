@@ -50,12 +50,12 @@
                     <Label Content="Play" VerticalAlignment="Center" FontSize="16" />
                 </StackPanel>
             </Button>
-            <!--<Button Background="Transparent" BorderThickness="0" IsEnabled="{Binding Config.EnableCoopServer}" Grid.Column="2" ToolTip="Coop Server" x:Name="btnCoopServer" Click="btnCoopServer_Click">
+            <Button Background="Transparent" BorderThickness="0" Grid.Column="1" ToolTip="Server" x:Name="btnServer" Click="btnServer_Click" Visibility="Collapsed">
                 <StackPanel VerticalAlignment="Center"  HorizontalAlignment="Left" Orientation="Horizontal">
-                    <iconPacks:PackIconCodicons Kind="Server" Height="20" Width="20"  VerticalAlignment="Center"></iconPacks:PackIconCodicons>
-                    <Label Content="Coop Server" VerticalAlignment="Center" FontSize="16"  />
+                    <iconPacks:PackIconCodicons Kind="Server" Height="20" Width="20" VerticalAlignment="Center"></iconPacks:PackIconCodicons>
+                    <Label Content="Server" VerticalAlignment="Center" FontSize="16" />
                 </StackPanel>
-            </Button>-->
+            </Button>
             <Button Background="Transparent" BorderThickness="0" Grid.Column="3" ToolTip="Tools" x:Name="btnToToolsWindow" Click="btnToToolsWindow_Click">
                 <StackPanel VerticalAlignment="Center"  HorizontalAlignment="Left" Orientation="Horizontal">
                     <iconPacks:PackIconCodicons Kind="Tools" Height="20" Width="20"  VerticalAlignment="Center"></iconPacks:PackIconCodicons>
@@ -117,9 +117,23 @@
         </Grid>
         <TextBlock Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="1">Stay in Tarkov - Powered by SPT-AKI Server</TextBlock>
         <TextBlock Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" x:Name="InstallLocation" Text="{Binding Config.InstallLocation}"></TextBlock>
-        <!--<Grid x:Name="gridCoopServer" Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="3">
-            <gameServer:GameServerWindow></gameServer:GameServerWindow>
-        </Grid>-->
+        <Grid x:Name="gridServer" Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="3">
+            <Grid.RowDefinitions>
+                <RowDefinition MinHeight="30" Height="30"></RowDefinition>
+                <RowDefinition MinHeight="30" Height="30"></RowDefinition>
+                <RowDefinition MinHeight="100" Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <Button Content="Launch Server" x:Name="btnServerCommand" Click="btnServerCommand_Click" Grid.Column="0"></Button>
+                <Button Content="Launch Server EXE" x:Name="btnServerEXE" Click="btnServerEXE_Click" Grid.Column="1"></Button>
+            </Grid>
+            <Label Content="Log" Grid.Row="1"></Label>
+            <TextBox x:Name="txtServerLog" IsReadOnly="True" MaxLines="9999" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" Grid.Row="2"></TextBox>
+        </Grid>
         <Grid x:Name="gridTools" Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="3">
                 <Grid.RowDefinitions>
                     <RowDefinition MinHeight="30" Height="30"></RowDefinition>
@@ -137,22 +151,12 @@
                         <Setter Property="Margin" Value="5,5,0,5"/>
                     </Style>
                 </StackPanel.Resources>
-                <!--<mah:MetroHeader Content="Server Address" Foreground="White" />
-        <TextBox Text="{Binding Config.ServerInstance.ServerAddress}"></TextBox>-->
-                <!--<mah:MetroHeader Content="Automatically Install Assembly DLLs" Foreground="White" />-->
-                <!--<StackPanel Orientation="Horizontal">
-                    <CheckBox IsChecked="{Binding Config.AutomaticallyDeobfuscateDlls}"></CheckBox>
-                    <ComboBox x:Name="cbAssemblyDLLs">
-                    </ComboBox>
-                </StackPanel>-->
                 <mah:MetroHeader Content="Automatically Install SIT" Foreground="White" />
                 <CheckBox IsChecked="{Binding Config.AutomaticallyInstallSIT}"></CheckBox>
+                <mah:MetroHeader Content="Automatically Install SIT - Pre Release" Foreground="White" />
+                <CheckBox IsChecked="{Binding Config.AutomaticallyInstallSITPreRelease}"></CheckBox>
                 <mah:MetroHeader Content="Automatically Install Aki Support" Foreground="White" />
                 <CheckBox IsChecked="{Binding Config.AutomaticallyInstallAkiSupport}"></CheckBox>
-                <!--<mah:MetroHeader Content="Send Activity to Discord" Foreground="White" />
-                <CheckBox IsChecked="{Binding Config.SendInfoToDiscord}"></CheckBox>
-                <mah:MetroHeader Content="Enable Coop Server" Foreground="White" />
-                <CheckBox IsChecked="{Binding Config.EnableCoopServer}"></CheckBox>-->
             </StackPanel>
         </Grid>
     </Grid>
