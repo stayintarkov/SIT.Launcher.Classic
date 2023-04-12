@@ -64,7 +64,7 @@ namespace SIT.Launcher
                 AutomaticallyInstallAssemblyDlls = true,
                 AutomaticallyInstallSIT = true,
                 AutomaticallyInstallAkiSupport = true,
-                ServerInstance = new ServerInstance() { ServerAddress = "http://localhost:6969" }
+                ServerInstance = new ServerInstance() { ServerAddress = "http://127.0.0.1:6969" }
             };
             if(File.Exists(App.ApplicationDirectory + "LauncherConfig.json"))
                 launcherConfig = JsonConvert.DeserializeObject<LauncherConfig>(File.ReadAllText(App.ApplicationDirectory + "LauncherConfig.json"));
