@@ -211,53 +211,36 @@ namespace SIT.Launcher.DeObfus
         }
 
         
-
+        /// <summary>
+        /// This function adds sptUsec and sptBear to the EFT.WildSpawnType enum
+        /// </summary>
+        /// <param name="assembly"></param>
+        /// <param name="config"></param>
         private static void RemapAddSPTUsecAndBear(AssemblyDefinition assembly, AutoRemapperConfig config)
         {
             if (!config.EnableAddSPTUsecBearToDll)
                 return;
 
-            long sptUsecValue = 99; // 0x80000000;
-            //long usecValue = 0x07;
-            long sptBearValue = 100; // 0x100000000;
-            //long bearValue = 0x09;
+            long sptUsecValue = 99; 
+            long sptBearValue = 100;
 
             var botEnums = assembly.MainModule.GetType("EFT.WildSpawnType");
 
             if (botEnums.Fields.Any(x => x.Name == "sptUsec"))
                 return;
 
-            //long v = 0;
-            //foreach(var f in botEnums.Fields)
-            //{
-            //    f.Constant = v;
-            //    v++;
-            //}
-
             var sptUsec = new FieldDefinition("sptUsec",
                     Mono.Cecil.FieldAttributes.Public | Mono.Cecil.FieldAttributes.Static | Mono.Cecil.FieldAttributes.Literal | Mono.Cecil.FieldAttributes.HasDefault,
                     botEnums)
             { Constant = sptUsecValue };
-
-            //var Usec = new FieldDefinition("Usec`",
-            //       Mono.Cecil.FieldAttributes.Public | Mono.Cecil.FieldAttributes.Static | Mono.Cecil.FieldAttributes.Literal | Mono.Cecil.FieldAttributes.HasDefault,
-            //       botEnums)
-            //{ Constant = usecValue };
 
             var sptBear = new FieldDefinition("sptBear",
                     Mono.Cecil.FieldAttributes.Public | Mono.Cecil.FieldAttributes.Static | Mono.Cecil.FieldAttributes.Literal | Mono.Cecil.FieldAttributes.HasDefault,
                     botEnums)
             { Constant = sptBearValue };
 
-            //var Bear = new FieldDefinition("Bear",
-            //     Mono.Cecil.FieldAttributes.Public | Mono.Cecil.FieldAttributes.Static | Mono.Cecil.FieldAttributes.Literal | Mono.Cecil.FieldAttributes.HasDefault,
-            //     botEnums)
-            //{ Constant = bearValue };
-
             botEnums.Fields.Add(sptUsec);
-            //botEnums.Fields.Add(Usec);
             botEnums.Fields.Add(sptBear);
-            //botEnums.Fields.Add(Bear);
 
             Log($"Remapper: Added SPTUsec and SPTBear to EFT.WildSpawnType");
         }

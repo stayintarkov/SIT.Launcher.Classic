@@ -667,8 +667,33 @@
       "RenameClassNameTo": "BackendConfigManager",
       "HasFields": [],
       "HasMethodsStatic": [ "LoadApplicationConfig" ]
-    }
+    },
 
+
+    // -----------------------------------------
+    // BSG's connection to Web Server classes
+    //
+    {
+      "RenameClassNameTo": "TarkovRequestTransportHttp",
+      "HasFields": [ "LastSucceedResponse", "WebDiagnosticsEnabled" ],
+      "HasEvents": [ "OnSessionError", "OnErrorHandledWithResult" ],
+      "HasMethods": []
+    },
+    {
+      "RenameClassNameTo": "TarkovRequestTransportWS",
+      "HasMethods": [ "EstablishConnectionToUrl", "CloseConnection", "SendRequest", "SendNotification" ]
+    },
+    {
+      "RenameClassNameTo": "TarkovRequest",
+      "HasFields": [ "RequestId", "ProtocolType", "Crc", "CachedResponse", "CacheValidationConfigured", "Data", "MainURLFull" ],
+      "HasMethodsStatic": [ "CreateFromLegacyParams" ]
+    },
+    {
+      "RenameClassNameTo": "TarkovRequestParams",
+      "HasFields": [ "Params", "DefaultTimeoutSeconds", "NoRetries", "FirstCycleDelaySeconds", "SecondCycleDelaySeconds", "NextCycleDelaySeconds", "DefaultRetries", "MaximumRetries" ]
+    }
+    //
+    // -----------------------------------------
 
   ],
   "DefinedTypesToForcePublic": [
