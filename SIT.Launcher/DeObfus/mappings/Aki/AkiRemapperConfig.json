@@ -691,10 +691,16 @@
     {
       "RenameClassNameTo": "TarkovRequestParams",
       "HasFields": [ "Params", "DefaultTimeoutSeconds", "NoRetries", "FirstCycleDelaySeconds", "SecondCycleDelaySeconds", "NextCycleDelaySeconds", "DefaultRetries", "MaximumRetries" ]
-    }
+    },
     //
     // -----------------------------------------
 
+    {
+      "RenameClassNameTo": "WeaponEffectsManager",
+      "HasFields": [ "WeaponSounds_0" ],
+      "HasEvents": [ ],
+      "HasMethods": [ "MuzzleTransforms", "SetFireport", "DestroyAllPatronsInWeapon", "MoveAmmoFromChamberToShellPort", "RemoveAllShells", "StartSpawnShell", "PlayShotEffects" ]
+    }
   ],
   "DefinedTypesToForcePublic": [
     "BaseLocalGame"

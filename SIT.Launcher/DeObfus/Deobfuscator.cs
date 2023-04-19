@@ -194,11 +194,33 @@ namespace SIT.Launcher.DeObfus
                 {
                     if (oldAssembly != null)
                     {
-                        AutoRemapperConfig autoRemapperConfig = JsonConvert.DeserializeObject<AutoRemapperConfig>(File.ReadAllText(App.ApplicationDirectory + "//DeObfus/AutoRemapperConfig.json"));
+                        Log($"Deobfuscating: Run file BaseRemapperConfig.json");
+                        var autoRemapperConfig = JsonConvert.DeserializeObject<AutoRemapperConfig>(File.ReadAllText(App.ApplicationDirectory + "//DeObfus/BaseRemapperConfig.json"));
                         RemapByAutoConfiguration(oldAssembly, autoRemapperConfig);
                         RemapSwitchClassesToPublic(oldAssembly, autoRemapperConfig);
                         RemapByDefinedConfiguration(oldAssembly, autoRemapperConfig);
                         RemapAddSPTUsecAndBear(oldAssembly, autoRemapperConfig);
+
+                        foreach(var fI in Directory.GetFiles(App.ApplicationDirectory + "//DeObfus//mappings//", "*.json", SearchOption.AllDirectories).Select(x=> new FileInfo(x)))
+                        {
+                            if (!fI.Exists)
+                                continue;
+
+                            if (fI.Extension != ".json")
+                                continue;
+
+                            Log($"-Deobfuscating-Run file--------------------------------------------------------------------------------------");
+                            Log($"{fI.Name}");
+
+                            autoRemapperConfig = JsonConvert.DeserializeObject<AutoRemapperConfig>(File.ReadAllText(fI.FullName));
+                            RemapByAutoConfiguration(oldAssembly, autoRemapperConfig);
+                            RemapSwitchClassesToPublic(oldAssembly, autoRemapperConfig);
+                            RemapByDefinedConfiguration(oldAssembly, autoRemapperConfig);
+                            RemapAddSPTUsecAndBear(oldAssembly, autoRemapperConfig);
+
+                            Log(Environment.NewLine);
+
+                        }
 
                         oldAssembly.Write(assemblyPath.Replace(".dll", "-remapped.dll"));
                     }
@@ -218,7 +240,7 @@ namespace SIT.Launcher.DeObfus
         /// <param name="config"></param>
         private static void RemapAddSPTUsecAndBear(AssemblyDefinition assembly, AutoRemapperConfig config)
         {
-            if (!config.EnableAddSPTUsecBearToDll)
+            if (!config.EnableAddSPTUsecBearToDll.HasValue || !config.EnableAddSPTUsecBearToDll.Value)
                 return;
 
             long sptUsecValue = 99; 
@@ -247,9 +269,6 @@ namespace SIT.Launcher.DeObfus
 
         private static void RemapSwitchClassesToPublic(AssemblyDefinition assembly, AutoRemapperConfig autoRemapperConfig)
         {
-            //if (!autoRemapperConfig.EnableAutomaticRemapping)
-            //    return;
-
             int countOfPublications = 0;
             Log($"Remapper: Ensuring EFT classes are public");
             var nonPublicTypes = assembly
@@ -282,7 +301,7 @@ namespace SIT.Launcher.DeObfus
         /// <param name="autoRemapperConfig"></param>
         private static void RemapByAutoConfiguration(AssemblyDefinition oldAssembly, AutoRemapperConfig autoRemapperConfig)
         {
-            if (!autoRemapperConfig.EnableAutomaticRemapping)
+            if (!autoRemapperConfig.EnableAutomaticRemapping.HasValue || !autoRemapperConfig.EnableAutomaticRemapping.Value)
                 return;
 
             var gclasses = oldAssembly.MainModule.GetTypes().Where(x =>
@@ -296,67 +315,9 @@ namespace SIT.Launcher.DeObfus
                 // Renaming by the classes being in methods
                 //RemapAutoDiscoverAndCountByMethodParameters(gclassToNameCounts, t);
 
-
-                //foreach (var m in t.Methods)
-                //{ 
-                //    // --------------------------------------------------------
-                //    // Renaming by the classes by the return typed methods
-                //    if (m.Name.StartsWith("Read") && !m.ReturnType.Name.Contains("void", StringComparison.OrdinalIgnoreCase))
-                //    {
-                //        var n = m.ReturnType.Name
-                //            .Replace("[]", "")
-                //            .Replace("`1", "")
-                //            .Replace("&", "")
-                //            .Replace(" ", "")
-                //            + "."
-                //            + m.Name.Replace("Read", "", StringComparison.OrdinalIgnoreCase);
-                //        if (!gclassToNameCounts.ContainsKey(n))
-                //            gclassToNameCounts.Add(n, 0);
-
-                //        gclassToNameCounts[n]++;
-                //    }
-                //}
-
                 // --------------------------------------------------------
                 // Renaming by the classes being used as Members/Properties/Fields in other classes
                 RemapAutoDiscoverAndCountByProperties(gclassToNameCounts, t);
-
-                //    foreach (var prop in t.Fields.Where(p =>
-                //        p.FieldType.Name.StartsWith("GClass")
-                //        || p.FieldType.Name.StartsWith("GStruct")
-                //        || p.FieldType.Name.StartsWith("GInterface")
-                //        ))
-                //    {
-                //        if (prop.Name.StartsWith("GClass", StringComparison.OrdinalIgnoreCase)
-                //        || prop.Name.StartsWith("GStruct", StringComparison.OrdinalIgnoreCase)
-                //        || prop.Name.StartsWith("GInterface", StringComparison.OrdinalIgnoreCase)
-                //        || prop.Name.StartsWith("_")
-                //        || prop.Name.Contains("_")
-                //        || prop.Name.Contains("/")
-                //        )
-                //            continue;
-
-                //        //if(prop.Name == "AirplaneDataPacket")
-                //        //{
-
-                //        //}
-
-                //        var n = prop.FieldType.Name
-                //            .Replace("[]", "")
-                //            .Replace("`1", "")
-                //            .Replace("&", "")
-                //            .Replace(" ", "")
-                //            + "." + prop.Name;
-                //        if (!gclassToNameCounts.ContainsKey(n))
-                //            gclassToNameCounts.Add(n, 0);
-
-                //        gclassToNameCounts[n]++;
-                //        //if (gclassToNameCounts[n] > 1)
-                //        //{
-                //        //    gclassToNameCounts[n] = 0;
-                //        //}
-                //    }
-
 
             }
 
@@ -412,7 +373,7 @@ namespace SIT.Launcher.DeObfus
                 {
                     var oldClassName = t.Name;
                     t.Name = newClassName;
-                    //t.Namespace = "EFT";
+
                     renamedClasses.Add(oldClassName, newClassName);
                     Log($"Remapper: Auto Remapped {oldClassName} to {newClassName}");
                 }
@@ -451,6 +412,12 @@ namespace SIT.Launcher.DeObfus
                     }
                 }
             }
+
+            //foreach (var t in oldAssembly.MainModule.GetTypes())
+            //{
+            //    if (t.Namespace == "" || t.Namespace == null)
+            //        t.Namespace = "EFT";
+            //}
 
             // Testing stuff here.
             // Quick hack to name properties properly in EFT.Player
@@ -538,11 +505,6 @@ namespace SIT.Launcher.DeObfus
                     gclassToNameCounts.Add(n, 0);
 
                 gclassToNameCounts[n]++;
-                // this is shit and needs fixing
-                //if (gclassToNameCounts[n] > 1)
-                //{
-                //    gclassToNameCounts[n] = 0;
-                //}
             }
         }
 
@@ -553,8 +515,7 @@ namespace SIT.Launcher.DeObfus
                                 p.ParameterType.Name.StartsWith("GClass")
                                 || p.ParameterType.Name.StartsWith("GStruct")
                                 || p.ParameterType.Name.StartsWith("GInterface")
-                                //|| p.ParameterType.Name.StartsWith("Class")
-
+                                || p.ParameterType.Name.StartsWith("Class")
                                 )))
             {
                 // --------------------------------------------------------
@@ -564,7 +525,7 @@ namespace SIT.Launcher.DeObfus
                     x.ParameterType.Name.StartsWith("GClass")
                     || x.ParameterType.Name.StartsWith("GStruct")
                     || x.ParameterType.Name.StartsWith("GInterface")
-                    //|| x.ParameterType.Name.StartsWith("Class")
+                    || x.ParameterType.Name.StartsWith("Class")
                     ))
                 {
                     var n = p.ParameterType.Name
@@ -584,7 +545,7 @@ namespace SIT.Launcher.DeObfus
 
         private static void RemapByDefinedConfiguration(AssemblyDefinition oldAssembly, AutoRemapperConfig autoRemapperConfig)
         {
-            if (!autoRemapperConfig.EnableDefinedRemapping)
+            if (!autoRemapperConfig.EnableDefinedRemapping.HasValue || !autoRemapperConfig.EnableDefinedRemapping.Value)
                 return;
 
             int countOfDefinedMappingSucceeded = 0;

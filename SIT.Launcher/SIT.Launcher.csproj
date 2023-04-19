@@ -20,7 +20,7 @@
     <None Remove="AkiSupport\Bepinex\aki-custom.dll" />
     <None Remove="AkiSupport\Bepinex\Patchers\DONOTDELETE.txt" />
     <None Remove="AkiSupport\Bepinex\Plugins\DONOTDELETE.txt" />
-    <None Remove="DeObfus\AutoRemapperConfig.json" />
+    <None Remove="DeObfus\BaseRemapperConfig.json" />
     <None Remove="DeObfus\de4dot\AssemblyData.dll" />
     <None Remove="DeObfus\de4dot\de4dot.blocks.dll" />
     <None Remove="DeObfus\de4dot\de4dot.code.dll" />
@@ -28,6 +28,8 @@
     <None Remove="DeObfus\de4dot\de4dot.exe" />
     <None Remove="DeObfus\de4dot\de4dot.mdecrypt.dll" />
     <None Remove="DeObfus\de4dot\dnlib.dll" />
+    <None Remove="DeObfus\mappings\Aki\AkiRemapperConfig.json" />
+    <None Remove="DeObfus\mappings\SITRemapperConfig.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -55,7 +57,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 		</Content>
-	    <Content Include="DeObfus\AutoRemapperConfig.json">
+	    <Content Include="DeObfus\BaseRemapperConfig.json">
 	      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	    </Content>
 	    <Content Include="DeObfus\de4dot\AssemblyData.dll">
@@ -86,6 +88,12 @@
 	      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 		</Content>
+	    <Content Include="DeObfus\mappings\Aki\AkiRemapperConfig.json">
+	      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	    </Content>
+	    <Content Include="DeObfus\mappings\SIT\SITRemapperConfig.json">
+	      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	    </Content>
     <Content Include="References\Accessibility.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	<ExcludeFromSingleFile>true</ExcludeFromSingleFile>

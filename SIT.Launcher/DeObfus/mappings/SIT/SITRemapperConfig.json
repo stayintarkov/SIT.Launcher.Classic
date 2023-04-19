@@ -1,0 +1,146 @@
+{
+  // Enable/Disable the Automatic System of Remapping via Code
+  "EnableAutomaticRemapping": true,
+  // Enable/Disable the Defined Mapping list of Remapping - The defined list runs after the Automatic Remap
+  "EnableDefinedRemapping": true,
+  "DefinedRemapping": [
+    // ------------------------------------------------------------------------------------------
+    // SIT Remapping List
+    {
+      "RenameClassNameTo": "AbstractFirearmActioner",
+      "HasMethodsVirtual": [ "ShowGesture", "ReloadMag", "BlindFire", "OnFold" ]
+    },
+    {
+      "RenameClassNameTo": "ProfileInfo",
+      "HasFields": [ "Nickname", "GroupId" ],
+      "HasMethods": [ "AddBan", "GetBan" ]
+    },
+    {
+      "RenameClassNameTo": "PacketItemInteraction",
+      "HasMethods": [ "Serialize", "Deserialize" ],
+      "HasFields": [ "HasInteraction", "EInteractionType" ]
+    },
+    {
+      "RenameClassNameTo": "InteractionResult",
+      "HasFields": [ "InteractionType" ]
+    },
+    {
+      "RenameClassNameTo": "GridItemAddress",
+      "HasFields": [ "Item", "ContainerName", "Grid" ],
+      "HasMethods": [ "AddWithoutRestrictions" ]
+    },
+    {
+      "RenameClassNameTo": "UnderbarrelWeapon",
+      "HasFields": [ "Chambers", "UseAmmoWithoutShell" ],
+      "HasMethods": [ "GetBarrelDeviation" ]
+    },
+    {
+      "RenameClassNameTo": "MagazineTemplate",
+      // As MagazineClass and the MagazineTemplate are so close in fields, only find the first GClass version
+      "OnlyRemapFirstFoundType": true,
+      "MustBeGClass": true,
+      "HasFields": [ "Cartridges", "LoadUnloadModifier", "CheckTimeModifier", "CheckOverride", "ReloadMagType" ]
+    },
+    // Rename the main Backend Server Connection that sends/receives to the Backend Server
+    {
+      "RenameClassNameTo": "BackendServerConnection",
+      "OnlyRemapFirstFoundType": true,
+      "HasEvents": [ "OnSessionError" ],
+      "HasMethods": [ "CreateProfile", "GetProfileStatus", "GetGlobalConfig", "GetClientSettingsConfig", "SendMetrics" ],
+      "HasFields": [ "Profile", "AllProfiles", "BackEndConfig", "SocialNetwork", "ChatServers" ]
+    },
+    // 13.0.3 Squad Player
+    {
+      "RenameClassNameTo": "SquadPlayer",
+      "OnlyRemapFirstFoundType": true,
+      "MustBeGClass": true,
+      "HasFields": [ "IsLeader", "IsReady", "Info", "PlayerVisualRepresentation", "AccountId" ]
+    },
+    // 13.0.3 Squad Grouping
+    {
+      "RenameClassNameTo": "SquadGroupRaid",
+      "OnlyRemapFirstFoundType": true,
+      "MustBeGClass": true,
+      "HasFields": [ "Players", "RaidSettings" ]
+    },
+    {
+      "RenameClassNameTo": "IFilterCustomization",
+      "IsInterface": true,
+      "HasMethods": [ "FilterCustomization" ]
+    },
+    {
+      "RenameClassNameTo": "FilterCustomizationClass",
+      "IsClass": true,
+      "MustBeGClass": true,
+      "HasMethods": [ "FilterCustomization" ]
+    },
+    {
+      "RenameClassNameTo": "AStatisticsManager",
+      "IsClass": true,
+      "HasMethodsVirtual": [ "BeginStatisticsSession", "ExperienceGained", "LogDamage", "OnBodyPartRestored", "OnBodyPartRestored", "OnHealthChanged" ]
+    },
+    {
+      "RenameClassNameTo": "AStatisticsManagerForPlayer",
+      "IsClass": true,
+      "HasFields": [ "CurrentSessionLength" ],
+      "HasMethodsStatic": [ "ForeachItems" ],
+      "HasMethods": [ "BeginStatisticsSession" ]
+    },
+    {
+      "RenameClassNameTo": "StatisticsManagerForPlayer",
+      "IsClass": true,
+      "MustBeGClass": true,
+      "HasMethods": [ "ShowStatNotification" ]
+    },
+    {
+      "RenameClassNameTo": "BackendConfigManager",
+      "HasFields": [],
+      "HasMethodsStatic": [ "LoadApplicationConfig" ]
+    },
+
+
+    // -----------------------------------------
+    // BSG's connection to Web Server classes
+    //
+    {
+      "RenameClassNameTo": "TarkovRequestTransportHttp",
+      "HasFields": [ "LastSucceedResponse", "WebDiagnosticsEnabled" ],
+      "HasEvents": [ "OnSessionError", "OnErrorHandledWithResult" ],
+      "HasMethods": []
+    },
+    {
+      "RenameClassNameTo": "TarkovRequestTransportWS",
+      "HasMethods": [ "EstablishConnectionToUrl", "CloseConnection", "SendRequest", "SendNotification" ]
+    },
+    {
+      "RenameClassNameTo": "TarkovRequest",
+      "HasFields": [ "RequestId", "ProtocolType", "Crc", "CachedResponse", "CacheValidationConfigured", "Data", "MainURLFull" ],
+      "HasMethodsStatic": [ "CreateFromLegacyParams" ]
+    },
+    {
+      "RenameClassNameTo": "TarkovRequestParams",
+      "HasFields": [ "Params", "DefaultTimeoutSeconds", "NoRetries", "FirstCycleDelaySeconds", "SecondCycleDelaySeconds", "NextCycleDelaySeconds", "DefaultRetries", "MaximumRetries" ]
+    },
+    //
+    // -----------------------------------------
+
+    {
+      "RenameClassNameTo": "WeaponEffectsManager",
+      "HasFields": [ "WeaponSounds_0" ],
+      "HasEvents": [ ],
+      "HasMethods": [ "MuzzleTransforms", "SetFireport", "DestroyAllPatronsInWeapon", "MoveAmmoFromChamberToShellPort", "RemoveAllShells", "StartSpawnShell", "PlayShotEffects" ]
+    }
+  ],
+  "DefinedTypesToForcePublic": [
+    "BaseLocalGame"
+  ],
+  "TypesToForceAllPublicMethods": [
+    "BaseLocalGame",
+    "Player"
+  ],
+  "TypesToForceAllPublicFieldsAndProperties": [
+    //"BaseLocalGame"
+  ],
+  // Add SptUsec and SptBear to the Dll
+  "EnableAddSPTUsecBearToDll": true
+}
