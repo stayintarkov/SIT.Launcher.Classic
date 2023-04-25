@@ -45,6 +45,13 @@ namespace SIT.Launcher
             this.DataContext = this;
 
             this.Title = "SIT Launcher - " + App.ProductVersion.ToString();
+
+            this.Closing += MainWindow_Closing;
+        }
+
+        private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Config.Save();
         }
 
         public LauncherConfig Config { get; } = LauncherConfig.Instance;

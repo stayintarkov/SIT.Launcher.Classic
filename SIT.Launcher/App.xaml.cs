@@ -41,7 +41,8 @@ namespace SIT.Launcher
 
         public App()
         {
-            new DiscordInterop().StartDiscordClient("V." + ProductVersion);
+            if(Config.SendInfoToDiscord)
+                new DiscordInterop().StartDiscordClient("V." + ProductVersion);
         }
        
     }
