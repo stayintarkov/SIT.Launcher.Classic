@@ -123,12 +123,21 @@
     },
     //
     // -----------------------------------------
-
     {
       "RenameClassNameTo": "WeaponEffectsManager",
       "HasFields": [ "WeaponSounds_0" ],
-      "HasEvents": [ ],
+      "HasEvents": [],
       "HasMethods": [ "MuzzleTransforms", "SetFireport", "DestroyAllPatronsInWeapon", "MoveAmmoFromChamberToShellPort", "RemoveAllShells", "StartSpawnShell", "PlayShotEffects" ]
+    },
+    {
+      "RenameClassNameTo": "GridContainer",
+      "HasMethods": [ "AddItem", "AddItemWithoutRestrictions", "FindAll", "GetItemsForPlayer", "GetKnownItems", "GetSearchableInfo", "GetUnknownItems", "RemoveItem", "SetKnownItems", "SetSearched" ]
+    },
+    {
+      "RenameClassNameTo": "FoodAndDrink",
+      //"InheritsClass": "Item",
+      "HasFields": [ "FoodDrinkComponent", "HealthEffectsComponent" ],
+      "HasMethods": []
     }
   ],
   "DefinedTypesToForcePublic": [
