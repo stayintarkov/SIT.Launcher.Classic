@@ -171,6 +171,11 @@ namespace SIT.Launcher
                 if (messageBoxResult == MessageBoxResult.Yes)
                 {
                     returnData = requesting.PostJson("/launcher/profile/register", JsonConvert.SerializeObject(data));
+                    var messageBoxResultRegister = MessageBox.Show(
+                        "Your account has been registered. " + Environment.NewLine +
+                        "Due to an SPT-Aki error. You must start the game once, then ALT-F4 when the screen is blank, then start again to login!"
+                        , "Account"
+                        , MessageBoxButton.YesNo);
                 }
                 else
                 {
@@ -335,11 +340,11 @@ namespace SIT.Launcher
             UpdateButtonText("Installing BepInEx");
             await Task.Delay(500);
 
-            UpdateButtonText("Downloading BepInEx");
-            await Task.Delay(500);
-
             if (!File.Exists(App.ApplicationDirectory + "\\BepInEx5.zip"))
             {
+                UpdateButtonText("Downloading BepInEx");
+                await Task.Delay(500);
+
                 using (var ms = new MemoryStream())
                 {
                     using (var rStream = await new HttpClient().GetStreamAsync("https://github.com/BepInEx/BepInEx/releases/download/v5.4.21/BepInEx_x64_5.4.21.0.zip")) // response.GetResponseStream();
@@ -405,7 +410,12 @@ namespace SIT.Launcher
                 var github = new GitHubClient(new ProductHeaderValue("SIT-Launcher"));
                 var user = await github.User.Get("paulov-t");
                 var tarkovCoreReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Core", new ApiOptions() { });
-                var latestCore = tarkovCoreReleases.First(x => x.Prerelease == Config.AutomaticallyInstallSITPreRelease);
+                Release latestCore = null;
+                if(Config.AutomaticallyInstallSITPreRelease)
+                    latestCore = tarkovCoreReleases.OrderByDescending(x => x.CreatedAt).First(x => x.Prerelease);
+                else
+                    latestCore = tarkovCoreReleases.OrderByDescending(x => x.CreatedAt).First(x => !x.Prerelease);
+
                 var allAssets = latestCore.Assets.OrderByDescending(x => x.CreatedAt).DistinctBy(x => x.Name);
                 var allAssetsCount = allAssets.Count();
                 var assetIndex = 0;
