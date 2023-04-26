@@ -232,33 +232,50 @@ namespace SIT.Launcher
             // connect and get editions
             //var returnDataConnect = requesting.PostJson("/launcher/server/connect", JsonConvert.SerializeObject(data));
 
-            // attempt to login
-            var returnData = requesting.PostJson("/launcher/profile/login", JsonConvert.SerializeObject(data));
-
-            // If failed, attempt to register
-            if (returnData == "FAILED")
+            try
             {
-                var messageBoxResult = MessageBox.Show("Your account has not been found, would you like to register a new account with these credentials?", "Account", MessageBoxButton.YesNo);
-                if (messageBoxResult == MessageBoxResult.Yes)
-                {
-                    returnData = requesting.PostJson("/launcher/profile/register", JsonConvert.SerializeObject(data));
-                    var messageBoxResultRegister = MessageBox.Show(
-                        "Your account has been registered. " + Environment.NewLine +
-                        "Due to an SPT-Aki error. You must start the game once, then ALT-F4 when the screen is blank, then start again to login!"
-                        , "Account"
-                        , MessageBoxButton.YesNo);
-                }
-                else
-                {
-                    return null;
-                }
-            }
+                // attempt to login
+                var returnData = requesting.PostJson("/launcher/profile/login", JsonConvert.SerializeObject(data));
 
-            return returnData;
+                // If failed, attempt to register
+                if (returnData == "FAILED")
+                {
+                    var messageBoxResult = MessageBox.Show("Your account has not been found, would you like to register a new account with these credentials?", "Account", MessageBoxButton.YesNo);
+                    if (messageBoxResult == MessageBoxResult.Yes)
+                    {
+                        returnData = requesting.PostJson("/launcher/profile/register", JsonConvert.SerializeObject(data));
+                        var messageBoxResultRegister = MessageBox.Show(
+                            "Your account has been registered. " + Environment.NewLine +
+                            "Due to an SPT-Aki error. You must start the game once, then ALT-F4 when the screen is blank, then start again to login!"
+                            , "Account"
+                            , MessageBoxButton.YesNo);
+
+                        returnData = requesting.PostJson("/launcher/profile/login", JsonConvert.SerializeObject(data));
+
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+
+                return returnData;
+            }
+            catch (System.Net.WebException webEx)
+            {
+                MessageBox.Show(webEx.Message, "Unable to communicate with the Server");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Unable to communicate with the Server");
+            }
+            return null;
         }
 
         private async void btnLaunchGame_Click(object sender, RoutedEventArgs e)
         {
+            Config.Save();
+
             var returnData = LoginToServer();
 
             if (string.IsNullOrEmpty(returnData))

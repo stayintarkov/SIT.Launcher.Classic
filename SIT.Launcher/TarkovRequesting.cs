@@ -114,6 +114,7 @@ namespace SIT.Launcher
             request.Headers.Add("Accept-Encoding", "deflate");
 
             request.Method = method;
+            request.Timeout = 5000;
 
             if (method != "GET" && !string.IsNullOrEmpty(data))
             {
@@ -171,6 +172,7 @@ namespace SIT.Launcher
             request.Headers.Add("Accept-Encoding", "deflate");
 
             request.Method = method;
+            request.Timeout = 5000;
 
             if (method != "GET" && !string.IsNullOrEmpty(data))
             {
@@ -191,17 +193,9 @@ namespace SIT.Launcher
             }
 
             // get response stream
-            try
-            {
-                WebResponse response = request.GetResponse();
-                return response.GetResponseStream();
-            }
-            catch (Exception)
-            {
-
-            }
-
-            return null;
+            WebResponse response = request.GetResponse();
+            return response.GetResponseStream();
+           
         }
 
         public void PutJson(string url, string data, bool compress = true)
