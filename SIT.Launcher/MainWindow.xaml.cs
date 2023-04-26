@@ -1,4 +1,5 @@
-﻿using MahApps.Metro.Controls;
+﻿using FolderBrowserEx;
+using MahApps.Metro.Controls;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using Octokit;
@@ -46,7 +47,77 @@ namespace SIT.Launcher
 
             this.Title = "SIT Launcher - " + App.ProductVersion.ToString();
 
+            this.Loaded += MainWindow_Loaded;
+            this.ContentRendered += MainWindow_ContentRendered;
             this.Closing += MainWindow_Closing;
+        }
+
+        private void MainWindow_ContentRendered(object sender, EventArgs e)
+        {
+            NewInstallFromOfficial();
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private async void NewInstallFromOfficial()
+        {
+            if (string.IsNullOrEmpty(Config.InstallLocation))
+            {
+                if (MessageBox.Show("No OFFLINE install found. Would you like to install now?", "Install", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                {
+                    var fiOfficialGame = OfficialGameFinder.FindOfficialGame();
+                    if (fiOfficialGame == null)
+                        return;
+
+                    //FolderBrowserDialog folderBrowserDialogOfficial = new FolderBrowserDialog();
+                    //folderBrowserDialogOfficial.Title = "Select Official EFT Folder";
+                    //folderBrowserDialogOfficial.InitialFolder = Directory.GetParent(OfficialGameFinder.FindOfficialGame().FullName).FullName;
+                    //if (folderBrowserDialogOfficial.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    //{
+                        FolderBrowserDialog folderBrowserDialogOffline = new FolderBrowserDialog();
+                        folderBrowserDialogOffline.Title = "Select New Offline EFT Install Folder";
+                        if (folderBrowserDialogOffline.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                        {
+                            if (fiOfficialGame.DirectoryName == folderBrowserDialogOffline.SelectedFolder)
+                            {
+                                MessageBox.Show("You cannot install OFFLINE into your Official Folder!", "Install");
+                                NewInstallFromOfficial();
+                                return;
+                            }
+
+                            var exeLocation = string.Empty;
+
+                            var officialFiles = Directory
+                                .GetFiles(fiOfficialGame.DirectoryName, "*", new EnumerationOptions() { RecurseSubdirectories = true })
+                                .Select(x => new FileInfo(x));
+                            foreach (var file in officialFiles) 
+                            {
+                                await loadingDialog.UpdateAsync("Installing", $"Copying file: {file.Name}");
+                                var newFilePath = file.FullName.Replace(fiOfficialGame.DirectoryName, folderBrowserDialogOffline.SelectedFolder);
+                                Directory.CreateDirectory(Directory.GetParent(newFilePath).FullName);
+
+                                var fiNewFile = new FileInfo(newFilePath);
+                                if (!fiNewFile.Exists || fiNewFile.LastWriteTime < file.LastWriteTime)
+                                    file.CopyTo(newFilePath, true);
+
+                                if (newFilePath.Contains("EscapeFromTarkov.exe"))
+                                    exeLocation = newFilePath;
+                            }
+
+                            Config.InstallLocation = folderBrowserDialogOffline.SelectedFolder + "\\EscapeFromTarkov.exe";
+                            this.DataContext = null;
+                            this.DataContext = this;
+
+                            CleanupDirectory(exeLocation);
+                            UpdateButtonText(null);
+
+                            await loadingDialog.UpdateAsync(null, null);
+                        }
+                    //}
+                }
+            }
         }
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -452,6 +523,9 @@ namespace SIT.Launcher
                             File.Copy(assemblyLocation, assemblyLocation + ".backup");
                             File.Copy(clientModDLL, assemblyLocation, true);
                         }
+
+                        if (Config.ForceInstallLatestSIT)
+                            File.Copy(clientModDLL, assemblyLocation, true);
                     }
                     else
                     {
@@ -464,6 +538,9 @@ namespace SIT.Launcher
                             shouldCopy = (fiExistingMod.LastWriteTime < createdDateOfDownloadedAsset);
                         }
                         else
+                            shouldCopy = true;
+
+                        if (Config.ForceInstallLatestSIT)
                             shouldCopy = true;
 
                         if (shouldCopy)
@@ -760,6 +837,15 @@ namespace SIT.Launcher
                 txtServerLog.Text += e.Data ?? e.Data;
             
             });
+        }
+
+        private void btnChangeOfflineInstallPath_Click(object sender, RoutedEventArgs e)
+        {
+            Config.InstallLocation = null;
+            BrowseForOfflineGame();
+            Config.Save();
+            this.DataContext = null;
+            this.DataContext = this;
         }
     }
 }

@@ -37,7 +37,7 @@ namespace SIT.Launcher
 
         public ICollection<ServerInstance> ServerInstances { get; set; }
 
-        public ServerInstance ServerInstance { get; set; } = new ServerInstance() { ServerAddress = "https://localhost:443" };
+        public ServerInstance ServerInstance { get; set; } = new ServerInstance() { ServerAddress = "https://127.0.0.1:443" };
 
         public string Username { get; set; }
 
@@ -49,12 +49,12 @@ namespace SIT.Launcher
 
         public bool AutomaticallyInstallSIT { get; set; } = true;
         public bool AutomaticallyInstallSITPreRelease { get; set; } = false;
-
+        public bool ForceInstallLatestSIT { get; set; } = false;
         public bool AutomaticallyInstallAkiSupport { get; set; } = true;
 
         public bool EnableCoopServer { get; set; } = false;
 
-        public bool SendInfoToDiscord { get; set; } = true;
+        public bool SendInfoToDiscord { get; set; } = false;
 
         private static LauncherConfig Load()
         {
