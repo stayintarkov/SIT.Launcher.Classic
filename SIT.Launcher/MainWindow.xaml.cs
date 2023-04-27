@@ -328,13 +328,25 @@ namespace SIT.Launcher
             btnLaunchGame.IsEnabled = false;
 
             var installLocation = Config.InstallLocation;
-            await DownloadAndInstallBepInEx5(installLocation);
+            if(!await DownloadAndInstallBepInEx5(installLocation))
+            {
+                MessageBox.Show("Install and Start aborted");
+                return;
+            }
 
-            await DownloadAndInstallSIT(installLocation);
+            if (!await DownloadAndInstallSIT(installLocation))
+            {
+                MessageBox.Show("Install and Start aborted");
+                return;
+            }
 
-           
             // Copy Aki Dlls for support
-            DownloadAndInstallAki(installLocation);
+            if (!await DownloadAndInstallAki(installLocation))
+            {
+                MessageBox.Show("Install and Start aborted");
+                return;
+            }
+            
 
             // Deobfuscate Assembly-CSharp
             if (Config.AutomaticallyDeobfuscateDlls
@@ -415,47 +427,56 @@ namespace SIT.Launcher
             }
         }
 
-        private async Task DownloadAndInstallBepInEx5(string exeLocation)
+        private async Task<bool> DownloadAndInstallBepInEx5(string exeLocation)
         {
-            var baseGamePath = Directory.GetParent(exeLocation).FullName;
-            var bepinexPath = System.IO.Path.Combine(exeLocation.Replace("EscapeFromTarkov.exe", "BepInEx"));
-            var bepinexWinHttpDLL = exeLocation.Replace("EscapeFromTarkov.exe", "winhttp.dll");
-
-            var bepinexCorePath = System.IO.Path.Combine(bepinexPath, "core");
-            var bepinexPluginsPath = System.IO.Path.Combine(bepinexPath, "plugins");
-            
-
-            UpdateButtonText("Installing BepInEx");
-            await Task.Delay(500);
-
-            if (!File.Exists(App.ApplicationDirectory + "\\BepInEx5.zip"))
+            try
             {
-                UpdateButtonText("Downloading BepInEx");
+                var baseGamePath = Directory.GetParent(exeLocation).FullName;
+                var bepinexPath = System.IO.Path.Combine(exeLocation.Replace("EscapeFromTarkov.exe", "BepInEx"));
+                var bepinexWinHttpDLL = exeLocation.Replace("EscapeFromTarkov.exe", "winhttp.dll");
+
+                var bepinexCorePath = System.IO.Path.Combine(bepinexPath, "core");
+                var bepinexPluginsPath = System.IO.Path.Combine(bepinexPath, "plugins");
+
+
+                UpdateButtonText("Installing BepInEx");
                 await Task.Delay(500);
 
-                using (var ms = new MemoryStream())
+                if (!File.Exists(App.ApplicationDirectory + "\\BepInEx5.zip"))
                 {
-                    using (var rStream = await new HttpClient().GetStreamAsync("https://github.com/BepInEx/BepInEx/releases/download/v5.4.21/BepInEx_x64_5.4.21.0.zip")) // response.GetResponseStream();
+                    UpdateButtonText("Downloading BepInEx");
+                    await Task.Delay(500);
+
+                    using (var ms = new MemoryStream())
                     {
-                        rStream.CopyTo(ms);
-                        await File.WriteAllBytesAsync(App.ApplicationDirectory + "\\BepInEx5.zip", ms.ToArray());
+                        using (var rStream = await new HttpClient().GetStreamAsync("https://github.com/BepInEx/BepInEx/releases/download/v5.4.21/BepInEx_x64_5.4.21.0.zip")) // response.GetResponseStream();
+                        {
+                            rStream.CopyTo(ms);
+                            await File.WriteAllBytesAsync(App.ApplicationDirectory + "\\BepInEx5.zip", ms.ToArray());
+                        }
                     }
                 }
+
+                if (Directory.Exists(bepinexCorePath) && Directory.Exists(bepinexPluginsPath) && File.Exists(bepinexWinHttpDLL))
+                    return true;
+
+                UpdateButtonText("Installing BepInEx");
+
+                System.IO.Compression.ZipFile.ExtractToDirectory(App.ApplicationDirectory + "\\BepInEx5.zip", baseGamePath, true);
+                if (!Directory.Exists(bepinexPluginsPath))
+                {
+                    Directory.CreateDirectory(bepinexPluginsPath);
+                }
             }
-
-            if (Directory.Exists(bepinexCorePath) && Directory.Exists(bepinexPluginsPath) && File.Exists(bepinexWinHttpDLL))
-                return;
-
-            UpdateButtonText("Installing BepInEx");
-
-            System.IO.Compression.ZipFile.ExtractToDirectory(App.ApplicationDirectory + "\\BepInEx5.zip", baseGamePath, true);
-            if (!Directory.Exists(bepinexPluginsPath))
-            {
-                Directory.CreateDirectory(bepinexPluginsPath);
+            catch(Exception ex) 
+            { 
+                MessageBox.Show($"Unable to Install BepInEx: {ex.Message}", "Error");
+                return false;
             }
 
             UpdateButtonText(null);
             btnLaunchGame.IsEnabled = true;
+            return true;
 
         }
 
@@ -471,16 +492,12 @@ namespace SIT.Launcher
             }
 
             btnLaunchGame.Content = LaunchButtonText;
-
-            //if(Config.SendInfoToDiscord)
-            //    DiscordInterop.DiscordRpcClient.UpdateDetails(text);
-
         }
 
-        private async Task DownloadAndInstallSIT(string exeLocation)
+        private async Task<bool> DownloadAndInstallSIT(string exeLocation)
         {
             if (!Config.AutomaticallyInstallSIT)
-                return;
+                return true;
 
             var baseGamePath = Directory.GetParent(exeLocation).FullName;
             var bepinexPath = exeLocation.Replace("EscapeFromTarkov.exe", "");
@@ -488,7 +505,7 @@ namespace SIT.Launcher
 
             var bepinexPluginsPath = bepinexPath + "\\plugins\\";
             if (!Directory.Exists(bepinexPluginsPath))
-                return;
+                return false;
 
             UpdateButtonText("Downloading SIT");
 
@@ -565,11 +582,13 @@ namespace SIT.Launcher
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                var r = MessageBox.Show("Unable to download and install SIT", "Error");
+                MessageBox.Show($"Unable to download and install SIT.{Environment.NewLine} {ex.Message}", "Error");
+                return false;
             }
 
+            return true;
 
 
         }
@@ -594,78 +613,89 @@ namespace SIT.Launcher
         }
 
 
-        private void DownloadAndInstallAki(string exeLocation)
+        private async Task<bool> DownloadAndInstallAki(string exeLocation)
         {
             if (!Config.AutomaticallyInstallAkiSupport)
-                return;
+                return true;
 
-            var bepinexPluginsPath = GetBepInExPluginsPath(exeLocation);
-            var bepinexPatchersPath = GetBepInExPatchersPath(exeLocation);
-
-            // Discover where Assembly-CSharp is within the Game Folders
-            var managedPath = exeLocation.Replace("EscapeFromTarkov.exe", "");
-            managedPath += "EscapeFromTarkov_Data\\Managed\\";
-
-            List<FileInfo> fiAkiManagedFiles = Directory.GetFiles(App.ApplicationDirectory + "/AkiSupport/Managed").Select(x => new FileInfo(x)).ToList();
-
-            DirectoryInfo diManaged = new DirectoryInfo(managedPath);
-            if (diManaged.Exists)
+            try
             {
-                foreach(var fileInfo in fiAkiManagedFiles)
+
+                var bepinexPluginsPath = GetBepInExPluginsPath(exeLocation);
+                var bepinexPatchersPath = GetBepInExPatchersPath(exeLocation);
+
+                // Discover where Assembly-CSharp is within the Game Folders
+                var managedPath = exeLocation.Replace("EscapeFromTarkov.exe", "");
+                managedPath += "EscapeFromTarkov_Data\\Managed\\";
+
+                List<FileInfo> fiAkiManagedFiles = Directory.GetFiles(App.ApplicationDirectory + "/AkiSupport/Managed").Select(x => new FileInfo(x)).ToList();
+
+                DirectoryInfo diManaged = new DirectoryInfo(managedPath);
+                if (diManaged.Exists)
                 {
-                    var path = System.IO.Path.Combine(managedPath, fileInfo.Name);
+                    foreach (var fileInfo in fiAkiManagedFiles)
+                    {
+                        var path = System.IO.Path.Combine(managedPath, fileInfo.Name);
 
-                    // DO NOT OVERWRITE IF NEWER VERSION OF AKI EXISTS IN DIRECTORY
-                    var existingFI = new FileInfo(path);
-                    if (existingFI.Exists && existingFI.LastWriteTime > fileInfo.LastWriteTime)
-                        return;
+                        // DO NOT OVERWRITE IF NEWER VERSION OF AKI EXISTS IN DIRECTORY
+                        var existingFI = new FileInfo(path);
+                        if (existingFI.Exists && existingFI.LastWriteTime > fileInfo.LastWriteTime)
+                            continue;
 
-                    fileInfo.CopyTo(path, true);
+                        fileInfo.CopyTo(path, true);
+                    }
+                }
+
+                List<FileInfo> fiAkiBepinexPluginsFiles = Directory.GetFiles(App.ApplicationDirectory + "/AkiSupport/Bepinex/Plugins").Select(x => new FileInfo(x)).ToList();
+                DirectoryInfo diBepinex = new DirectoryInfo(bepinexPluginsPath);
+                if (diBepinex.Exists)
+                {
+                    // Delete any existing plugins in BepInEx folder. They won't work with SIT.
+                    List<FileInfo> fiAkiExistingPlugins = Directory.GetFiles(bepinexPluginsPath).Where(x => x.StartsWith("aki-", StringComparison.OrdinalIgnoreCase)).Select(x => new FileInfo(x)).ToList();
+                    foreach (var fileInfo in fiAkiExistingPlugins)
+                    {
+                        fileInfo.Delete();
+                    }
+
+                    // Install any compatible Plugins from SIT Launcher
+                    foreach (var fileInfo in fiAkiBepinexPluginsFiles)
+                    {
+                        var existingPath = System.IO.Path.Combine(bepinexPluginsPath, fileInfo.Name);
+
+                        // DO NOT OVERWRITE IF NEWER VERSION OF AKI EXISTS IN DIRECTORY
+                        var existingFI = new FileInfo(existingPath);
+                        if (existingFI.Exists && existingFI.LastWriteTime > fileInfo.LastWriteTime)
+                            continue;
+
+                        fileInfo.CopyTo(existingPath, true);
+                    }
+                }
+
+                List<FileInfo> fiAkiBepinexPatchersFiles = Directory.GetFiles(App.ApplicationDirectory + "/AkiSupport/Bepinex/Patchers").Select(x => new FileInfo(x)).ToList();
+                DirectoryInfo diBepinexPatchers = new DirectoryInfo(bepinexPatchersPath);
+                if (diBepinexPatchers.Exists)
+                {
+                    foreach (var fileInfo in fiAkiBepinexPatchersFiles)
+                    {
+                        //var existingPath = System.IO.Path.Combine(bepinexPatchersPath, fileInfo.Name); // Patcher is causing problems
+                        var existingPath = System.IO.Path.Combine(bepinexPluginsPath, fileInfo.Name);
+
+                        // DO NOT OVERWRITE IF NEWER VERSION OF AKI EXISTS IN DIRECTORY
+                        var existingFI = new FileInfo(existingPath);
+                        if (existingFI.Exists && existingFI.LastWriteTime > fileInfo.LastWriteTime)
+                            continue;
+
+                        fileInfo.CopyTo(existingPath, true);
+                    }
                 }
             }
-
-            List<FileInfo> fiAkiBepinexPluginsFiles = Directory.GetFiles(App.ApplicationDirectory + "/AkiSupport/Bepinex/Plugins").Select(x => new FileInfo(x)).ToList();
-            DirectoryInfo diBepinex = new DirectoryInfo(bepinexPluginsPath);
-            if (diBepinex.Exists)
+            catch (Exception ex)
             {
-                // Delete any existing plugins in BepInEx folder. They won't work with SIT.
-                List<FileInfo> fiAkiExistingPlugins = Directory.GetFiles(bepinexPluginsPath).Where(x => x.StartsWith("aki-", StringComparison.OrdinalIgnoreCase)).Select(x => new FileInfo(x)).ToList();
-                foreach (var fileInfo in fiAkiExistingPlugins)
-                {
-                    fileInfo.Delete();
-                }
-
-                // Install any compatible Plugins from SIT Launcher
-                foreach (var fileInfo in fiAkiBepinexPluginsFiles)
-                {
-                    var existingPath = System.IO.Path.Combine(bepinexPluginsPath, fileInfo.Name);
-
-                    // DO NOT OVERWRITE IF NEWER VERSION OF AKI EXISTS IN DIRECTORY
-                    var existingFI = new FileInfo(existingPath);
-                    if (existingFI.Exists && existingFI.LastWriteTime > fileInfo.LastWriteTime)
-                        return;
-
-                    fileInfo.CopyTo(existingPath, true);
-                }
+                MessageBox.Show($"Unable to download and install Aki.{Environment.NewLine} {ex.Message}", "Error");
+                return false;
             }
 
-            List<FileInfo> fiAkiBepinexPatchersFiles = Directory.GetFiles(App.ApplicationDirectory + "/AkiSupport/Bepinex/Patchers").Select(x => new FileInfo(x)).ToList();
-            DirectoryInfo diBepinexPatchers = new DirectoryInfo(bepinexPatchersPath);
-            if (diBepinexPatchers.Exists)
-            {
-                foreach (var fileInfo in fiAkiBepinexPatchersFiles)
-                {
-                    //var existingPath = System.IO.Path.Combine(bepinexPatchersPath, fileInfo.Name); // Patcher is causing problems
-                    var existingPath = System.IO.Path.Combine(bepinexPluginsPath, fileInfo.Name);
-
-                    // DO NOT OVERWRITE IF NEWER VERSION OF AKI EXISTS IN DIRECTORY
-                    var existingFI = new FileInfo(existingPath);
-                    if (existingFI.Exists && existingFI.LastWriteTime > fileInfo.LastWriteTime)
-                        return;
-
-                    fileInfo.CopyTo(existingPath, true);
-                }
-            }
+            return true;
 
         }
 
