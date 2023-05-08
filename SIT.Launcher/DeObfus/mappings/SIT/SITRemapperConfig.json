@@ -138,6 +138,12 @@
       //"InheritsClass": "Item",
       "HasFields": [ "FoodDrinkComponent", "HealthEffectsComponent" ],
       "HasMethods": []
+    },
+    {
+      "RenameClassNameTo": "IThrowableCallback",
+      "IsInterface": true,
+      "HasFields": [],
+      "HasMethods": [ "HighThrow", "LowThrow", "CanThrow" ]
     }
   ],
   "DefinedTypesToForcePublic": [

@@ -641,7 +641,11 @@ namespace SIT.Launcher.DeObfus
                     continue;
 
                 foreach (var parameter in method.Parameters
-                    .Where(x => x.ParameterType.Name.StartsWith("GClass") || x.ParameterType.Name.StartsWith("GStruct"))
+                    .Where(x => 
+                    x.ParameterType.Name.StartsWith("GClass") 
+                    || x.ParameterType.Name.StartsWith("GStruct") 
+                    || x.ParameterType.Name.StartsWith("GInterface")
+                    )
                     .Where(x => x.Name.Length > 3)
                     )
                 {
