@@ -628,11 +628,15 @@ namespace SIT.Launcher
                 var managedPath = exeLocation.Replace("EscapeFromTarkov.exe", "");
                 managedPath += "EscapeFromTarkov_Data\\Managed\\";
 
-                List<FileInfo> fiAkiManagedFiles = Directory.GetFiles(App.ApplicationDirectory + "/AkiSupport/Managed").Select(x => new FileInfo(x)).ToList();
-
+                var sitLauncherAkiSupportManagedPath = App.ApplicationDirectory + "/AkiSupport/Managed";
+                var sitLauncherAkiSupportBepinexPluginsPath = App.ApplicationDirectory + "/AkiSupport/Bepinex/Plugins";
+                var sitLauncherAkiSupportBepinexPatchersPath = App.ApplicationDirectory + "/AkiSupport/Bepinex/Patchers";
+                DirectoryInfo diAkiSupportManaged = new DirectoryInfo(sitLauncherAkiSupportManagedPath);
                 DirectoryInfo diManaged = new DirectoryInfo(managedPath);
-                if (diManaged.Exists)
+
+                if (diManaged.Exists && diAkiSupportManaged.Exists)
                 {
+                    List<FileInfo> fiAkiManagedFiles = Directory.GetFiles(sitLauncherAkiSupportManagedPath).Select(x => new FileInfo(x)).ToList();
                     foreach (var fileInfo in fiAkiManagedFiles)
                     {
                         var path = System.IO.Path.Combine(managedPath, fileInfo.Name);
@@ -646,10 +650,12 @@ namespace SIT.Launcher
                     }
                 }
 
-                List<FileInfo> fiAkiBepinexPluginsFiles = Directory.GetFiles(App.ApplicationDirectory + "/AkiSupport/Bepinex/Plugins").Select(x => new FileInfo(x)).ToList();
+                DirectoryInfo diAkiSupportBepinexPlugins = new DirectoryInfo(sitLauncherAkiSupportBepinexPluginsPath);
                 DirectoryInfo diBepinex = new DirectoryInfo(bepinexPluginsPath);
-                if (diBepinex.Exists)
+                if (diBepinex.Exists && diAkiSupportBepinexPlugins.Exists)
                 {
+                    List<FileInfo> fiAkiBepinexPluginsFiles = Directory.GetFiles(sitLauncherAkiSupportBepinexPluginsPath).Select(x => new FileInfo(x)).ToList();
+
                     // Delete any existing plugins in BepInEx folder. They won't work with SIT.
                     List<FileInfo> fiAkiExistingPlugins = Directory.GetFiles(bepinexPluginsPath).Where(x => x.StartsWith("aki-", StringComparison.OrdinalIgnoreCase)).Select(x => new FileInfo(x)).ToList();
                     foreach (var fileInfo in fiAkiExistingPlugins)
@@ -671,9 +677,10 @@ namespace SIT.Launcher
                     }
                 }
 
-                List<FileInfo> fiAkiBepinexPatchersFiles = Directory.GetFiles(App.ApplicationDirectory + "/AkiSupport/Bepinex/Patchers").Select(x => new FileInfo(x)).ToList();
+                List<FileInfo> fiAkiBepinexPatchersFiles = Directory.GetFiles(sitLauncherAkiSupportBepinexPatchersPath).Select(x => new FileInfo(x)).ToList();
                 DirectoryInfo diBepinexPatchers = new DirectoryInfo(bepinexPatchersPath);
-                if (diBepinexPatchers.Exists)
+                DirectoryInfo diAkiSupportBepinexPatchersPlugins = new DirectoryInfo(sitLauncherAkiSupportBepinexPatchersPath);
+                if (diBepinexPatchers.Exists && diAkiSupportBepinexPatchersPlugins.Exists)
                 {
                     foreach (var fileInfo in fiAkiBepinexPatchersFiles)
                     {

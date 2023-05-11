@@ -33,7 +33,7 @@ namespace SIT.Launcher
         {
             get
             {
-                return Directory.GetParent(Process.GetCurrentProcess().MainModule.FileName).FullName + "\\";
+                return AppContext.BaseDirectory + "\\";//  Directory.GetParent(Process.GetCurrentProcess().MainModule.FileName).FullName + "\\";
             }
         }
         public LauncherConfig Config { get; } = LauncherConfig.Instance;
