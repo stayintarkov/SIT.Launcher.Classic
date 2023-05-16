@@ -325,6 +325,15 @@ namespace SIT.Launcher
 
         private async Task DownloadInstallAndStartGame(string sessionId)
         {
+            //Dont know if these folders are even needed anymore or planned to be removed
+            //but this should fix the path error caused when /AkiSupport/Bepinex/Patchers/ path is missing
+            var akiSupportFolderExists = Directory.Exists(App.ApplicationDirectory + "/AkiSupport/Bepinex/Patchers");
+
+            if (!akiSupportFolderExists)
+            {
+                Directory.CreateDirectory(App.ApplicationDirectory + "/AkiSupport/Bepinex/Patchers");
+            }
+
             btnLaunchGame.IsEnabled = false;
 
             var installLocation = Config.InstallLocation;
