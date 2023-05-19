@@ -63,7 +63,16 @@ namespace SIT.Launcher
 
         private async void NewInstallFromOfficial()
         {
-            if (string.IsNullOrEmpty(Config.InstallLocation))
+            // Brand new setup of SIT
+            if (string.IsNullOrEmpty(Config.InstallLocation) 
+                
+                // Config Install Location exists, but the install location looks suspiciuosly like a direct copy of Live
+                // Check BepInEx
+                || !DoesBepInExExistInInstall(Config.InstallLocation)
+                // Check SIT.Core
+                || !IsSITCoreInstalled(Config.InstallLocation)
+                
+                )
             {
                 if (MessageBox.Show("No OFFLINE install found. Would you like to install now?", "Install", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
@@ -71,51 +80,50 @@ namespace SIT.Launcher
                     if (fiOfficialGame == null)
                         return;
 
-                    //FolderBrowserDialog folderBrowserDialogOfficial = new FolderBrowserDialog();
-                    //folderBrowserDialogOfficial.Title = "Select Official EFT Folder";
-                    //folderBrowserDialogOfficial.InitialFolder = Directory.GetParent(OfficialGameFinder.FindOfficialGame().FullName).FullName;
-                    //if (folderBrowserDialogOfficial.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                    //{
-                        FolderBrowserDialog folderBrowserDialogOffline = new FolderBrowserDialog();
-                        folderBrowserDialogOffline.Title = "Select New Offline EFT Install Folder";
-                        if (folderBrowserDialogOffline.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    FolderBrowserDialog folderBrowserDialogOffline = new FolderBrowserDialog();
+                    folderBrowserDialogOffline.Title = "Select New Offline EFT Install Folder";
+                    if (folderBrowserDialogOffline.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    {
+                        if (fiOfficialGame.DirectoryName == folderBrowserDialogOffline.SelectedFolder)
                         {
-                            if (fiOfficialGame.DirectoryName == folderBrowserDialogOffline.SelectedFolder)
-                            {
-                                MessageBox.Show("You cannot install OFFLINE into your Official Folder!", "Install");
-                                NewInstallFromOfficial();
-                                return;
-                            }
-
-                            var exeLocation = string.Empty;
-
-                            var officialFiles = Directory
-                                .GetFiles(fiOfficialGame.DirectoryName, "*", new EnumerationOptions() { RecurseSubdirectories = true })
-                                .Select(x => new FileInfo(x));
-                            foreach (var file in officialFiles) 
-                            {
-                                await loadingDialog.UpdateAsync("Installing", $"Copying file: {file.Name}");
-                                var newFilePath = file.FullName.Replace(fiOfficialGame.DirectoryName, folderBrowserDialogOffline.SelectedFolder);
-                                Directory.CreateDirectory(Directory.GetParent(newFilePath).FullName);
-
-                                var fiNewFile = new FileInfo(newFilePath);
-                                if (!fiNewFile.Exists || fiNewFile.LastWriteTime < file.LastWriteTime)
-                                    file.CopyTo(newFilePath, true);
-
-                                if (newFilePath.Contains("EscapeFromTarkov.exe"))
-                                    exeLocation = newFilePath;
-                            }
-
-                            Config.InstallLocation = folderBrowserDialogOffline.SelectedFolder + "\\EscapeFromTarkov.exe";
-                            this.DataContext = null;
-                            this.DataContext = this;
-
-                            CleanupDirectory(exeLocation);
-                            UpdateButtonText(null);
-
-                            await loadingDialog.UpdateAsync(null, null);
+                            MessageBox.Show("You cannot install OFFLINE into your Official Folder!", "Install");
+                            NewInstallFromOfficial();
+                            return;
                         }
-                    //}
+
+                        var exeLocation = string.Empty;
+
+                        var officialFiles = Directory
+                            .GetFiles(fiOfficialGame.DirectoryName, "*", new EnumerationOptions() { RecurseSubdirectories = true })
+                            .Select(x => new FileInfo(x));
+                        foreach (var file in officialFiles) 
+                        {
+                            await loadingDialog.UpdateAsync("Installing", $"Copying file: {file.Name}");
+                            var newFilePath = file.FullName.Replace(fiOfficialGame.DirectoryName, folderBrowserDialogOffline.SelectedFolder);
+                            Directory.CreateDirectory(Directory.GetParent(newFilePath).FullName);
+
+                            var fiNewFile = new FileInfo(newFilePath);
+                            if (!fiNewFile.Exists || fiNewFile.LastWriteTime < file.LastWriteTime)
+                                file.CopyTo(newFilePath, true);
+
+                            if (newFilePath.Contains("EscapeFromTarkov.exe"))
+                                exeLocation = newFilePath;
+                        }
+
+                        Config.InstallLocation = folderBrowserDialogOffline.SelectedFolder + "\\EscapeFromTarkov.exe";
+                        this.DataContext = null;
+                        this.DataContext = this;
+
+                        await loadingDialog.UpdateAsync("Installing", $"Cleaning EFT OFFLINE Directory");
+                        CleanupDirectory(exeLocation);
+                        await loadingDialog.UpdateAsync("Installing", $"Installing BepInEx");
+                        await DownloadAndInstallBepInEx5(exeLocation);
+                        await loadingDialog.UpdateAsync("Installing", $"Installing SIT.Core");
+                        await DownloadAndInstallSIT(exeLocation);
+                        UpdateButtonText(null);
+
+                        await loadingDialog.UpdateAsync(null, null);
+                    }
                 }
             }
         }
@@ -429,6 +437,18 @@ namespace SIT.Launcher
             }
         }
 
+        private bool DoesBepInExExistInInstall(string exeLocation)
+        {
+            var baseGamePath = Directory.GetParent(exeLocation).FullName;
+            var bepinexPath = System.IO.Path.Combine(exeLocation.Replace("EscapeFromTarkov.exe", "BepInEx"));
+            var bepinexWinHttpDLL = exeLocation.Replace("EscapeFromTarkov.exe", "winhttp.dll");
+
+            var bepinexCorePath = System.IO.Path.Combine(bepinexPath, "core");
+            var bepinexPluginsPath = System.IO.Path.Combine(bepinexPath, "plugins");
+
+            return (Directory.Exists(bepinexCorePath) && Directory.Exists(bepinexPluginsPath) && File.Exists(bepinexWinHttpDLL));
+        }
+
         private async Task<bool> DownloadAndInstallBepInEx5(string exeLocation)
         {
             try
@@ -459,7 +479,7 @@ namespace SIT.Launcher
                     }
                 }
 
-                if (Directory.Exists(bepinexCorePath) && Directory.Exists(bepinexPluginsPath) && File.Exists(bepinexWinHttpDLL))
+                if (DoesBepInExExistInInstall(exeLocation))
                     return true;
 
                 UpdateButtonText("Installing BepInEx");
@@ -496,10 +516,24 @@ namespace SIT.Launcher
             btnLaunchGame.Content = LaunchButtonText;
         }
 
-        private async Task<bool> DownloadAndInstallSIT(string exeLocation)
+        private bool IsSITCoreInstalled(string exeLocation)
         {
-            if (!Config.AutomaticallyInstallSIT)
+            var baseGamePath = Directory.GetParent(exeLocation).FullName;
+            var bepinexPath = exeLocation.Replace("EscapeFromTarkov.exe", "");
+            bepinexPath += "BepInEx";
+
+            var bepinexPluginsPath = bepinexPath + "\\plugins\\";
+            if (!Directory.Exists(bepinexPluginsPath))
+                return false;
+
+            return File.Exists(bepinexPluginsPath + "SIT.Core.dll");
+        }
+
+        private async Task<bool> DownloadAndInstallSIT(string exeLocation, bool forceInstall = false)
+        {
+            if (!Config.AutomaticallyInstallSIT && IsSITCoreInstalled(exeLocation))
                 return true;
+
 
             var baseGamePath = Directory.GetParent(exeLocation).FullName;
             var bepinexPath = exeLocation.Replace("EscapeFromTarkov.exe", "");
@@ -509,6 +543,7 @@ namespace SIT.Launcher
             if (!Directory.Exists(bepinexPluginsPath))
                 return false;
 
+       
             UpdateButtonText("Downloading SIT");
 
             try
