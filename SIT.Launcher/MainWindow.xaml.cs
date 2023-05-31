@@ -251,13 +251,9 @@ namespace SIT.Launcher
                     var messageBoxResult = MessageBox.Show("Your account has not been found, would you like to register a new account with these credentials?", "Account", MessageBoxButton.YesNo);
                     if (messageBoxResult == MessageBoxResult.Yes)
                     {
+                        // Register
                         returnData = requesting.PostJson("/launcher/profile/register", JsonConvert.SerializeObject(data));
-                        var messageBoxResultRegister = MessageBox.Show(
-                            "Your account has been registered. " + Environment.NewLine +
-                            "Due to an SPT-Aki error. You must start the game once, then ALT-F4 when the screen is blank, then start again to login!"
-                            , "Account"
-                            , MessageBoxButton.YesNo);
-
+                        // Login attempt after register
                         returnData = requesting.PostJson("/launcher/profile/login", JsonConvert.SerializeObject(data));
 
                     }
