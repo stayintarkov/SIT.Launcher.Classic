@@ -1,6 +1,6 @@
 {
   // Enable/Disable the Automatic System of Remapping via Code
-  "EnableAutomaticRemapping": true,
+  "EnableAutomaticRemapping": false,
   // Enable/Disable the Defined Mapping list of Remapping - The defined list runs after the Automatic Remap
   "EnableDefinedRemapping": true,
   "DefinedRemapping": [
@@ -299,78 +299,24 @@
       "HasFields": [ "BaseBrain", "Agent", "LastDecision" ],
       "HasMethods": [ "Activate" ]
     },
-    ////"GClass417": "BotTacticClass",
-    ////"GClass429": "BotWeaponControllerClass",
-    ////"GClass443": "BodyPartClass",
-    ////"GClass465": "DeadBodiesControllerClass",
-    ////"GClass470": "BotRequestsControllerClass",
-    ////"GClass474": "BotsGroupClass",
-    //{
-    //  "RenameClassNameTo": "BotsGroupClass",
-    //  "HasEvents": [ "OnAddGroup" ],
-    //  "HasMethods": [ "TryGetValue", "Add", "AddNoKey" ]
-    //},
-    ////"GClass477": "BotGroupClass",
     {
       "RenameClassNameTo": "BotGroupClass",
       "HasMethods": [ "IsPlayerEnemy", "IsPlayerEnemyByRole", "AddEnemyGroup", "AddEnemyGroupIfAllowed" ]
     },
-    ////"GClass484": "BotSettingsClass",
     {
       "RenameClassNameTo": "BotSettingsClass",
       "HasFields": [ "IsLastPositionChecked", "LastChangeVisionTime" ],
       "HasMethods": [ "GetPositionForSearch", "SetSuppressEndTime", "IsSuppressed" ]
     },
-    ////"GClass492": "AiDataClass",
     {
       "RenameClassNameTo": "AiDataClass",
       "HasMethods": [ "IsBossOrFollowerRequireRevenge", "KillEnemy", "DoMove", "LeavePlace" ]
     },
-    ////"GClass495": "BotLoyaltyClass",
-    //{
-    //  "RenameClassNameTo": "BotLoyaltyClass",
-    //  "HasFields": [ "HostileScavs" ],
-    //  "HasMethods": [ "KillEnemy", "MarkAsAggressor", "WasAttackedBy", "MarkAsCanBeFreeKilled" ]
-    //},
-    ////"GClass515": "AiTaskManagerClass",
-    //{
-    //  "RenameClassNameTo": "AiTaskManagerClass",
-    //  "HasFields": [ "MaxTaskPerFrame" ],
-    //  "HasMethods": [ "AddTask", "CountTasks", "TaskWaitTooLong" ]
-    //},
-    ////"GClass523": "ScatteringSettingsClass",
-    //{
-    //  "RenameClassNameTo": "ScatteringSettingsClass",
-    //  "HasFields": [ "CurrentScattering" ],
-    //  "HasMethods": [ "Check", "SetWeapon" ]
-    //},
-    ////"GClass528": "BotDifficultySettingsClass",
-    //{
-    //  "RenameClassNameTo": "BotDifficultySettingsClass",
-    //  "HasFields": [ "Curv", "Current", "FileSettings", "CurrentScatteringSetting" ],
-    //  "HasMethods": [ "ApplyPresetLocation", "ApplyPreset" ]
-    //},
-    ////"GClass569": "ZoneLeaveControllerClass",
-    //{
-    //  "RenameClassNameTo": "ZoneLeaveControllerClass",
-    //  "HasMethods": [ "IsDay", "IsDayByHour", "IsZoneBlockFor", "ClearZone" ]
-    //},
-    ////"GClass571": "BotsClass",
-    //{
-    //  "RenameClassNameTo": "BotsClass",
-    //  "HasEvents": [ "OnBotAdd" ]
-    //},
-    ////"GClass577": "BotsPresets",
     {
       "RenameClassNameTo": "BotsPresets",
       "HasFields": [ "BundlesLoading" ],
       "HasMethods": [ "GetNewProfile", "CreateProfile" ]
     },
-    ////"GClass596": "LoggerClass",
-    ////"GClass674": "TimerClass",
-    ////"GClass879": "DecalMeshClass",
-    ////"GClass887": "ChatServerClass",
-    ////"GInterface120": "ISession",
     {
       "RenameClassNameTo": "ISession",
       "IsInterface": true,
@@ -378,45 +324,26 @@
       "HasFields": [ "QueueStatus", "Acceleration" ],
       "HasMethods": [ "AddToWishList" ]
     },
-    ////"GInterface12": "IBotGame",
-    ////"GInterface148": "IConnectionHandler",
     {
       "RenameClassNameTo": "IConnectionHandler",
       "IsInterface": true,
       "HasMethods": [ "SetUri", "SetUriParam", "SetRequestHeader", "Open" ]
     },
-    ////"GInterface15": "IBotData",
     {
       "RenameClassNameTo": "IBotData",
       "IsInterface": true,
       "HasMethods": [ "PrepareToLoadBackend", "ChooseProfile" ]
     },
-    ////"GInterface153": "ISynchronizableObject",
-    //"GInterface159": "IEffect",
     {
       "RenameClassNameTo": "IEffect",
       "IsInterface": true,
       "HasFields": [ "Type", "BodyPart", "State", "CurStateTimeLeft", "WorkStateTime", "Strength" ]
     },
-    ////"GInterface201": "IHealthController",
-    //{
-    //  "RenameClassNameTo": "IHealthController",
-    //  "IsInterface": true,
-    //  "HasFields": [ "Energy", "Hydration", "Temperature" ]
-    //},
-    ////"GInterface253": "IZones",
-    //{
-    //  "RenameClassNameTo": "IZones",
-    //  "IsInterface": true,
-    //  "HasMethods": [ "ZoneNames", "ZoneSpawnPoints", "AllZonesSpawnPoints", "GetBossPosition" ]
-    //},
-    ////"GInterface255": "ISpawnPoints",
     {
       "RenameClassNameTo": "ISpawnPoints",
       "IsInterface": true,
       "HasMethods": [ "CreateSpawnPoint", "DestroySpawnPoint" ]
     },
-    ////"GInterface256": "ISpawnSystem",
     {
       "RenameClassNameTo": "ISpawnSystem",
       "IsInterface": true,
@@ -440,36 +367,26 @@
     },
     {
       "RenameClassNameTo": "BindableState",
+      "IsClass": true,
       "OnlyRemapFirstFoundType": true,
-      "InheritsClass": "ABindableState"
+      "InheritsClass": "ABindableState",
+      "HasConstructorArgs": [ "initialValue", "equalityComparer" ]
     },
-    ////"GInterface30": "IBackendInterface",
-    //{
-    //  "RenameClassNameTo": "IBackendInterface",
-    //  "IsInterface": true,
-    //  "HasFields": [ "Session" ],
-    //  "HasMethods": [ "RegisterDevice", "Login", "GetAvailableLanguages" ]
-    //},
-    ////"GInterface290": "IBundleLock",
     {
       "RenameClassNameTo": "IBundleLock",
       "IsInterface": true,
       "HasFields": [ "IsLocked" ],
       "HasMethods": [ "Lock", "Unlock" ]
     },
-    ////"GInterface71": "IAIDetails",
     {
       "RenameClassNameTo": "IAIDetails",
       "IsInterface": true,
       "HasFields": [ "Side", "GroupId", "TeamId", "LookDirection", "Position", "WeaponRoot", "HealthController", "AIData" ]
     },
-    ////"GStruct109": "WeatherSettings",
-    ////"GStruct268": "DamageInfo",
     {
       "RenameClassNameTo": "DamageInfo",
       "HasFields": [ "DamageType", "Damage", "PenetrationPower", "HitNormal" ]
     },
-    //"GStruct39": "AirplaneDataPacketStruct"
     {
       "RenameClassNameTo": "BotSettingsRepoClass",
       "HasMethodsStatic": [ "CountAsBoss", "GetPhraseTagFromRole", "GetScavRoleKey", "IsBoss" ]
@@ -494,224 +411,15 @@
     {
       "RenameClassNameTo": "ExfiltrationControllerClass",
       "HasMethods": [ "AssignScavIdToPoint", "GetScavExfiltrationMask", "InitAllExfiltrationPoints", "ScavExfiltrationClaim" ]
-    },
-
-
-
-    // ------------------------------------------------------------------------------------------
-    // SIT Remapping List
-    //{
-    //  "RenameClassNameTo": "IProgress",
-    //  "IsInterface": true,
-    //  "HasFields": [ "Progress", "InitLevelStage" ]
-    //},
-    //{
-    //  "RenameClassNameTo": "SProgress",
-    //  "HasFields": [ "Progress", "Stage" ]
-    //},
-    //{
-    //  "RenameClassNameTo": "FilterCustomization",
-    //  "HasFields": [ "Default" ],
-    //  "HasMethods": [ "FilterCustomization" ]
-    //},
-    //{
-    //  "RenameClassNameTo": "StatisticsSession",
-    //  "HasFields": [],
-    //  "HasMethods": [ "BeginStatisticsSession", "EndStatisticsSession" ]
-    //},
-    //{
-    //  "RenameClassNameTo": "GroupManagement",
-    //  "HasFields": [],
-    //  "HasMethods": [ "DisbandGroup", "LeaveGroup", "ExitFromMatchMaker" ]
-    //},
-    //{
-    //  "RenameClassNameTo": "BotPresetFactory",
-    //  "HasFields": [],
-    //  "HasMethods": [ "GetNewProfile", "CreateProfile" ]
-    //},
-    //{
-    //  "RenameClassNameTo": "BotCreator",
-    //  "HasFields": [ "BotsLoading", "BundlesLoading", "StartProfilesLoaded" ],
-    //  "HasMethods": []
-    //},
-    //{
-    //  "RenameClassNameTo": "IAIData",
-    //  "HasFields": [ "AskRequests", "AIBossPlayer", "GetFlare", "IAmBoss", "UsingLight", "Player", "PowerOfEquipment" ],
-    //  "HasMethods": []
-    //},
-    //{
-    //  "RenameClassNameTo": "GHealthController",
-    //  "HasFields": [],
-    //  "HasMethods": [ "ChangeEnergy", "ChangeHealth", "ChangeHydration", "DoContusion" ]
-    //},
-    //{
-    //  "RenameClassNameTo": "BossSpawnerClass",
-    //  "HasFields": [ "BossSpawnWaves", "HaveSectants" ],
-    //  "HasMethods": [ "Run", "Stop" ]
-    //},
-    ////{
-    ////  "RenameClassNameTo": "PlayerGameAction",
-    ////  "HasFields": [],
-    ////  "HasMethods": [ "PlayerComeToPlace", "AnyEvent", "ExitActivated", "PlaySound", "TrainCome", "GrenadeExplosion", "InteractObject", "Kill", "ThrowGrenade" ]
-    ////}
-    //{
-    //  "RenameClassNameTo": "GlobalScreenController",
-    //  "HasFields": [ "CurrentScreenController" ],
-    //  "HasMethods": [ "RegisterScreen", "ReleaseScreen", "TryCloseAllScreens" ]
-    //},
-    //{
-    //  "RenameClassNameTo": "IKnifeTemplate",
-    //  "IsInterface": true,
-    //  "HasFields": [ "KnifeHitDelay", "KnifeHitSlashRate", "KnifeHitStabRate", "KnifeHitRadius" ]
-    //},
-    //{
-    //  "RenameClassNameTo": "GlobalNetworkReadWriteDescriptors",
-    //  "HasMethods": [ "ReadEFTGridDescriptor", "ReadEFTGridItemAddressDescriptor" ]
-    //},
-    {
-      "RenameClassNameTo": "AbstractFirearmActioner",
-      "HasMethodsVirtual": [ "ShowGesture", "ReloadMag", "BlindFire", "OnFold" ]
-    },
-    {
-      "RenameClassNameTo": "ProfileInfo",
-      "HasFields": [ "Nickname", "GroupId" ],
-      "HasMethods": [ "AddBan", "GetBan" ]
-    },
-    {
-      "RenameClassNameTo": "PacketItemInteraction",
-      "HasMethods": [ "Serialize", "Deserialize" ],
-      "HasFields": [ "HasInteraction", "EInteractionType" ]
-    },
-    {
-      "RenameClassNameTo": "InteractionResult",
-      "HasFields": [ "InteractionType" ]
-    },
-    {
-      "RenameClassNameTo": "GridItemAddress",
-      "HasFields": [ "Item", "ContainerName", "Grid" ],
-      "HasMethods": [ "AddWithoutRestrictions" ]
-    },
-    {
-      "RenameClassNameTo": "UnderbarrelWeapon",
-      "HasFields": [ "Chambers", "UseAmmoWithoutShell" ],
-      "HasMethods": [ "GetBarrelDeviation" ]
-    },
-    {
-      "RenameClassNameTo": "MagazineTemplate",
-      // As MagazineClass and the MagazineTemplate are so close in fields, only find the first GClass version
-      "OnlyRemapFirstFoundType": true,
-      "MustBeGClass": true,
-      "HasFields": [ "Cartridges", "LoadUnloadModifier", "CheckTimeModifier", "CheckOverride", "ReloadMagType" ]
-    },
-    // Rename the main Backend Server Connection that sends/receives to the Backend Server
-    {
-      "RenameClassNameTo": "BackendServerConnection",
-      "OnlyRemapFirstFoundType": true,
-      "HasEvents": [ "OnSessionError" ],
-      "HasMethods": [ "CreateProfile", "GetProfileStatus", "GetGlobalConfig", "GetClientSettingsConfig", "SendMetrics" ],
-      "HasFields": [ "Profile", "AllProfiles", "BackEndConfig", "SocialNetwork", "ChatServers" ]
-    },
-    // 13.0.3 Squad Player
-    {
-      "RenameClassNameTo": "SquadPlayer",
-      "OnlyRemapFirstFoundType": true,
-      "MustBeGClass": true,
-      "HasFields": [ "IsLeader", "IsReady", "Info", "PlayerVisualRepresentation", "AccountId" ]
-    },
-    // 13.0.3 Squad Grouping
-    {
-      "RenameClassNameTo": "SquadGroupRaid",
-      "OnlyRemapFirstFoundType": true,
-      "MustBeGClass": true,
-      "HasFields": [ "Players", "RaidSettings" ]
     }
-    // Offline Raid Screen Controller
-    //{
-    //  "RenameClassNameTo": "OfflineRaidScreenController",
-    //  "OnlyRemapFirstFoundType": true,
-    //  "IsNestedInClass": "MatchmakerOfflineRaidScreen",
-    //  //"MustBeGClass": true,
-    //  //"HasFields": [ "ProfileInfo", "RaidSettings" ]
-    //}
-    ,
-    {
-      "RenameClassNameTo": "IFilterCustomization",
-      "IsInterface": true,
-      "HasMethods": [ "FilterCustomization" ]
-    },
-    {
-      "RenameClassNameTo": "FilterCustomizationClass",
-      "IsClass": true,
-      "MustBeGClass": true,
-      "HasMethods": [ "FilterCustomization" ]
-    },
-    {
-      "RenameClassNameTo": "AStatisticsManager",
-      "IsClass": true,
-      "HasMethodsVirtual": [ "BeginStatisticsSession", "ExperienceGained", "LogDamage", "OnBodyPartRestored", "OnBodyPartRestored", "OnHealthChanged" ]
-    },
-    {
-      "RenameClassNameTo": "AStatisticsManagerForPlayer",
-      "IsClass": true,
-      "HasFields": [ "CurrentSessionLength" ],
-      "HasMethodsStatic": [ "ForeachItems" ],
-      "HasMethods": [ "BeginStatisticsSession" ]
-    },
-    {
-      "RenameClassNameTo": "StatisticsManagerForPlayer",
-      "IsClass": true,
-      "MustBeGClass": true,
-      "HasMethods": [ "ShowStatNotification" ]
-    },
-    {
-      "RenameClassNameTo": "BackendConfigManager",
-      "HasFields": [],
-      "HasMethodsStatic": [ "LoadApplicationConfig" ]
-    },
 
 
-    // -----------------------------------------
-    // BSG's connection to Web Server classes
-    //
-    {
-      "RenameClassNameTo": "TarkovRequestTransportHttp",
-      "HasFields": [ "LastSucceedResponse", "WebDiagnosticsEnabled" ],
-      "HasEvents": [ "OnSessionError", "OnErrorHandledWithResult" ],
-      "HasMethods": []
-    },
-    {
-      "RenameClassNameTo": "TarkovRequestTransportWS",
-      "HasMethods": [ "EstablishConnectionToUrl", "CloseConnection", "SendRequest", "SendNotification" ]
-    },
-    {
-      "RenameClassNameTo": "TarkovRequest",
-      "HasFields": [ "RequestId", "ProtocolType", "Crc", "CachedResponse", "CacheValidationConfigured", "Data", "MainURLFull" ],
-      "HasMethodsStatic": [ "CreateFromLegacyParams" ]
-    },
-    {
-      "RenameClassNameTo": "TarkovRequestParams",
-      "HasFields": [ "Params", "DefaultTimeoutSeconds", "NoRetries", "FirstCycleDelaySeconds", "SecondCycleDelaySeconds", "NextCycleDelaySeconds", "DefaultRetries", "MaximumRetries" ]
-    },
-    //
-    // -----------------------------------------
-
-    {
-      "RenameClassNameTo": "WeaponEffectsManager",
-      "HasFields": [ "WeaponSounds_0" ],
-      "HasEvents": [ ],
-      "HasMethods": [ "MuzzleTransforms", "SetFireport", "DestroyAllPatronsInWeapon", "MoveAmmoFromChamberToShellPort", "RemoveAllShells", "StartSpawnShell", "PlayShotEffects" ]
-    }
   ],
   "DefinedTypesToForcePublic": [
-    "BaseLocalGame"
   ],
   "TypesToForceAllPublicMethods": [
-    "BaseLocalGame",
-    "Player"
   ],
   "TypesToForceAllPublicFieldsAndProperties": [
-    //"BaseLocalGame"
   ],
-  // Add SptUsec and SptBear to the Dll
-  "EnableAddSPTUsecBearToDll": true
+  "EnableAddSPTUsecBearToDll": false
 }

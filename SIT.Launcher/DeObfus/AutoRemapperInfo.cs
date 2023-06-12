@@ -29,6 +29,7 @@ namespace SIT.Launcher.DeObfus
         public string IsNestedInClass { get; set; }
         public bool? OnlyRemapFirstFoundType { get; set; }
         public bool? MustBeGClass { get; set; }
+        public bool? RemoveAbstract { get; set; }
 
         public override string ToString()
         {

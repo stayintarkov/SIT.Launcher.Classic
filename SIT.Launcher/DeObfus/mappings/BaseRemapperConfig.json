@@ -6,11 +6,8 @@
   "DefinedRemapping": [
   ],
   "DefinedTypesToForcePublic": [
-    "BaseLocalGame"
   ],
   "TypesToForceAllPublicMethods": [
-    "BaseLocalGame",
-    "Player"
   ],
   "TypesToForceAllPublicFieldsAndProperties": [
     //"BaseLocalGame"

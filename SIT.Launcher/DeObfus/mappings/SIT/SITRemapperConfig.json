@@ -1,6 +1,6 @@
 {
   // Enable/Disable the Automatic System of Remapping via Code
-  "EnableAutomaticRemapping": true,
+  "EnableAutomaticRemapping": false,
   // Enable/Disable the Defined Mapping list of Remapping - The defined list runs after the Automatic Remap
   "EnableDefinedRemapping": true,
   "DefinedRemapping": [
@@ -134,8 +134,7 @@
       "HasMethods": [ "AddItem", "AddItemWithoutRestrictions", "FindAll", "GetItemsForPlayer", "GetKnownItems", "GetSearchableInfo", "GetUnknownItems", "RemoveItem", "SetKnownItems", "SetSearched" ]
     },
     {
-      "RenameClassNameTo": "FoodAndDrink",
-      //"InheritsClass": "Item",
+      "RenameClassNameTo": "FoodDrink",
       "HasFields": [ "FoodDrinkComponent", "HealthEffectsComponent" ],
       "HasMethods": []
     },
@@ -147,14 +146,22 @@
     }
   ],
   "DefinedTypesToForcePublic": [
-    "BaseLocalGame"
+    //"EFT.BaseLocalGame",
+    //"EFT.Player",
+    //"EFT.Player/FirearmController",
+    //"EFT.Player/GrenadeController", //,
+    //"EFT.Player/MedsController"
+    "BodyPartState"
+
   ],
   "TypesToForceAllPublicMethods": [
-    "BaseLocalGame",
-    "Player"
+    "EFT.BaseLocalGame",
+    "EFT.Player"
   ],
   "TypesToForceAllPublicFieldsAndProperties": [
-    //"BaseLocalGame"
+    "BaseLocalGame",
+    "AbstractActiveHealthController"//,
+    //"PlayerHealthController"
   ],
   // Add SptUsec and SptBear to the Dll
   "EnableAddSPTUsecBearToDll": true
