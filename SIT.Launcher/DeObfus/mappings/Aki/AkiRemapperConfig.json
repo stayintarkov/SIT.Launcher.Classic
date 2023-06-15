@@ -411,8 +411,62 @@
     {
       "RenameClassNameTo": "ExfiltrationControllerClass",
       "HasMethods": [ "AssignScavIdToPoint", "GetScavExfiltrationMask", "InitAllExfiltrationPoints", "ScavExfiltrationClaim" ]
-    }
+    },
+    {
+      "RenameClassNameTo": "AICoreAgentClass",
+      "InheritsClass": "AbstractAiCoreAgentM",
+      "HasConstructorArgs": [ "aiCoreController", "strategy", "nodesDictionary", "monoBehObject", "name", "lazyGetter" ]
 
+    },
+    {
+      "RenameClassNameTo": "AICoreLayerClass",
+      "HasEvents": [ "OnEndCurDecision", "OnStartCurDecision" ],
+      "HasMethods": [ "GetDecision", "ShallEndCurrentDecision", "ShallUseNow", "GetCustomData" ],
+      "HasFields": [ "Priority" ],
+      "IsAbstract": true
+    },
+    {
+      "RenameClassNameTo": "BaseLogicLayerSimpleClass",
+      "HasMethods": [ "FindPoint", "InFightLogic", "EndRunAwayGrenade", "EndSimplePatrol" ],
+      "HasMethodsStatic": [ "TryMoveToEnemy", "CheckMedsToStop", "IsPointInsideDangerZone" ],
+      "HasConstructorArgs": [ "bot", "priority" ]
+
+    },
+    {
+      "RenameClassNameTo": "BaseNodeClass",
+      "OnlyRemapFirstFoundType": true,
+      "IsAbstract": true,
+      "HasConstructorArgs": [ "bot" ],
+      "HasFields": [ "botOwner_0" ]
+
+    },
+    {
+      "RenameClassNameTo": "AICoreStrategyClass",
+      "IsAbstract": true,
+      "HasEvents": [ "OnLayerChangedTo" ],
+      "HasMethods": [ "IsLayerActive", "HaveLayer", "Activate" ]
+
+    },
+    {
+      "RenameClassNameTo": "AICoreActionEndStruct",
+      "IsStruct": true,
+      "HasMethodsStatic": [ "Create" ],
+      "HasFields": [ "MessageId", "EventId" ]
+
+    },
+    {
+      "RenameClassNameTo": "AICoreActionResultStruct",
+      "IsStruct": true,
+      "HasConstructorArgs": [ "action", "reason" ],
+      "HasFields": [ "Action", "Reason" ]
+
+    },
+    {
+      "RenameClassNameTo": "LootItemPositionClass",
+      // This name comes from my Auto Remapper (and makes sense). I don't know why Aki chose the name LootItemPositionClass instead?!
+      "ClassName": "JsonLootItem",
+      "OnlyRemapFirstFoundType": true
+    }
 
   ],
   "DefinedTypesToForcePublic": [
