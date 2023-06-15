@@ -143,6 +143,12 @@
       "IsInterface": true,
       "HasFields": [],
       "HasMethods": [ "HighThrow", "LowThrow", "CanThrow" ]
+    },
+    {
+      "RenameClassNameTo": "AHealthController",
+      "IsAbstract": true,
+      "IsClass": true,
+      "HasFields": [ "healthValue_0", "healthValue_1", "healthValue_2", "healthValue_3", "dictionary_1" ]
     }
   ],
   "DefinedTypesToForcePublic": [
@@ -151,7 +157,8 @@
     //"EFT.Player/FirearmController",
     //"EFT.Player/GrenadeController", //,
     //"EFT.Player/MedsController"
-    "BodyPartState"
+    "BodyPartState"//,
+    //"EFT.Player/PlayerInventoryController"
 
   ],
   "TypesToForceAllPublicMethods": [
