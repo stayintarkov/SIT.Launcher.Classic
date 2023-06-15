@@ -962,7 +962,7 @@ namespace SIT.Launcher.DeObfus
 
 #if DEBUG
 
-if(config.HasConstructorArgs != null && config.HasConstructorArgs.Length > 0) 
+if(config.IsStruct != null) 
 {
 
 }
@@ -1067,7 +1067,7 @@ if(config.HasConstructorArgs != null && config.HasConstructorArgs.Length > 0)
                                     )
                                 )).ToList();
 
-                    // Filter Types by Class/Interface
+                    // Filter Types by Class
                     findTypes = findTypes.Where(
                         x =>
                             (
@@ -1075,6 +1075,7 @@ if(config.HasConstructorArgs != null && config.HasConstructorArgs.Length > 0)
                             )
                         ).ToList();
 
+                    // Filter Types by Interface
                     findTypes = findTypes.Where(
                        x =>
                            (
@@ -1082,8 +1083,15 @@ if(config.HasConstructorArgs != null && config.HasConstructorArgs.Length > 0)
                            )
                        ).ToList();
 
+                    findTypes = findTypes.Where(
+                   x =>
+                       (
+                            (!config.IsStruct.HasValue || (config.IsStruct.HasValue && config.IsStruct.Value && (x.IsValueType)))
+                       )
+                   ).ToList();
+
                     // Filter Types by Constructor
-                    if(config.HasConstructorArgs != null)
+                    if (config.HasConstructorArgs != null)
                         findTypes = findTypes.Where(t => t.Methods.Any(x => x.IsConstructor && x.Parameters.Count == config.HasConstructorArgs.Length)).ToList();
                     //findTypes = findTypes.Where(x
                     //        =>
