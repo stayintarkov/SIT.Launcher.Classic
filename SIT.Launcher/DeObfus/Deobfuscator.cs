@@ -775,17 +775,27 @@ namespace SIT.Launcher.DeObfus
             catch { }
         }
 
-        private static void RemapAutoDiscoverAndCountByMethodParameters(ref Dictionary<string, int> gclassToNameCounts, TypeDefinition t, IEnumerable<TypeDefinition> allTypes)
+        private static void RemapAutoDiscoverAndCountByMethodParameters(ref Dictionary<string, int> gclassToNameCounts, TypeDefinition t, IEnumerable<TypeDefinition> otherTypes)
         {
             try
             {
-                
-               
-
-                foreach(var other in allTypes)
+#if DEBUG
+                if(t.Name == "GStruct143")
                 {
-                    if (!t.HasMethods || t.Methods == null)
+
+                }
+#endif 
+
+
+                foreach(var other in otherTypes)
+                {
+                    if (!other.HasMethods || other.Methods == null)
                         continue;
+
+                    if (other.FullName.Contains("FirearmController")) 
+                    { 
+
+                    }
 
                     foreach (var method in other.Methods)
                     {
@@ -795,11 +805,18 @@ namespace SIT.Launcher.DeObfus
                         if (!method.Parameters.Any())
                             continue;
 
+                        if(method.Name == "SetLightsState")
+                        {
+
+                        }
+
                         foreach (var parameter in method.Parameters
-                            .Where(x => x.ParameterType.Name == t.Name)
+                            .Where(x => x.ParameterType.Name.Replace("[]","").Replace("`1", "") == t.Name)
                             .Where(x => x.ParameterType.Name.Length > 3)
                             )
                         {
+                            
+
                             var n = 
                             // Key Value is Built like so. KEY.VALUE
                             parameter.ParameterType.Name
@@ -810,10 +827,7 @@ namespace SIT.Launcher.DeObfus
                             .Replace("&", "")
                             .Replace(" ", "")
                             + "." 
-                            
                             + char.ToUpper(parameter.Name[0]) + parameter.Name.Substring(1)
-
-                            // + (parameter.ParameterType.Name.Contains("`1") ? "`1" : "") // cater for `1
                             ;
                             if (!gclassToNameCounts.ContainsKey(n))
                                 gclassToNameCounts.Add(n, 0);
@@ -822,21 +836,6 @@ namespace SIT.Launcher.DeObfus
                         }
                     }
 
-                    // foreach (var m in other.Methods)
-                    // {
-                    //     if (m.ReturnType.Name.StartsWith("GClass"))
-                    //     {
-                    //         var rT = assemblyDefinition.MainModule.GetTypes().FirstOrDefault(x => x == m.ReturnType);
-                    //         if (rT != null)
-                    //         {
-                    //             var oldTypeName = rT.Name;
-                    //             rT.Name = m.Name.Replace("ReadEFT", "");
-                    //             Log($"Remapper: Auto Remapped {oldTypeName} to {rT.Name}");
-                    //             renamedClasses.Add(oldTypeName, rT.Name);
-                    //             Log($"Remapper: Auto Remapped {oldTypeName} to {rT.Name}");
-                    //         }
-                    //     }
-                    // }
                 }
             }
             catch { }
