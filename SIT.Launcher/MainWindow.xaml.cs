@@ -530,6 +530,7 @@ namespace SIT.Launcher
             if (!Config.AutomaticallyInstallSIT && IsSITCoreInstalled(exeLocation))
                 return true;
 
+            await loadingDialog.UpdateAsync("Installing SIT", $"Disovering files");
 
             var baseGamePath = Directory.GetParent(exeLocation).FullName;
             var bepinexPath = exeLocation.Replace("EscapeFromTarkov.exe", "");
@@ -548,13 +549,20 @@ namespace SIT.Launcher
                 var github = new GitHubClient(new ProductHeaderValue("SIT-Launcher"));
                 var user = await github.User.Get("paulov-t");
                 var tarkovCoreReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Core", new ApiOptions() { });
+                var tarkovCoreReleasesOrdered = tarkovCoreReleases.OrderByDescending(x => x.CreatedAt).ToList();
                 Release latestCore = null;
-                if(Config.AutomaticallyInstallSITPreRelease)
-                    latestCore = tarkovCoreReleases.OrderByDescending(x => x.CreatedAt).First(x => x.Prerelease);
-                else
-                    latestCore = tarkovCoreReleases.OrderByDescending(x => x.CreatedAt).First(x => !x.Prerelease);
+                if (Config.AutomaticallyInstallSITPreRelease && tarkovCoreReleasesOrdered[0].Prerelease)
+                    latestCore = tarkovCoreReleasesOrdered[0];
+
+                if (latestCore == null)
+                    latestCore = tarkovCoreReleasesOrdered.First(x => !x.Prerelease);
+
+
 
                 var allAssets = latestCore.Assets.OrderByDescending(x => x.CreatedAt).DistinctBy(x => x.Name);
+
+                await loadingDialog.UpdateAsync("Installing SIT", $"Downloading files");
+
                 var allAssetsCount = allAssets.Count();
                 var assetIndex = 0;
                 foreach (var A in allAssets)
@@ -571,9 +579,11 @@ namespace SIT.Launcher
                         await File.WriteAllBytesAsync(deliveryPath, ms.ToArray());
                     }
                     assetIndex++;
+                    await loadingDialog.UpdateAsync("Installing SIT", $"Downloading files ({assetIndex}/{allAssetsCount})");
                 }
 
 
+                await loadingDialog.UpdateAsync("Installing SIT", $"Installing files");
 
                 UpdateButtonText("Installing SIT");
 
@@ -620,6 +630,8 @@ namespace SIT.Launcher
                 MessageBox.Show($"Unable to download and install SIT.{Environment.NewLine} {ex.Message}", "Error");
                 return false;
             }
+
+            await loadingDialog.UpdateAsync(null, null);
 
             return true;
 
