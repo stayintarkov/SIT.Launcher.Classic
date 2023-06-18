@@ -434,10 +434,8 @@
     },
     {
       "RenameClassNameTo": "BaseNodeClass",
-      "OnlyRemapFirstFoundType": true,
-      "IsAbstract": true,
-      "HasConstructorArgs": [ "bot" ],
-      "HasFields": [ "botOwner_0" ]
+      "IsStruct": true,
+      "HasFields": [ "Priority", "PriorityCounter", "ServerWorldTime" ],
 
     },
     {
@@ -450,8 +448,8 @@
     {
       "RenameClassNameTo": "AICoreActionEndStruct",
       "IsStruct": true,
-      "HasMethodsStatic": [ "Create" ],
-      "HasFields": [ "MessageId", "EventId" ]
+      "HasFields": [ "Value", "Reason" ],
+      "HasConstructorArgs": [ "reason", "val" ]
 
     },
     {
