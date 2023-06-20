@@ -423,7 +423,11 @@ namespace SIT.Launcher.DeObfus
 
             var allTypes = assemblyDefinition.MainModule.GetTypes();
             var gclasses = assemblyDefinition.MainModule.GetTypes()
-                .Where(x => x.Name.StartsWith("GClass") || x.Name.StartsWith("GStruct") || x.Name.StartsWith("Class") || x.Name.StartsWith("GInterface"))
+                .Where(x => 
+                x.Name.StartsWith("GClass") 
+                || x.Name.StartsWith("GStruct") 
+                || (x.Name.StartsWith("Class") || x.Name.StartsWith("Class"))
+                || x.Name.StartsWith("GInterface"))
                 // .Where(x => !x.Name.Contains("`"))
                 .OrderBy(x => x.Name)
                 .ToArray();
@@ -466,8 +470,8 @@ namespace SIT.Launcher.DeObfus
                 var indexOfControllerNest = 0;
                 foreach (var nc in t.NestedTypes.Where(x => x != null && x.Name.StartsWith("Class")))
                 {
-                    //var oldClassName = nc.Name;
-                    //var newClassName = t.Name + "Sub" + indexOfControllerNest++;
+                    var oldClassName = nc.Name;
+                    var newClassName = t.Name + "Sub" + indexOfControllerNest++;
                     //nc.Name = newClassName;
                     //renamedClasses.Add(oldClassName, newClassName);
                     //Log($"Remapper: Auto Remapped {oldClassName} to {newClassName}");
@@ -551,7 +555,8 @@ namespace SIT.Launcher.DeObfus
             .Where(x => !x.Key.Contains(".Instance", StringComparison.OrdinalIgnoreCase))
             .Where(x => !x.Key.Contains(".Default", StringComparison.OrdinalIgnoreCase))
             .Where(x => !x.Key.Contains(".Current", StringComparison.OrdinalIgnoreCase))
-            .OrderByDescending(x => x.Value);
+            .OrderByDescending(x => x.Value)
+            .ToArray();
 
 #if DEBUG
 
@@ -784,10 +789,14 @@ namespace SIT.Launcher.DeObfus
                 {
 
                 }
+                if (t.Name.Contains("/"))
+                {
+
+                }
 #endif 
 
 
-                foreach(var other in otherTypes)
+                foreach (var other in otherTypes)
                 {
                     if (!other.HasMethods || other.Methods == null)
                         continue;

@@ -10,12 +10,10 @@
       "RenameClassNameTo": "BattleeyePatchClass",
       "HasMethods": [ "RunValidation" ]
     },
-    //{
-    //  "RenameClassNameTo": "PostRaidHealthScreenClass",
-    //  "ClassName": null,
-    //  "HasFields": [ "exitStatus_0" ],
-    //  "HasMethods": [ "OnProfileChangeApplied" ]
-    //},
+    {
+      "RenameClassNameTo": "PostRaidHealthScreenClass",
+      "ClassName": "GClass1182"
+    },
     // not working
     //{
     //  "RenameClassNameTo": "SpawnSystemClass",
@@ -435,7 +433,7 @@
     {
       "RenameClassNameTo": "BaseNodeClass",
       "IsStruct": true,
-      "HasFields": [ "Priority", "PriorityCounter", "ServerWorldTime" ],
+      "HasFields": [ "Priority", "PriorityCounter", "ServerWorldTime" ]
 
     },
     {
@@ -457,6 +455,14 @@
       "IsStruct": true,
       "HasConstructorArgs": [ "action", "reason" ],
       "HasFields": [ "Action", "Reason" ]
+
+    },
+    {
+      "RenameClassNameTo": "BaseLogicLayerClass",
+      "OnlyRemapFirstFoundType": true,
+      "HasMethodsStatic": [ "HoldOrCover", "HoldOrCoverRun" ],
+      "HasMethods": [ "ShallEndCurrentDecision", "EndGoToPoint" ],
+      "HasConstructorArgs": [ "bot", "priority" ]
 
     },
     {
