@@ -163,10 +163,10 @@
       "HasMethods": [ "GetWeatherTypeByNode" ]
     },
     ////"GClass1810": "ClientMetrics",
-    {
-      "RenameClassNameTo": "ClientMetrics",
-      "HasFields": [ "RenderBinMetricCollector", "GameUpdateBinMetricCollector", "MaxRttBinMetricCollector", "MaxLossBinMetricCollector", "MaxClientServerTimeDiffBinMetricCollector" ]
-    },
+    //{
+    //  "RenameClassNameTo": "ClientMetrics",
+    //  "HasFields": [ "RenderBinMetricCollector", "GameUpdateBinMetricCollector", "MaxRttBinMetricCollector", "MaxLossBinMetricCollector", "MaxClientServerTimeDiffBinMetricCollector" ]
+    //},
     ////"GClass1816": "MetricsClass",
     //{
     //  "RenameClassNameTo": "MetricsClass",
@@ -432,9 +432,7 @@
     },
     {
       "RenameClassNameTo": "BaseNodeClass",
-      "IsStruct": true,
-      "HasFields": [ "Priority", "PriorityCounter", "ServerWorldTime" ]
-
+      "ClassName": "GClass104" // public abstract class GClass104 : GClass103 	protected BotOwner botOwner_0; public GClass104(BotOwner bot)
     },
     {
       "RenameClassNameTo": "AICoreStrategyClass",
