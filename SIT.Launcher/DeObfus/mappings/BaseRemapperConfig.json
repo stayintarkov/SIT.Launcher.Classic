@@ -2,7 +2,7 @@
   // Enable/Disable the Automatic System of Remapping via Code
   "EnableAutomaticRemapping": true,
   // Enable/Disable the Defined Mapping list of Remapping - The defined list runs after the Automatic Remap
-  "EnableDefinedRemapping": true,
+  "EnableDefinedRemapping": false,
   "DefinedRemapping": [
   ],
   "DefinedTypesToForcePublic": [
