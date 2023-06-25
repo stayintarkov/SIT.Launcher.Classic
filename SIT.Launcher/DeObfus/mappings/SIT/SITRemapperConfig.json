@@ -149,6 +149,33 @@
       "IsAbstract": true,
       "IsClass": true,
       "HasFields": [ "healthValue_0", "healthValue_1", "healthValue_2", "healthValue_3", "dictionary_1" ]
+    },
+    {
+      "RenameClassNameTo": "BossWaveManager",
+      "IsClass": true,
+      "HasMethodsStatic": [ "smethod_0" ],
+      "HasMethods": [ "Run" ],
+      "HasFields": [ "BossSpawnWaves", "HaveSectants" ]
+    },
+    {
+      "RenameClassNameTo": "SpawnSystemSettings",
+      "IsStruct": true,
+      "HasFields": [ "DEFAULT_SPHERE_COLLIDER_RADIUS", "MIN_MAX_DIST_TO_ENEMY_BY_GROUP_SQR", "SPAWN_SAFE_DISTANCE_METERS", "DELAY_TO_CAN_SPAWN_SEC" ]
+    },
+    {
+      "RenameClassNameTo": "SpawnSystemFactory",
+      "IsClass": true,
+      "HasMethodsStatic": [ "CreateSpawnSystem" ]
+    },
+    {
+      "RenameClassNameTo": "BackendConfigManagerConfig",
+      "IsClass": true,
+      "HasFields": [ "BackendUrl", "Version", "BuildVersion", "RaidMode", "Pools", "TargetFrameRate", "ResetSettings", "UseSpiritPlayer", "UseSpiritFastAnimator" ]
+    },
+    {
+      "RenameClassNameTo": "FPSCamera",
+      "IsClass": true,
+      "HasFields": [ "CAMERA_NAME", "effectsController_0", "hideoutCameraFlashlight_0", "highLightMesh_0", "visorEffect_0", "hysteresisFilter_0", "nightVision_0", "thermalVision_0", "gradingPostFX_0" ]
     }
   ],
   "DefinedTypesToForcePublic": [
