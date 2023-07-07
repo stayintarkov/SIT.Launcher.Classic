@@ -223,7 +223,6 @@ namespace SIT.Launcher.DeObfus
                 {
                     if (oldAssembly != null)
                     {
-                        Log($"Deobfuscating: Run file BaseRemapperConfig.json");
                         foreach(var fI in Directory.GetFiles(App.ApplicationDirectory + "//DeObfus//mappings//", "*.json", SearchOption.AllDirectories).Select(x=> new FileInfo(x)))
                         {
                             if (!fI.Exists)
@@ -566,6 +565,7 @@ namespace SIT.Launcher.DeObfus
             }
 #endif
 
+            int counter = 0;
             var usedNamesCount = new Dictionary<string, int>();
             var renamedClasses = new Dictionary<string, string>();
             foreach (var g in orderedGClassCounts)
@@ -573,8 +573,11 @@ namespace SIT.Launcher.DeObfus
                 var keySplit = g.Key.Split('.');
                 var gclassName = keySplit[0];
                 var gclassNameNew = keySplit[1];
-                if (gclassNameNew.Length <= 3
-                    || gclassNameNew.StartsWith("Value", StringComparison.OrdinalIgnoreCase)
+
+                if (gclassNameNew.Length <= 3)
+                    continue;
+
+                if (gclassNameNew.StartsWith("Value", StringComparison.OrdinalIgnoreCase)
                     || gclassNameNew.StartsWith("Attribute", StringComparison.OrdinalIgnoreCase)
                     || gclassNameNew.StartsWith("Instance", StringComparison.OrdinalIgnoreCase)
                     || gclassNameNew.StartsWith("_", StringComparison.OrdinalIgnoreCase)
@@ -615,6 +618,7 @@ namespace SIT.Launcher.DeObfus
                 newClassName = newClassName.Replace("`1", "");
                 newClassName = newClassName.Replace("`2", "");
                 newClassName = newClassName.Replace("`3", "");
+                newClassName = newClassName.Replace("`4", "");
 
                 if (!usedNamesCount.ContainsKey(newClassName))
                     usedNamesCount.Add(newClassName, 0);
@@ -624,25 +628,23 @@ namespace SIT.Launcher.DeObfus
                 if (usedNamesCount[newClassName] > 1)
                     newClassName += usedNamesCount[newClassName];
 
-                if (!assemblyDefinition.MainModule.GetTypes().Any(x => x.Name == newClassName)
-                    && !Assembly.GetAssembly(typeof(Attribute)).GetTypes().Any(x => x.Name.StartsWith(newClassName, StringComparison.OrdinalIgnoreCase))
-                    && !assemblyDefinition.MainModule.GetTypes().Any(x => x.Name.Equals(newClassName, StringComparison.OrdinalIgnoreCase))
-                    )
+                if (assemblyDefinition.MainModule.GetTypes().Any(x => x.Name.Equals(newClassName, StringComparison.OrdinalIgnoreCase)))
                 {
-
-
-                    //var oldType = (TypeDefinition)t as TypeDefinition;
-                    //var oldTypeStub = CreateStubOfOldType(oldType);
-                    //oldTypeStub.BaseType = t;
-                    //oldTypeStub.IsSealed = true;
-                    t.Name = newClassName;
-                    //t.IsSealed = false;
-                    //if(!assemblyDefinition.MainModule.Types.Any(x=>x.FullName == oldTypeStub.FullName))
-                    //    assemblyDefinition.MainModule.Types.Add(oldTypeStub);
-
-                    renamedClasses.Add(oldClassName, newClassName);
-                    Log($"Remapper: Auto Remapped {oldClassName} to {newClassName}");
+                    newClassName += counter;
                 }
+                else if (assemblyDefinition.MainModule.GetTypes().Any(x => x.FullName.Contains($"/{newClassName}", StringComparison.OrdinalIgnoreCase)))
+                {
+                    newClassName += counter;
+                    //continue;
+                }
+
+                if (Assembly.GetAssembly(typeof(Attribute)).GetTypes().Any(x => x.Name.StartsWith(newClassName, StringComparison.OrdinalIgnoreCase)))
+                    continue;
+
+                t.Name = newClassName;
+              
+                renamedClasses.Add(oldClassName, newClassName);
+                Log($"Remapper: Auto Remapped {oldClassName} to {newClassName}");
             }
 
             return renamedClasses;

@@ -12,7 +12,7 @@
     },
     {
       "RenameClassNameTo": "PostRaidHealthScreenClass",
-      "ClassName": "GClass1182"
+      "ClassName": "Class1182"
     },
     // not working
     //{
@@ -80,10 +80,10 @@
     //  "HasFields": [ "BotDifficulty", "Role", "UseThis", "VisibleAngle" ]
     //},
     //"GClass1154": "BotMemoryClass",
-    //{
-    //  "RenameClassNameTo": "BotMemoryClass",
-    //  "HasMethods": [ "Spotted", "LoseVisionCurrentEnemy", "DeleteInfoAboutEnemy", "AddEnemy" ]
-    //},
+    {
+      "RenameClassNameTo": "BotMemoryClass",
+      "HasMethods": [ "LoseVisionCurrentEnemy", "GoToPoint", "AddEnemy" ]
+    },
     //"GClass1236": "LocalizationClass",
     //{
     //  "RenameClassNameTo": "LocalizationClass",
@@ -93,7 +93,7 @@
     {
       "RenameClassNameTo": "BotControllerClass",
       "IsClass": true,
-      "HasFields": [ "BotsCountWithDelayed", "IsEnable", "BotGame" ],
+      "HasFields": [ "BotGame" ],
       "HasMethods": [ "ActivateBotsByWave", "ActivateBotsWithoutWave", "AddEnemyToAllGroups", "BotDied", "SpawnBossDebug", "SpawnBotDebugClient", "SpawnBotDebugServer" ]
     },
     //"GClass1305": "WaveInfo",
