@@ -143,9 +143,14 @@
                 <RowDefinition MinHeight="30" Height="30"></RowDefinition>
                 <RowDefinition MinHeight="100" Height="*"></RowDefinition>
                 </Grid.RowDefinitions>
-            <Button Content="Deobfuscate Assembly" x:Name="btnDeobfuscate" Click="btnDeobfuscate_Click" Grid.Row="0"></Button>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Button Content="Deobfuscate and Remap Assembly" x:Name="btnDeobfuscate" Click="btnDeobfuscate_Click" Grid.Row="0"></Button>
+            <Button Content="Only Deobfuscate Assembly" x:Name="btnDeobfuscateOnly" Click="btnDeobfuscateOnly_Click" Grid.Row="0" Grid.Column="1"></Button>
             <Label Content="Log" Grid.Row="1"></Label>
-            <TextBox x:Name="txtDeobfuscateLog" IsReadOnly="True" MaxLines="9999" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" Grid.Row="2"></TextBox>
+            <TextBox x:Name="txtDeobfuscateLog" Grid.ColumnSpan="2" IsReadOnly="True" MaxLines="9999" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" Grid.Row="2"></TextBox>
         </Grid>
         <Grid x:Name="gridSettings" Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="3">
             <StackPanel Margin="5" HorizontalAlignment="Left">
