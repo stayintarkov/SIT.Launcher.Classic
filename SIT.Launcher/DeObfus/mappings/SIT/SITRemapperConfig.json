@@ -176,6 +176,11 @@
       "RenameClassNameTo": "FPSCamera",
       "IsClass": true,
       "HasFields": [ "CAMERA_NAME", "effectsController_0", "hideoutCameraFlashlight_0", "highLightMesh_0", "visorEffect_0", "hysteresisFilter_0", "nightVision_0", "thermalVision_0", "gradingPostFX_0" ]
+    },
+    {
+      "RenameClassNameTo": "LocalGameBotCreator",
+      "IsClass": true,
+      "HasMethods": [ "FillCreationDataWithProfiles" ]
     }
   ],
   "DefinedTypesToForcePublic": [
@@ -184,8 +189,10 @@
     //"EFT.Player/FirearmController",
     //"EFT.Player/GrenadeController", //,
     //"EFT.Player/MedsController"
-    "BodyPartState"//,
-    //"EFT.Player/PlayerInventoryController"
+    "BodyPartState",
+    "EFT.Player/PlayerInventoryController",
+    "EFT.Player/PlayerOwnerInventoryController",
+    "EFT.Player/SinglePlayerInventoryController"
 
   ],
   "TypesToForceAllPublicMethods": [
