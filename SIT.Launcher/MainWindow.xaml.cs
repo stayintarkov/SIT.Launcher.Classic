@@ -150,12 +150,31 @@ namespace SIT.Launcher
             this.DataContext = null;
             this.DataContext = this;
 
+            // ----------------------------------------------------------------------------------------
+            // Delete Deobfuscated and Backup Assembly CSharps
+            await loadingDialog.UpdateAsync("Installing", $"Deleting old Assembly-CSharp backups");
+            var offlineFolderFiles = Directory
+                                        .GetFiles(offlineFolder, "Assembly-CSharp*", new EnumerationOptions() { RecurseSubdirectories = true })
+                                        .Select(x => new FileInfo(x));
+            foreach (var file in offlineFolderFiles)
+            {
+                if(file.FullName.EndsWith(".backup") || file.FullName.EndsWith("-cleaned.dll"))
+                    file.Delete();
+            }
+            //
+            // ----------------------------------------------------------------------------------------
+
             await loadingDialog.UpdateAsync("Installing", $"Cleaning EFT OFFLINE Directory");
             CleanupDirectory(exeLocation);
+           
             await loadingDialog.UpdateAsync("Installing", $"Installing BepInEx");
             await DownloadAndInstallBepInEx5(exeLocation);
+           
             await loadingDialog.UpdateAsync("Installing", $"Installing SIT.Core");
             await DownloadAndInstallSIT(exeLocation);
+
+          
+
             UpdateButtonText(null);
 
             await loadingDialog.UpdateAsync(null, null);
