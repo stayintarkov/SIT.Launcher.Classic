@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -251,14 +252,17 @@ namespace SIT.Launcher.DeObfus
                                 RenameClassesByCounts(oldAssembly, gclassToNameCounts);
                             }
 
-                            RemapSwitchClassesToPublic(oldAssembly, autoRemapperConfig);
                             RemapByDefinedConfiguration(oldAssembly, autoRemapperConfig);
                             RemapAddSPTUsecAndBear(oldAssembly, autoRemapperConfig);
                             RemapPublicTypesMethodsAndFields(oldAssembly, autoRemapperConfig);
 
+
                             Log(Environment.NewLine);
 
                         }
+
+                        RemapSwitchClassesToPublic(oldAssembly);
+                        Log(Environment.NewLine);
 
                         oldAssembly.Write(assemblyPath.Replace(".dll", "-remapped.dll"));
                     }
@@ -291,6 +295,11 @@ namespace SIT.Launcher.DeObfus
                         {
                             t.DeclaringType.IsPublic = true;
                         }
+                        foreach(var inte in t.Interfaces)
+                        {
+
+                        }
+                        t.Resolve();
                     }
                     else
                     {
@@ -359,8 +368,8 @@ namespace SIT.Launcher.DeObfus
             if (!config.EnableAddSPTUsecBearToDll.HasValue || !config.EnableAddSPTUsecBearToDll.Value)
                 return;
 
-            long sptUsecValue = 99; 
-            long sptBearValue = 100;
+            long sptUsecValue = 33; 
+            long sptBearValue = 34;
 
             var botEnums = assembly.MainModule.GetType("EFT.WildSpawnType");
 
@@ -383,28 +392,78 @@ namespace SIT.Launcher.DeObfus
             Log($"Remapper: Added SPTUsec and SPTBear to EFT.WildSpawnType");
         }
 
-        private static void RemapSwitchClassesToPublic(AssemblyDefinition assembly, AutoRemapperConfig autoRemapperConfig)
+        /// <summary>
+        /// Finds defined types and attempts to remove "Internal" from them
+        /// </summary>
+        /// <param name="assembly"></param>
+        private static void RemapSwitchClassesToPublic(AssemblyDefinition assembly)
         {
             int countOfPublications = 0;
             Log($"Remapper: Ensuring EFT classes are public");
-            var nonPublicTypes = assembly
+            var types = assembly
                 .MainModule
                 .GetTypes()
-                .Where(x => x.IsNotPublic).ToList();
+                .Where(x => 
+                x.IsClass 
+                && x.IsDefinition 
+                //&& x.Namespace.StartsWith("EFT")
+                && !x.Name.Contains("<")
+                && !x.Name.Contains(">")
+                && !x.Name.Contains("Module")
+                && !Assembly.GetAssembly(typeof(Attribute))
+                    .GetTypes()
+                    .Any(y => y.Name.StartsWith(x.Name, StringComparison.OrdinalIgnoreCase))
+                );
 
-            var nonPublicClasses = nonPublicTypes.Where(t =>
-                t.IsClass
-                    && t.IsDefinition
-                    && t.BaseType != null
-                    //&& (t.BaseType.FullName != "System.Object")
-                    && !Assembly.GetAssembly(typeof(Attribute))
-                        .GetTypes()
-                        .Any(x => x.Name.StartsWith(t.Name, StringComparison.OrdinalIgnoreCase))
-                    ).ToList();
+            var nonPublicTypes = types
+                .Where(x => !x.IsNested && x.IsNotPublic).ToList();
 
-            foreach (var t in nonPublicClasses)
+            var nonPublicNestedTypes = types
+                .Where(x => x.IsNested && !x.IsNestedPublic).ToList();
+
+            //var nonPublicClasses = nonPublicTypes.Where(t =>
+            //    t.IsClass
+            //        && t.IsDefinition
+            //        && t.BaseType != null
+            //        //&& (t.BaseType.FullName != "System.Object")
+            //        && !Assembly.GetAssembly(typeof(Attribute))
+            //            .GetTypes()
+            //            .Any(x => x.Name.StartsWith(t.Name, StringComparison.OrdinalIgnoreCase))
+            //        ).ToList();
+
+            foreach (var t in nonPublicTypes)
             {
-                t.IsPublic = true;
+                if (t.IsNested)
+                {
+                    t.IsNestedPublic = true;
+                    if (!t.DeclaringType.IsPublic)
+                    {
+                        t.DeclaringType.IsPublic = true;
+                    }
+                }
+                else
+                {
+                    t.IsPublic = true;
+                    if (t.BaseType != null)
+                    {
+                        t.BaseType.Resolve().IsPublic = true;
+                    }
+                }
+                countOfPublications++;
+            }
+            foreach (var t in nonPublicNestedTypes)
+            {
+                if (t.IsNested)
+                {
+                    t.IsNestedPublic = true;
+                    //if (!t.DeclaringType.IsPublic)
+                    //{
+                    //    if(t.DeclaringType.IsNested)
+                    //        t.DeclaringType.IsNestedPublic = true;
+                    //    else
+                    //        t.DeclaringType.IsPublic = true;
+                    //}
+                }
                 countOfPublications++;
             }
             Log($"Remapper: {countOfPublications} EFT classes have been converted to public");
@@ -456,9 +515,10 @@ namespace SIT.Launcher.DeObfus
 
             // ----------------------------------------------------------------------------------------
             // Rename classes based on discovery above
-            Dictionary<string, string> renamedClasses = RenameClassesByCounts(assemblyDefinition, gclassToNameCounts);
+            Dictionary<string, TypeDefinition> renamedClasses = RenameClassesByCounts(assemblyDefinition, gclassToNameCounts);
             // end of renaming based on discovery
             // ---------------------------------------------------------------------------------------
+            
 
             foreach (var t in assemblyDefinition.MainModule.GetTypes().Where(x
                 =>
@@ -493,7 +553,7 @@ namespace SIT.Launcher.DeObfus
                     var oldClassName = nc.Name;
                     var newClassName = t.Name + "Sub" + indexOfControllerNest++;
                     nc.Name = newClassName;
-                    renamedClasses.Add(oldClassName, newClassName);
+                    renamedClasses.Add(oldClassName, t);
                     Log($"Remapper: Auto Remapped {oldClassName} to {newClassName}");
                     //nc.Name = nc.Name.Replace("Class", newStartOfName).Substring(0, newStartOfName.Length) + indexOfControllerNest.ToString();
                 }
@@ -527,7 +587,7 @@ namespace SIT.Launcher.DeObfus
                         {
                             var oldTypeName = rT.Name;
                             rT.Name = m.Name.Replace("ReadEFT", "");
-                            renamedClasses.Add(oldTypeName, rT.Name);
+                            renamedClasses.Add(oldTypeName, rT);
                             Log($"Remapper: Auto Remapped {oldTypeName} to {rT.Name}");
                         }
                     }
@@ -540,7 +600,7 @@ namespace SIT.Launcher.DeObfus
             Log($"Remapper: Auto Remapped {autoRemappedClassCount} classes");
         }
 
-        private static Dictionary<string, string> RenameClassesByCounts(AssemblyDefinition assemblyDefinition, Dictionary<string, int> gclassToNameCounts)
+        private static Dictionary<string, TypeDefinition> RenameClassesByCounts(AssemblyDefinition assemblyDefinition, Dictionary<string, int> gclassToNameCounts)
         {
             var orderedGClassCounts = gclassToNameCounts
             .Where(x => x.Value > 0)
@@ -567,27 +627,27 @@ namespace SIT.Launcher.DeObfus
 
             int counter = 0;
             var usedNamesCount = new Dictionary<string, int>();
-            var renamedClasses = new Dictionary<string, string>();
+            var renamedClasses = new Dictionary<string, TypeDefinition>();
             foreach (var g in orderedGClassCounts)
             {
                 var keySplit = g.Key.Split('.');
-                var gclassName = keySplit[0];
-                var gclassNameNew = keySplit[1];
+                var className = keySplit[0];
+                var classNameNew = keySplit[1];
 
-                if (gclassNameNew.Length <= 3)
+                if (classNameNew.Length <= 3)
                     continue;
 
-                if (gclassNameNew.StartsWith("Value", StringComparison.OrdinalIgnoreCase)
-                    || gclassNameNew.StartsWith("Attribute", StringComparison.OrdinalIgnoreCase)
-                    || gclassNameNew.StartsWith("Instance", StringComparison.OrdinalIgnoreCase)
-                    || gclassNameNew.StartsWith("_", StringComparison.OrdinalIgnoreCase)
-                    || gclassNameNew.StartsWith("<", StringComparison.OrdinalIgnoreCase)
-                    || Assembly.GetAssembly(typeof(Attribute)).GetTypes().Any(x => x.Name.StartsWith(gclassNameNew, StringComparison.OrdinalIgnoreCase))
-                    || assemblyDefinition.MainModule.GetTypes().Any(x => x.Name.Equals(gclassNameNew, StringComparison.OrdinalIgnoreCase))
+                if (classNameNew.StartsWith("Value", StringComparison.OrdinalIgnoreCase)
+                    || classNameNew.StartsWith("Attribute", StringComparison.OrdinalIgnoreCase)
+                    || classNameNew.StartsWith("Instance", StringComparison.OrdinalIgnoreCase)
+                    || classNameNew.StartsWith("_", StringComparison.OrdinalIgnoreCase)
+                    || classNameNew.StartsWith("<", StringComparison.OrdinalIgnoreCase)
+                    || Assembly.GetAssembly(typeof(Attribute)).GetTypes().Any(x => x.Name.StartsWith(classNameNew, StringComparison.OrdinalIgnoreCase))
+                    || assemblyDefinition.MainModule.GetTypes().Any(x => x.Name.Equals(classNameNew, StringComparison.OrdinalIgnoreCase))
                     )
                     continue;
 
-                var t = assemblyDefinition.MainModule.GetTypes().FirstOrDefault(x => x.Name == gclassName);
+                var t = assemblyDefinition.MainModule.GetTypes().FirstOrDefault(x => x.Name == className);
                 if (t == null)
                     continue;
 
@@ -595,14 +655,14 @@ namespace SIT.Launcher.DeObfus
                 var oldClassName = t.Name;
 
                 // Follow standard naming convention, PascalCase all class names
-                var newClassName = char.ToUpper(gclassNameNew[0]) + gclassNameNew.Substring(1);
+                var newClassName = char.ToUpper(classNameNew[0]) + classNameNew.Substring(1);
 
                 // The class has already been renamed, ignore
                 if (renamedClasses.ContainsKey(oldClassName))
                     continue;
 
                 // The new class name has already been used, ignore
-                if (renamedClasses.Values.Contains(newClassName))
+                if (renamedClasses.Values.Any(x => x.Name == newClassName && x.Namespace == t.Namespace))
                     continue;
 
                 if (UsedTypesByOtherDlls.Contains(newClassName))
@@ -643,8 +703,39 @@ namespace SIT.Launcher.DeObfus
 
                 t.Name = newClassName;
               
-                renamedClasses.Add(oldClassName, newClassName);
+                // Add the oldClassName as the Key with the newClassName as the Value
+                renamedClasses.Add(oldClassName, t);
                 Log($"Remapper: Auto Remapped {oldClassName} to {newClassName}");
+
+
+                //if (!assemblyDefinition.MainModule.Types.Any(x => x.Name == oldClassName && x.Namespace == t.Namespace))
+                //{
+                //    TypeDefinition stubOldType = new TypeDefinition(t.Namespace, oldClassName, t.Attributes);
+                //    stubOldType.ClassSize = t.ClassSize;
+                //    stubOldType.DeclaringType = t.DeclaringType;
+                //    //foreach(var gp in t.GenericParameters)
+                //    //{
+                //    //    stubOldType.GenericParameters.Add(gp);
+                //    //}
+                //    stubOldType.MetadataToken = t.MetadataToken;
+                //    foreach (var m in t.Methods.Where(x=>x.IsConstructor))
+                //    {
+                //        MethodDefinition method = new MethodDefinition(m.Name, m.Attributes, m.ReturnType);
+                //        var il = method.Body = new Mono.Cecil.Cil.MethodBody(method);
+                //        stubOldType.Methods.Add(method);
+                //    }
+                //    stubOldType.Name = oldClassName;
+                //    stubOldType.PackingSize = t.PackingSize;
+                //    stubOldType.Scope = t.Scope;
+                //    foreach (var sd in t.SecurityDeclarations)
+                //    {
+                //        stubOldType.SecurityDeclarations.Add(sd);
+                //    }
+                //    //stubOldType.BaseType = t;
+                //    assemblyDefinition.MainModule.Types.Add(stubOldType);
+                //    //Log($"Remapper: Added {oldClassName} stub to support Aki Client Mods");
+                //}
+
             }
 
             return renamedClasses;
@@ -959,7 +1050,7 @@ namespace SIT.Launcher.DeObfus
             catch { }
         }
 
-        private static void RemapByDefinedConfiguration(AssemblyDefinition oldAssembly, AutoRemapperConfig autoRemapperConfig)
+        private static void RemapByDefinedConfiguration(AssemblyDefinition assembly, AutoRemapperConfig autoRemapperConfig)
         {
             if (!autoRemapperConfig.EnableDefinedRemapping.HasValue || !autoRemapperConfig.EnableDefinedRemapping.Value)
                 return;
@@ -970,146 +1061,9 @@ namespace SIT.Launcher.DeObfus
             foreach (var config in autoRemapperConfig.DefinedRemapping.Where(x => !string.IsNullOrEmpty(x.RenameClassNameTo)))
             {
 
-#if DEBUG
-
-if(config.IsStruct != null) 
-{
-
-}
-
-#endif
-
                 try
                 {
-                    var findTypes
-                        = oldAssembly
-                        .MainModule
-                        .GetTypes()
-                        .OrderBy(x => x.Name)
-                        .Where(x => !x.Namespace.StartsWith("System"))
-                        .ToList();
-
-                    findTypes = findTypes.Where(
-                       x =>
-                           (
-                               !config.MustBeGClass.HasValue
-                               || (config.MustBeGClass.Value && x.Name.StartsWith("GClass"))
-                           )
-                       ).ToList();
-
-                    findTypes = findTypes.Where(
-                       x =>
-                           (
-                               string.IsNullOrEmpty(config.IsNestedInClass)
-                               || (!string.IsNullOrEmpty(config.IsNestedInClass) && x.FullName.Contains(config.IsNestedInClass + "+", StringComparison.OrdinalIgnoreCase))
-                               || (!string.IsNullOrEmpty(config.IsNestedInClass) && x.FullName.Contains(config.IsNestedInClass + ".", StringComparison.OrdinalIgnoreCase))
-                               || (!string.IsNullOrEmpty(config.IsNestedInClass) && x.FullName.Contains(config.IsNestedInClass + "/", StringComparison.OrdinalIgnoreCase))
-                           )
-                       ).ToList();
-
-
-                    // Filter Types by Inherits Class
-                    findTypes = findTypes.Where(
-                        x =>
-                            (
-                                config.InheritsClass == null || config.InheritsClass.Length == 0
-                                || (x.BaseType != null && x.BaseType.Name == config.InheritsClass)
-                            )
-                        ).ToList();
-
-                    // Filter Types by Class Name Matching
-                    findTypes = findTypes.Where(
-                        x =>
-                            (
-                                config.ClassName == null || config.ClassName.Length == 0 || (x.FullName.Contains(config.ClassName))
-                            )
-                        ).ToList();
-                    // Filter Types by Methods
-                    findTypes = findTypes.Where(x
-                            =>
-                                (config.HasMethods == null || config.HasMethods.Length == 0
-                                    || (x.Methods.Where(x => !x.IsStatic).Select(y=>y.Name.Split('.')[y.Name.Split('.').Length-1]).Count(y => config.HasMethods.Contains(y)) >= config.HasMethods.Length))
-
-                            ).ToList();
-                    // Filter Types by Virtual Methods
-                    if (config.HasMethodsVirtual != null && config.HasMethodsVirtual.Length > 0)
-                    {
-                        findTypes = findTypes.Where(x
-                               =>
-                                 (   x.Methods.Count(y => y.IsVirtual) > 0
-                                    && x.Methods.Where(y => y.IsVirtual).Count(y => config.HasMethodsVirtual.Contains(y.Name)) >= config.HasMethodsVirtual.Length
-                                    )
-                               ).ToList();
-                    }
-                    // Filter Types by Static Methods
-                    findTypes = findTypes.Where(x
-                            =>
-                                (config.HasMethodsStatic == null || config.HasMethodsStatic.Length == 0
-                                    || (x.Methods.Where(x => x.IsStatic).Select(y => y.Name.Split('.')[y.Name.Split('.').Length - 1]).Count(y => config.HasMethodsStatic.Contains(y)) >= config.HasMethodsStatic.Length))
-
-                            ).ToList();
-
-                    // Filter Types by Events
-                    findTypes = findTypes.Where(x
-                           =>
-                               (config.HasEvents == null || config.HasEvents.Length == 0
-                                   || (x.Events.Select(y => y.Name.Split('.')[y.Name.Split('.').Length - 1]).Count(y => config.HasEvents.Contains(y)) >= config.HasEvents.Length))
-
-                           ).ToList();
-
-                    // Filter Types by Field/Properties
-                    findTypes = findTypes.Where(
-                        x =>
-                                (
-                                    // fields
-                                    (
-                                    config.HasFields == null || config.HasFields.Length == 0 
-                                    || (!config.HasExactFields && x.Fields.Count(y => config.HasFields.Contains(y.Name)) >= config.HasFields.Length)
-                                    || (config.HasExactFields && x.Fields.Count(y => y.IsDefinition && config.HasFields.Contains(y.Name)) == config.HasFields.Length)
-                                    )
-                                    ||
-                                    // properties
-                                    (
-                                    config.HasFields == null || config.HasFields.Length == 0 
-                                    || (!config.HasExactFields && x.Properties.Count(y => config.HasFields.Contains(y.Name)) >= config.HasFields.Length)
-                                    || (config.HasExactFields && x.Properties.Count(y => y.IsDefinition && config.HasFields.Contains(y.Name)) == config.HasFields.Length)
-
-                                    )
-                                )).ToList();
-
-                    // Filter Types by Class
-                    findTypes = findTypes.Where(
-                        x =>
-                            (
-                                (!config.IsClass.HasValue || (config.IsClass.HasValue && config.IsClass.Value && ((x.IsClass || x.IsAbstract) && !x.IsEnum && !x.IsInterface)))
-                            )
-                        ).ToList();
-
-                    // Filter Types by Interface
-                    findTypes = findTypes.Where(
-                       x =>
-                           (
-                                (!config.IsInterface.HasValue || (config.IsInterface.HasValue && config.IsInterface.Value && (x.IsInterface && !x.IsEnum && !x.IsClass)))
-                           )
-                       ).ToList();
-
-                    findTypes = findTypes.Where(
-                   x =>
-                       (
-                            (!config.IsStruct.HasValue || (config.IsStruct.HasValue && config.IsStruct.Value && (x.IsValueType)))
-                       )
-                   ).ToList();
-
-                    // Filter Types by Constructor
-                    if (config.HasConstructorArgs != null)
-                        findTypes = findTypes.Where(t => t.Methods.Any(x => x.IsConstructor && x.Parameters.Count == config.HasConstructorArgs.Length)).ToList();
-                    //findTypes = findTypes.Where(x
-                    //        =>
-                    //            (config.HasConstructorArgs == null || config.HasConstructorArgs.Length == 0
-                    //                || (x.Methods.Where(x => x.IsConstructor).Where(y => y.Parameters.Any(z => config.HasConstructorArgs.Contains(z.Name))).Count() >= config.HasConstructorArgs.Length))
-
-                    //        ).ToList();
-
+                    List<TypeDefinition> findTypes = DiscoverTypeByMapping(assembly, config);
 
                     if (findTypes.Any())
                     {
@@ -1120,14 +1074,6 @@ if(config.IsStruct != null)
                                 .OrderBy(x => !x.Name.StartsWith("GClass") && !x.Name.StartsWith("GInterface"))
                                 .ThenBy(x => x.Name.StartsWith("GInterface"))
                                 .ToList();
-
-//#if DEBUG
-//                            if (findTypes.Any(x => x.BaseType != null && x.BaseType.Name == "ABindableState"))
-//                            {
-
-
-//                            }
-//#endif
 
                             var numberOfChangedIndexes = 0;
                             for (var index = 0; index < findTypes.Count(); index++)
@@ -1167,11 +1113,11 @@ if(config.IsStruct != null)
                             countOfDefinedMappingSucceeded++;
                         }
 
-                        if(config.RemoveAbstract.HasValue && config.RemoveAbstract.Value) 
+                        if (config.RemoveAbstract.HasValue && config.RemoveAbstract.Value)
                         {
-                            foreach (var type in findTypes) 
+                            foreach (var type in findTypes)
                             {
-                                if(type.IsAbstract)
+                                if (type.IsAbstract)
                                 {
                                     type.IsAbstract = false;
                                 }
@@ -1193,6 +1139,139 @@ if(config.IsStruct != null)
 
             Log($"Defined Remapper: SUCCESS: {countOfDefinedMappingSucceeded}");
             Log($"Defined Remapper: FAILED: {countOfDefinedMappingFailed}");
+        }
+
+        private static List<TypeDefinition> DiscoverTypeByMapping(AssemblyDefinition assembly, AutoRemapperInfo config)
+        {
+            var findTypes
+                                    = assembly
+                                    .MainModule
+                                    .GetTypes()
+                                    .OrderBy(x => x.Name)
+                                    .Where(x => !x.Namespace.StartsWith("System"))
+                                    .ToList();
+
+            findTypes = findTypes.Where(
+               x =>
+                   (
+                       !config.MustBeGClass.HasValue
+                       || (config.MustBeGClass.Value && x.Name.StartsWith("GClass"))
+                   )
+               ).ToList();
+
+            findTypes = findTypes.Where(
+               x =>
+                   (
+                       string.IsNullOrEmpty(config.IsNestedInClass)
+                       || (!string.IsNullOrEmpty(config.IsNestedInClass) && x.FullName.Contains(config.IsNestedInClass + "+", StringComparison.OrdinalIgnoreCase))
+                       || (!string.IsNullOrEmpty(config.IsNestedInClass) && x.FullName.Contains(config.IsNestedInClass + ".", StringComparison.OrdinalIgnoreCase))
+                       || (!string.IsNullOrEmpty(config.IsNestedInClass) && x.FullName.Contains(config.IsNestedInClass + "/", StringComparison.OrdinalIgnoreCase))
+                   )
+               ).ToList();
+
+
+            // Filter Types by Inherits Class
+            findTypes = findTypes.Where(
+                x =>
+                    (
+                        config.InheritsClass == null || config.InheritsClass.Length == 0
+                        || (x.BaseType != null && x.BaseType.Name == config.InheritsClass)
+                    )
+                ).ToList();
+
+            // Filter Types by Class Name Matching
+            findTypes = findTypes.Where(
+                x =>
+                    (
+                        config.ClassName == null || config.ClassName.Length == 0 || (x.FullName.Contains(config.ClassName))
+                    )
+                ).ToList();
+            // Filter Types by Methods
+            findTypes = findTypes.Where(x
+                    =>
+                        (config.HasMethods == null || config.HasMethods.Length == 0
+                            || (x.Methods.Where(x => !x.IsStatic).Select(y => y.Name.Split('.')[y.Name.Split('.').Length - 1]).Count(y => config.HasMethods.Contains(y)) >= config.HasMethods.Length))
+
+                    ).ToList();
+            // Filter Types by Virtual Methods
+            if (config.HasMethodsVirtual != null && config.HasMethodsVirtual.Length > 0)
+            {
+                findTypes = findTypes.Where(x
+                       =>
+                         (x.Methods.Count(y => y.IsVirtual) > 0
+                            && x.Methods.Where(y => y.IsVirtual).Count(y => config.HasMethodsVirtual.Contains(y.Name)) >= config.HasMethodsVirtual.Length
+                            )
+                       ).ToList();
+            }
+            // Filter Types by Static Methods
+            findTypes = findTypes.Where(x
+                    =>
+                        (config.HasMethodsStatic == null || config.HasMethodsStatic.Length == 0
+                            || (x.Methods.Where(x => x.IsStatic).Select(y => y.Name.Split('.')[y.Name.Split('.').Length - 1]).Count(y => config.HasMethodsStatic.Contains(y)) >= config.HasMethodsStatic.Length))
+
+                    ).ToList();
+
+            // Filter Types by Events
+            findTypes = findTypes.Where(x
+                   =>
+                       (config.HasEvents == null || config.HasEvents.Length == 0
+                           || (x.Events.Select(y => y.Name.Split('.')[y.Name.Split('.').Length - 1]).Count(y => config.HasEvents.Contains(y)) >= config.HasEvents.Length))
+
+                   ).ToList();
+
+            // Filter Types by Field/Properties
+            findTypes = findTypes.Where(
+                x =>
+                        (
+                            // fields
+                            (
+                            config.HasFields == null || config.HasFields.Length == 0
+                            || (!config.HasExactFields && x.Fields.Count(y => config.HasFields.Contains(y.Name)) >= config.HasFields.Length)
+                            || (config.HasExactFields && x.Fields.Count(y => y.IsDefinition && config.HasFields.Contains(y.Name)) == config.HasFields.Length)
+                            )
+                            ||
+                            // properties
+                            (
+                            config.HasFields == null || config.HasFields.Length == 0
+                            || (!config.HasExactFields && x.Properties.Count(y => config.HasFields.Contains(y.Name)) >= config.HasFields.Length)
+                            || (config.HasExactFields && x.Properties.Count(y => y.IsDefinition && config.HasFields.Contains(y.Name)) == config.HasFields.Length)
+
+                            )
+                        )).ToList();
+
+            // Filter Types by Class
+            findTypes = findTypes.Where(
+                x =>
+                    (
+                        (!config.IsClass.HasValue || (config.IsClass.HasValue && config.IsClass.Value && ((x.IsClass || x.IsAbstract) && !x.IsEnum && !x.IsInterface)))
+                    )
+                ).ToList();
+
+            // Filter Types by Interface
+            findTypes = findTypes.Where(
+               x =>
+                   (
+                        (!config.IsInterface.HasValue || (config.IsInterface.HasValue && config.IsInterface.Value && (x.IsInterface && !x.IsEnum && !x.IsClass)))
+                   )
+               ).ToList();
+
+            findTypes = findTypes.Where(
+           x =>
+               (
+                    (!config.IsStruct.HasValue || (config.IsStruct.HasValue && config.IsStruct.Value && (x.IsValueType)))
+               )
+           ).ToList();
+
+            // Filter Types by Constructor
+            if (config.HasConstructorArgs != null)
+                findTypes = findTypes.Where(t => t.Methods.Any(x => x.IsConstructor && x.Parameters.Count == config.HasConstructorArgs.Length)).ToList();
+            //findTypes = findTypes.Where(x
+            //        =>
+            //            (config.HasConstructorArgs == null || config.HasConstructorArgs.Length == 0
+            //                || (x.Methods.Where(x => x.IsConstructor).Where(y => y.Parameters.Any(z => config.HasConstructorArgs.Contains(z.Name))).Count() >= config.HasConstructorArgs.Length))
+
+            //        ).ToList();
+            return findTypes;
         }
 
         public static TypeDefinition CreateStubOfOldType(TypeDefinition oldType)
