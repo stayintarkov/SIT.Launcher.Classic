@@ -181,6 +181,11 @@
       "RenameClassNameTo": "LocalGameBotCreator",
       "IsClass": true,
       "HasMethods": [ "FillCreationDataWithProfiles" ]
+    },
+    {
+      "RenameClassNameTo": "ItemMovementHandler",
+      "IsClass": true,
+      "HasMethodsStatic": [ "AcceptQuest", "Add", "AddWithoutRestrictions", "ApplyItemToRevolverDrum", "Merge", "Move", "TransferOrMerge" ]
     }
   ],
   "DefinedTypesToForcePublic": [
@@ -190,9 +195,14 @@
     //"EFT.Player/GrenadeController", //,
     //"EFT.Player/MedsController"
     "BodyPartState",
+    "AHealthController/BodyPartState",
     "EFT.Player/PlayerInventoryController",
     "EFT.Player/PlayerOwnerInventoryController",
-    "EFT.Player/SinglePlayerInventoryController"
+    "EFT.Player/SinglePlayerInventoryController",
+    //internal class EmptyHandsController : ItemHandsController, IHandsController, GInterface111, IHandsController0
+    "EFT.Player/EmptyHandsController",
+    "EasyBundle",
+    "ProfileChangeHandler"
 
   ],
   "TypesToForceAllPublicMethods": [
