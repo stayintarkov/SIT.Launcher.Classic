@@ -186,6 +186,11 @@
       "RenameClassNameTo": "ItemMovementHandler",
       "IsClass": true,
       "HasMethodsStatic": [ "AcceptQuest", "Add", "AddWithoutRestrictions", "ApplyItemToRevolverDrum", "Merge", "Move", "TransferOrMerge" ]
+    },
+    {
+      "RenameClassNameTo": "ResourceBundleConstants",
+      "IsClass": true,
+      "HasFields": [ "PLAYER_BUNDLE_NAME" ]
     }
   ],
   "DefinedTypesToForcePublic": [

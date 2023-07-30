@@ -368,8 +368,8 @@ namespace SIT.Launcher.DeObfus
             if (!config.EnableAddSPTUsecBearToDll.HasValue || !config.EnableAddSPTUsecBearToDll.Value)
                 return;
 
-            long sptUsecValue = 33; 
-            long sptBearValue = 34;
+            long sptUsecValue = 34L; 
+            long sptBearValue = 35L;
 
             var botEnums = assembly.MainModule.GetType("EFT.WildSpawnType");
 
@@ -1183,9 +1183,10 @@ namespace SIT.Launcher.DeObfus
             findTypes = findTypes.Where(
                 x =>
                     (
-                        config.ClassName == null || config.ClassName.Length == 0 || (x.FullName.Contains(config.ClassName))
+                        config.ClassName == null || config.ClassName.Length == 0 || (x.Name.Equals(config.ClassName))
                     )
                 ).ToList();
+
             // Filter Types by Methods
             findTypes = findTypes.Where(x
                     =>
