@@ -604,7 +604,7 @@ namespace SIT.Launcher
                 var tarkovCoreReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Core", new ApiOptions() { });
                 var tarkovCoreReleasesOrdered = tarkovCoreReleases.OrderByDescending(x => x.CreatedAt).ToList();
                 Release latestCore = null;
-                if (Config.AutomaticallyInstallSITPreRelease && tarkovCoreReleasesOrdered[0].Prerelease)
+                if ((Config.AutomaticallyInstallSITPreRelease || Config.ForceInstallLatestSIT) && tarkovCoreReleasesOrdered[0].Prerelease)
                     latestCore = tarkovCoreReleasesOrdered[0];
 
                 if (latestCore == null)
@@ -831,6 +831,7 @@ namespace SIT.Launcher
                 OnDeobfuscateLog("--------------------------------------------------------------------------");
                 OnDeobfuscateLog("Deobfuscate started!" + Environment.NewLine);
                 btnDeobfuscate.IsEnabled = false;
+                btnDeobfuscateOnly.IsEnabled = false;
             });
             var result = await Deobfuscator.DeobfuscateAsync(exeLocation, createBackup, overwriteExisting, doRemapping, this);
             await Dispatcher.InvokeAsync(() =>
@@ -840,6 +841,7 @@ namespace SIT.Launcher
                 //    txtDeobfuscateLog.Text += logg + Environment.NewLine;
                 //}
                 btnDeobfuscate.IsEnabled = true;
+                btnDeobfuscateOnly.IsEnabled = true;
             });
 
             var deobfuscateLogPath = "DeobfuscateLog.txt";
