@@ -2,6 +2,16 @@
 
 This Launcher is designed to work with the [SPT-AKI Bleeding Edge Server](https://dev.sp-tarkov.com/SPT-AKI/Server)
 
+---
+
+<div align=center>
+
+![GitHub all releases](https://img.shields.io/github/downloads/paulov-t/SIT.Launcher/total) ![GitHub release (latest by date)](https://img.shields.io/github/downloads/paulov-t/SIT.Launcher/latest/total)
+
+</div>
+
+---
+
 ## SPT-AKI
 You can learn about SPT-Aki [here](https://www.sp-tarkov.com/).
 
