@@ -299,7 +299,7 @@
     },
     {
       "RenameClassNameTo": "BotGroupClass",
-      "HasMethods": [ "IsPlayerEnemy", "IsPlayerEnemyByRole", "AddEnemyGroup", "AddEnemyGroupIfAllowed" ]
+      "HasMethods": [ "IsPlayerEnemyByRole" ]
     },
     {
       "RenameClassNameTo": "BotSettingsClass",
@@ -432,7 +432,8 @@
     },
     {
       "RenameClassNameTo": "BaseNodeClass",
-      "ClassName": "GClass105", // public abstract class GClass104 : GClass103 	protected BotOwner botOwner_0; public GClass104(BotOwner bot)
+      "ClassName": "GClass114", // public abstract class GClass104 : GClass103 	protected BotOwner botOwner_0; public GClass104(BotOwner bot)
+      "IsAbstract": true,
       "HasFields": [ "botOwner_0" ],
       "HasConstructorArgs": [ "bot" ]
     },
