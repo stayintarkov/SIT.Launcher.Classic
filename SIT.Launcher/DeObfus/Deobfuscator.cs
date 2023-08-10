@@ -368,8 +368,8 @@ namespace SIT.Launcher.DeObfus
             if (!config.EnableAddSPTUsecBearToDll.HasValue || !config.EnableAddSPTUsecBearToDll.Value)
                 return;
 
-            long sptUsecValue = 34L; 
-            long sptBearValue = 35L;
+            long sptUsecValue = 0x26L;
+            long sptBearValue = 0x27L;
 
             var botEnums = assembly.MainModule.GetType("EFT.WildSpawnType");
 
