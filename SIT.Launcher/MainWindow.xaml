@@ -53,10 +53,10 @@
                     <Label Content="Play" VerticalAlignment="Center" FontSize="16" />
                 </StackPanel>
             </Button>
-            <Button Background="Transparent" BorderThickness="0" Grid.Column="1" ToolTip="Server" x:Name="btnServer" Click="btnServer_Click" Visibility="Collapsed">
+            <Button Background="Transparent" BorderThickness="0" Grid.Column="1" ToolTip="SIT Versions" x:Name="btnSITVersions" Click="btnSITVersions_Click">
                 <StackPanel VerticalAlignment="Center"  HorizontalAlignment="Left" Orientation="Horizontal">
-                    <iconPacks:PackIconCodicons Kind="Server" Height="20" Width="20" VerticalAlignment="Center"></iconPacks:PackIconCodicons>
-                    <Label Content="Server" VerticalAlignment="Center" FontSize="16" />
+                    <iconPacks:PackIconCodicons Kind="Github" Height="20" Width="20" VerticalAlignment="Center"></iconPacks:PackIconCodicons>
+                    <Label Content="SIT Versions" VerticalAlignment="Center" FontSize="16" />
                 </StackPanel>
             </Button>
             <Button Background="Transparent" BorderThickness="0" Grid.Column="3" ToolTip="Tools" x:Name="btnToToolsWindow" Click="btnToToolsWindow_Click">
@@ -73,14 +73,20 @@
             </Button>
         </Grid>
         <Grid x:Name="gridPlay" Grid.Row="1" Grid.ColumnSpan="3">
+            <Grid.Resources >
+                <Style TargetType="Border" >
+                    <Setter Property="Padding" Value="5,5,5,5" />
+                </Style>
+            </Grid.Resources>
+
             <Grid.RowDefinitions>
                 <RowDefinition MinHeight="180"></RowDefinition>
-                <RowDefinition ></RowDefinition>
+                <RowDefinition Height="*" ></RowDefinition>
                 <RowDefinition MaxHeight="50" ></RowDefinition>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition MinWidth="250" Width="250"></ColumnDefinition>
-                <ColumnDefinition MinWidth="300" Width="300"></ColumnDefinition>
+                <ColumnDefinition MinWidth="300" Width="*"></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <Grid>
@@ -89,31 +95,39 @@
                     <RowDefinition></RowDefinition>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition></ColumnDefinition>
-                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
             </Grid>
 
-            <Grid Grid.Column="0" Grid.ColumnSpan="2">
-                <Grid.RowDefinitions>
-                    <RowDefinition></RowDefinition>
-                </Grid.RowDefinitions>
-                <StackPanel>
-                    <mah:MetroHeader Content="Server" Foreground="White" />
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="2*"></ColumnDefinition>
-                            <ColumnDefinition></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
-                        <TextBox Text="{Binding Config.ServerInstance.ServerAddress}" HorizontalAlignment="Stretch"></TextBox>
-                        <!--<Button Grid.Column="1" x:Name="btnStartServer" Click="btnStartServer_Click">Start Server</Button>-->
-                    </Grid>
-                    <mah:MetroHeader  Content="Username" Foreground="White" />
-                    <TextBox Text="{Binding Config.Username}"></TextBox>
-                    <mah:MetroHeader Content="Password" Foreground="White" />
-                    <PasswordBox x:Name="txtPassword"></PasswordBox>
-                </StackPanel>
-            </Grid>
+            <Border  Grid.Column="0" Grid.ColumnSpan="2">
+                <Grid>
+                    <Grid.Resources >
+                        <Style TargetType="Border" >
+                            <Setter Property="Padding" Value="5,5,5,5" />
+                        </Style>
+                    </Grid.Resources>
+                    <Grid.RowDefinitions>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <StackPanel>
+                        <mah:MetroHeader Content="Server" Foreground="White" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"></ColumnDefinition>
+                                <ColumnDefinition></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Text="{Binding Config.ServerInstance.ServerAddress}" HorizontalAlignment="Stretch"></TextBox>
+                            <!--<Button Grid.Column="1" x:Name="btnStartServer" Click="btnStartServer_Click">Start Server</Button>-->
+                        </Grid>
+                        <mah:MetroHeader  Content="Username" Foreground="White" />
+                        <TextBox Text="{Binding Config.Username}"></TextBox>
+                        <mah:MetroHeader Content="Password" Foreground="White" />
+                        <PasswordBox x:Name="txtPassword"></PasswordBox>
+                    </StackPanel>
+                </Grid>
+            </Border>
+            
             <StackPanel Grid.Row="2" Grid.Column="2">
                 <Button x:Name="btnLaunchGame" Click="btnLaunchGame_Click" Content="{Binding LaunchButtonText, Mode=TwoWay}"></Button>
             </StackPanel>
@@ -137,6 +151,32 @@
             <Label Content="Log" Grid.Row="1"></Label>
             <TextBox x:Name="txtServerLog" IsReadOnly="True" MaxLines="9999" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" Grid.Row="2"></TextBox>
         </Grid>
+        <Grid x:Name="gridSITVersions" Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="3">
+            <Border  Grid.Row="0" Grid.Column="2">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="25"></RowDefinition>
+                        <RowDefinition Height="35"></RowDefinition>
+                        <RowDefinition MinHeight="200" Height="*"></RowDefinition>
+                        <RowDefinition Height="25"></RowDefinition>
+
+                    </Grid.RowDefinitions>
+                    <Label FontWeight="Bold">SIT Release News</Label>
+                    <TextBlock x:Name="txtSITLatestReleaseTitle" FontWeight="Bold" FontSize="14" Grid.Row="1" TextWrapping="Wrap"></TextBlock>
+                    <Border Grid.Row="2">
+                        <RichTextBox
+                    x:Name="rtbSITReleaseNews" 
+                    Padding="10" 
+                    Background="{DynamicResource MahApps.Brushes.Control.Background}" 
+                    Foreground="White"
+                    IsReadOnly="True"
+                    >
+
+                        </RichTextBox>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
         <Grid x:Name="gridTools" Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="3">
                 <Grid.RowDefinitions>
                     <RowDefinition MinHeight="30" Height="30"></RowDefinition>
@@ -159,14 +199,16 @@
                         <Setter Property="Margin" Value="5,5,0,5"/>
                     </Style>
                 </StackPanel.Resources>
-                <mah:MetroHeader Content="Automatically Install SIT" Foreground="White" />
+                <mah:MetroHeader Content="{DynamicResource textAutoInstallSIT}" Foreground="White" />
                 <CheckBox IsChecked="{Binding Config.AutomaticallyInstallSIT}"></CheckBox>
-                <mah:MetroHeader Content="Force Install Latest SIT" Foreground="White" />
+                <mah:MetroHeader Content="Force Install Latest SIT" ToolTip="This will install a Pre-Release of SIT, if available" Foreground="White" />
                 <CheckBox IsChecked="{Binding Config.ForceInstallLatestSIT}"></CheckBox>
-                <mah:MetroHeader Content="Automatically Install Aki Support - Aki Support is limited at this time!" Foreground="White" />
+                <mah:MetroHeader Content="Install Aki Reflection Binaries" ToolTip="Installs Aki.Common and Aki.Reflection to Managed folder. Does not provide all client mods support!"  Foreground="White" />
                 <CheckBox IsChecked="{Binding Config.AutomaticallyInstallAkiSupport}"></CheckBox>
                 <mah:MetroHeader Content="Discord Integration" Foreground="White" />
                 <CheckBox IsChecked="{Binding Config.SendInfoToDiscord}"></CheckBox>
+                <mah:MetroHeader Content="Close Launcher after Game Launch" Foreground="White" />
+                <CheckBox IsChecked="{Binding Config.CloseLauncherAfterLaunch}"></CheckBox>
                 <mah:MetroHeader Content="Install Location" Foreground="White" />
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="{Binding Config.InstallLocation}" />

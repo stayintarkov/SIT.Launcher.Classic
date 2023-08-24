@@ -33,10 +33,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Page Remove="Resources\Languages\English.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Resource Include="Images\StayInTarkov.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	</Resource>
+    <Resource Include="Resources\Languages\English.xaml" />
     <Content Include="AkiSupport\Bepinex\Patchers\DONOTDELETE.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
