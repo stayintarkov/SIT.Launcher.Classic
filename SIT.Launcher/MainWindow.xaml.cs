@@ -13,8 +13,10 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Documents;
 
 namespace SIT.Launcher
 {
@@ -45,7 +47,31 @@ namespace SIT.Launcher
         private void MainWindow_ContentRendered(object sender, EventArgs e)
         {
             NewInstallFromOfficial();
-            UpdateInstallFromOfficial();
+            _ = UpdateInstallFromOfficial();
+
+            _ = DisplayLatestReleaseNews();
+        }
+
+        private async Task DisplayLatestReleaseNews()
+        {
+            var github = new GitHubClient(new ProductHeaderValue("SIT-Launcher"));
+            var user = await github.User.Get("paulov-t");
+            var tarkovCoreReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Core", new ApiOptions() { });
+            var tarkovCoreLatestRelease = tarkovCoreReleases.OrderByDescending(x => x.CreatedAt).First();
+
+            rtbSITReleaseNews.Document = HtmlToFlowDocument(tarkovCoreLatestRelease.Body);
+            txtSITLatestReleaseTitle.Text = tarkovCoreLatestRelease.Name + " - " + tarkovCoreLatestRelease.CreatedAt.ToString();
+
+        }
+        public static FlowDocument HtmlToFlowDocument(string text)
+        {
+            var document = new FlowDocument();
+            using (var stream = new MemoryStream((new UTF8Encoding()).GetBytes(text)))
+            {
+                var txt = new TextRange(document.ContentStart, document.ContentEnd);
+                txt.Load(stream, DataFormats.Text);
+            }
+            return document;
         }
 
         private async Task UpdateInstallFromOfficial()
@@ -361,6 +387,11 @@ namespace SIT.Launcher
             {
                 var messageBoxResult = MessageBox.Show("Something went wrong. Maybe the server hasn't been started? Check the logs.", "Account");
             }
+
+            if(Config.CloseLauncherAfterLaunch)
+            {
+                App.Current.Shutdown();
+            }
         }
 
         private void BrowseForOfflineGame()
@@ -520,7 +551,9 @@ namespace SIT.Launcher
 
                     using (var ms = new MemoryStream())
                     {
-                        using (var rStream = await new HttpClient().GetStreamAsync("https://github.com/BepInEx/BepInEx/releases/download/v5.4.21/BepInEx_x64_5.4.21.0.zip")) // response.GetResponseStream();
+                        var httpClient = new HttpClient();
+                        httpClient.Timeout = new TimeSpan(0, 1, 0);
+                        using (var rStream = await httpClient.GetStreamAsync("https://github.com/BepInEx/BepInEx/releases/download/v5.4.21/BepInEx_x64_5.4.21.0.zip")) // response.GetResponseStream();
                         {
                             rStream.CopyTo(ms);
                             await File.WriteAllBytesAsync(App.ApplicationDirectory + "\\BepInEx5.zip", ms.ToArray());
@@ -610,24 +643,32 @@ namespace SIT.Launcher
                 if (latestCore == null)
                     latestCore = tarkovCoreReleasesOrdered.First(x => !x.Prerelease);
 
+                var clientModsDeliveryPath = Path.Combine(App.ApplicationDirectory, "ClientMods");
+                Directory.CreateDirectory(clientModsDeliveryPath);
 
-
-                var allAssets = latestCore.Assets.OrderByDescending(x => x.CreatedAt).DistinctBy(x => x.Name);
+                var maxSize = 100000000;
+                var allAssets = latestCore
+                    .Assets
+                    .Where(x => x.Size < maxSize)
+                    .OrderByDescending(x => x.CreatedAt).DistinctBy(x => x.Name);
 
                 await loadingDialog.UpdateAsync("Installing SIT", $"Downloading files");
 
                 var allAssetsCount = allAssets.Count();
                 var assetIndex = 0;
-                foreach (var A in allAssets)
+
+                var httpClient = new HttpClient();
+                httpClient.Timeout = new TimeSpan(0, 5, 0);
+
+                foreach (var asset in allAssets)
                 {
-                    var httpClient = new HttpClient();
-                    var response = await httpClient.GetAsync(A.BrowserDownloadUrl);
+                    var response = await httpClient.GetAsync(asset.BrowserDownloadUrl, HttpCompletionOption.ResponseContentRead);
                     if (response != null)
                     {
                         var ms = new MemoryStream();
                         await response.Content.CopyToAsync(ms);
 
-                        var deliveryPath = App.ApplicationDirectory + "\\ClientMods\\" + A.Name;
+                        var deliveryPath = Path.Combine(clientModsDeliveryPath, asset.Name); //App.ApplicationDirectory + "\\ClientMods\\" + asset.Name;
                         var fiDelivery = new FileInfo(deliveryPath);
                         await File.WriteAllBytesAsync(deliveryPath, ms.ToArray());
                     }
@@ -677,6 +718,9 @@ namespace SIT.Launcher
                             File.Copy(clientModDLL, bepinexPluginsPath + "\\" + fiClientMod.Name, true);
                     }
                 }
+
+                File.WriteAllText("CurrentSITVersion.txt", latestCore.Name);
+
             }
             catch (Exception ex)
             {
@@ -892,6 +936,8 @@ namespace SIT.Launcher
             gridServer.Visibility = Visibility.Collapsed;
             gridTools.Visibility = Visibility.Collapsed;
             gridSettings.Visibility = Visibility.Collapsed;
+            gridSITVersions.Visibility = Visibility.Collapsed;
+
         }
 
         //private void btnCoopServer_Click(object sender, RoutedEventArgs e)
@@ -1016,6 +1062,12 @@ namespace SIT.Launcher
             }
 
             UpdateButtonText(null);
+        }
+
+        private void btnSITVersions_Click(object sender, RoutedEventArgs e)
+        {
+            CollapseAll();
+            gridSITVersions.Visibility = Visibility.Visible;
         }
     }
 }
