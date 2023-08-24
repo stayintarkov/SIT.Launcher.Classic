@@ -55,6 +55,7 @@ namespace SIT.Launcher
         public bool EnableCoopServer { get; set; } = false;
 
         public bool SendInfoToDiscord { get; set; } = false;
+        public bool CloseLauncherAfterLaunch { get; set; } = false;
 
         private static LauncherConfig Load()
         {
@@ -64,6 +65,7 @@ namespace SIT.Launcher
                 AutomaticallyInstallAssemblyDlls = true,
                 AutomaticallyInstallSIT = true,
                 AutomaticallyInstallAkiSupport = true,
+                CloseLauncherAfterLaunch = false,
                 ServerInstance = new ServerInstance() { ServerAddress = "http://127.0.0.1:6969" }
             };
             if(File.Exists(App.ApplicationDirectory + "LauncherConfig.json"))
