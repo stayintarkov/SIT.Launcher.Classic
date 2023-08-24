@@ -114,7 +114,7 @@ namespace SIT.Launcher
             request.Headers.Add("Accept-Encoding", "deflate");
 
             request.Method = method;
-            request.Timeout = 5000;
+            request.Timeout = new TimeSpan(0, 1, 0).Milliseconds;
 
             if (method != "GET" && !string.IsNullOrEmpty(data))
             {
