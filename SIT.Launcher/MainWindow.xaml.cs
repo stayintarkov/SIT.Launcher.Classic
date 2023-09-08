@@ -540,11 +540,9 @@ namespace SIT.Launcher
                 var bepinexCorePath = System.IO.Path.Combine(bepinexPath, "core");
                 var bepinexPluginsPath = System.IO.Path.Combine(bepinexPath, "plugins");
 
+                var savedBepinexZipPath = App.ApplicationDirectory + "\\BepInEx5.4.22.zip";
 
-                UpdateButtonText("Installing BepInEx");
-                await Task.Delay(500);
-
-                if (!File.Exists(App.ApplicationDirectory + "\\BepInEx5.zip"))
+                if (!File.Exists(savedBepinexZipPath))
                 {
                     UpdateButtonText("Downloading BepInEx");
                     await Task.Delay(500);
@@ -553,26 +551,29 @@ namespace SIT.Launcher
                     {
                         var httpClient = new HttpClient();
                         httpClient.Timeout = new TimeSpan(0, 1, 0);
-                        using (var rStream = await httpClient.GetStreamAsync("https://github.com/BepInEx/BepInEx/releases/download/v5.4.21/BepInEx_x64_5.4.21.0.zip")) // response.GetResponseStream();
+                        using (var rStream = await httpClient.GetStreamAsync("https://github.com/BepInEx/BepInEx/releases/download/v5.4.22/BepInEx_x64_5.4.22.0.zip")) 
                         {
                             rStream.CopyTo(ms);
-                            await File.WriteAllBytesAsync(App.ApplicationDirectory + "\\BepInEx5.zip", ms.ToArray());
+                            await File.WriteAllBytesAsync(savedBepinexZipPath, ms.ToArray());
                         }
                     }
                 }
 
-                if (DoesBepInExExistInInstall(exeLocation))
+                if (DoesBepInExExistInInstall(exeLocation) && File.Exists("CurrentBepinexVersion.txt") && File.ReadAllText("CurrentBepinexVersion.txt") == savedBepinexZipPath)
                     return true;
 
                 UpdateButtonText("Installing BepInEx");
 
-                System.IO.Compression.ZipFile.ExtractToDirectory(App.ApplicationDirectory + "\\BepInEx5.zip", baseGamePath, true);
+                System.IO.Compression.ZipFile.ExtractToDirectory(savedBepinexZipPath, baseGamePath, true);
                 if (!Directory.Exists(bepinexPluginsPath))
                 {
                     Directory.CreateDirectory(bepinexPluginsPath);
                 }
+
+                File.WriteAllText("CurrentBepinexVersion.txt", savedBepinexZipPath);
+
             }
-            catch(Exception ex) 
+            catch (Exception ex) 
             { 
                 MessageBox.Show($"Unable to Install BepInEx: {ex.Message}", "Error");
                 return false;
