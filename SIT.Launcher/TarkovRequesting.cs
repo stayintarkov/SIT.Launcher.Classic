@@ -80,7 +80,7 @@ namespace SIT.Launcher
         /// <param name="data">string json data</param>
         /// <param name="compress">Should use compression gzip?</param>
         /// <returns>Stream or null</returns>
-        private Stream Send(string url, string method = "GET", string data = null, bool compress = true)
+        private (Stream, WebResponse) Send(string url, string method = "GET", string data = null, bool compress = true)
         {
             // disable SSL encryption
             ServicePointManager.Expect100Continue = true;
@@ -95,26 +95,18 @@ namespace SIT.Launcher
                 fullUri = fullUri.Insert(0, "https://");
 
             WebRequest request = WebRequest.Create(new Uri(fullUri));
-            //new HttpClient().PostAsync(fullUri);
-
-            //if (compress)
-            //    httpClient.DefaultRequestHeaders.Add("content-encoding", "deflate");
-            //else
-            //    httpClient.DefaultRequestHeaders.Remove("content-encoding");
-            //var reqMessage = new HttpRequestMessage(HttpMethod.Post, new Uri(fullUri));
-            //reqMessage.Headers.Add("content-encoding", "deflate");
-            //var httpClientResponse = httpClient.Send(reqMessage);
-
+           
             if (!string.IsNullOrEmpty(Session))
             {
                 request.Headers.Add("Cookie", $"PHPSESSID={Session}");
                 request.Headers.Add("SessionId", Session);
             }
 
-            request.Headers.Add("Accept-Encoding", "deflate");
+            //request.Headers.Add("Accept-Encoding", "deflate");
+            request.Headers.Add("Accept-Encoding", "deflate, gzip");
 
             request.Method = method;
-            request.Timeout = new TimeSpan(0, 1, 0).Milliseconds;
+            request.Timeout = (int)Math.Round(new TimeSpan(0, 1, 0).TotalMilliseconds);
 
             if (method != "GET" && !string.IsNullOrEmpty(data))
             {
@@ -137,8 +129,8 @@ namespace SIT.Launcher
             // get response stream
             try
             {
-                WebResponse response = request.GetResponse();
-                return response.GetResponseStream();
+                var response = request.GetResponse();
+                return (response.GetResponseStream(), response);
             }
             catch (Exception)
             {
@@ -147,7 +139,7 @@ namespace SIT.Launcher
         }
 
 
-        private Stream SendHttp(string url, string method = "GET", string data = null, bool compress = true)
+        private (Stream, WebResponse) SendHttp(string url, string method = "GET", string data = null, bool compress = true)
         {
             // disable SSL encryption
             ServicePointManager.Expect100Continue = true;
@@ -193,19 +185,19 @@ namespace SIT.Launcher
             }
 
             // get response stream
-            WebResponse response = request.GetResponse();
-            return response.GetResponseStream();
+            var response = request.GetResponse();
+            return (response.GetResponseStream(), response);
            
         }
 
         public void PutJson(string url, string data, bool compress = true)
         {
-            using (Stream stream = Send(url, "PUT", data, compress)) { }
+            using (Stream stream = Send(url, "PUT", data, compress).Item1) { }
         }
 
         public string GetJson(string url, bool compress = true)
         {
-            using (Stream stream = Send(url, "GET", null, compress))
+            using (Stream stream = Send(url, "GET", null, compress).Item1)
             {
                 using (MemoryStream ms = new MemoryStream())
                 {
@@ -220,7 +212,10 @@ namespace SIT.Launcher
 
         public string PostJson(string url, string data, bool compress = true)
         {
-            using (Stream stream = Send(url, "POST", data, compress))
+            var postItems = Send(url, "POST", data, compress);
+            var stream = postItems.Item1;
+            var response = postItems.Item2;
+            using (stream)
             {
                 using (MemoryStream ms = new MemoryStream())
                 {
@@ -228,7 +223,17 @@ namespace SIT.Launcher
                         return "";
                     stream.CopyTo(ms);
                     //return Encoding.UTF8.GetString(DecompressFile(ms.ToArray()));
-                    return SimpleZlib.Decompress(ms.ToArray(), null);
+
+                    //if (
+                    //    (response.Headers[HttpRequestHeader.ContentEncoding] != null && response.Headers[HttpRequestHeader.ContentEncoding] == "deflate")
+                    //    || (response.Headers[HttpRequestHeader.TransferEncoding] != null && response.Headers[HttpRequestHeader.TransferEncoding] == "chunked")
+                    //    )
+                    if(compress)
+                        return SimpleZlib.Decompress(ms.ToArray(), null);
+                    else
+                        return Encoding.UTF8.GetString(ms.ToArray());
+
+
                 }
             }
         }
