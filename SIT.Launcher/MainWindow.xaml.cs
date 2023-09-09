@@ -628,8 +628,6 @@ namespace SIT.Launcher
                 return false;
 
        
-            UpdateButtonText("Downloading SIT");
-
             try
             {
 
@@ -646,6 +644,10 @@ namespace SIT.Launcher
 
                 var clientModsDeliveryPath = Path.Combine(App.ApplicationDirectory, "ClientMods");
                 Directory.CreateDirectory(clientModsDeliveryPath);
+
+                // Checks the current downloaded version and only downloads if needed
+                if (File.Exists("CurrentSITVersion.txt") && File.ReadAllText("CurrentSITVersion.txt") == latestCore.Name)
+                    return true;
 
                 var maxSize = 100000000;
                 var allAssets = latestCore
