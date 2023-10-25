@@ -452,16 +452,16 @@
 
   <ItemGroup>
     <PackageReference Include="FolderBrowserEx" Version="1.0.1" />
-    <PackageReference Include="MahApps.Metro" Version="2.4.9" />
+    <PackageReference Include="MahApps.Metro" Version="2.4.10" />
     <PackageReference Include="MahApps.Metro.IconPacks" Version="4.11.0" />
     <PackageReference Include="MahApps.Metro.IconPacks.MaterialDesign" Version="4.11.0" />
     <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
     <PackageReference Include="MaterialDesignThemes.MahApps" Version="0.3.0" />
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="7.0.3" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="7.0.5" />
     <PackageReference Include="Mono.Cecil" Version="0.11.5" />
     <PackageReference Include="NetDiscordRpc" Version="1.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Octokit" Version="6.0.0" />
+    <PackageReference Include="Octokit" Version="7.1.0" />
     <PackageReference Include="System.IO.Compression" Version="4.3.0" />
   </ItemGroup>
 	<ItemGroup>
