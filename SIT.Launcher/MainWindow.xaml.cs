@@ -7,6 +7,7 @@ using SIT.Launcher.DeObfus;
 using SIT.Launcher.Windows;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -50,17 +51,46 @@ namespace SIT.Launcher
             _ = UpdateInstallFromOfficial();
 
             _ = DisplayLatestReleaseNews();
+
+            DisplayLatestLogs();
+        }
+
+        public static readonly DependencyProperty SITReleasesProperty = DependencyProperty.Register("SITReleases", typeof(ObservableCollection<Release>), typeof(MainWindow), new FrameworkPropertyMetadata(null));
+        public ObservableCollection<Release> SITReleases
+        {
+            get => (ObservableCollection<Release>)GetValue(SITReleasesProperty);
+            set => SetValue(SITReleasesProperty, value);
+        }
+
+        public static readonly DependencyProperty SelectedSITReleaseProperty = DependencyProperty.Register("SelectedSITRelease", typeof(Release), typeof(MainWindow), new FrameworkPropertyMetadata(null));
+        public Release SelectedSITRelease
+        {
+            get => (Release)GetValue(SelectedSITReleaseProperty);
+            set => SetValue(SelectedSITReleaseProperty, value);
+        }
+
+        private void DisplayLatestLogs()
+        {
+            var pathToLogs = Path.Combine(Directory.GetParent(OfficialGameFinder.FindOfficialGame().FullName).FullName, "Logs");
+            var filesInLogs = Directory.GetFiles(pathToLogs);
+            if (!filesInLogs.Any())
+                return;
+
+            foreach (var f in filesInLogs)
+            {
+
+            }
         }
 
         private async Task DisplayLatestReleaseNews()
         {
             var github = new GitHubClient(new ProductHeaderValue("SIT-Launcher"));
             var user = await github.User.Get("paulov-t");
-            var tarkovCoreReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Core", new ApiOptions() { });
-            var tarkovCoreLatestRelease = tarkovCoreReleases.OrderByDescending(x => x.CreatedAt).First();
+            SITReleases = new ObservableCollection<Release>(await github.Repository.Release.GetAll("paulov-t", "SIT.Core", new ApiOptions() { }));
+            SelectedSITRelease = SITReleases.OrderByDescending(x => x.CreatedAt).First();
 
-            rtbSITReleaseNews.Document = HtmlToFlowDocument(tarkovCoreLatestRelease.Body);
-            txtSITLatestReleaseTitle.Text = tarkovCoreLatestRelease.Name + " - " + tarkovCoreLatestRelease.CreatedAt.ToString();
+            rtbSITReleaseNews.Document = HtmlToFlowDocument(SelectedSITRelease.Body);
+            txtSITLatestReleaseTitle.Text = SelectedSITRelease.Name + " - " + SelectedSITRelease.CreatedAt.ToString();
 
         }
         public static FlowDocument HtmlToFlowDocument(string text)
@@ -158,9 +188,13 @@ namespace SIT.Launcher
             var officialFiles = Directory
                                         .GetFiles(fiOfficialGame.DirectoryName, "*", new EnumerationOptions() { RecurseSubdirectories = true })
                                         .Select(x => new FileInfo(x));
+
+            var countOfOfficialFiles = officialFiles.Count();
+            var currentNumber = 1;
             foreach (var file in officialFiles)
             {
-                await loadingDialog.UpdateAsync("Installing", $"Copying file: {file.Name}");
+                var percent = (int)Math.Round((decimal)(currentNumber / countOfOfficialFiles) * 100);
+                await loadingDialog.UpdateAsync("Installing", $"Copying file: {file.Name}", percent);
                 var newFilePath = file.FullName.Replace(fiOfficialGame.DirectoryName, offlineFolder);
                 Directory.CreateDirectory(Directory.GetParent(newFilePath).FullName);
 
@@ -170,6 +204,8 @@ namespace SIT.Launcher
 
                 if (newFilePath.Contains("EscapeFromTarkov.exe"))
                     exeLocation = newFilePath;
+
+                currentNumber++;
             }
 
             Config.InstallLocation = offlineFolder + "\\EscapeFromTarkov.exe";
@@ -459,7 +495,6 @@ namespace SIT.Launcher
 
         private async void StartGame(string sessionId, string installLocation)
         {
-            //App.LegalityCheck();
             CleanupDirectory(installLocation);
 
             UpdateButtonText(null);
@@ -470,15 +505,6 @@ namespace SIT.Launcher
             WindowState = WindowState.Minimized;
 
             await Task.Delay(10000);
-
-            //if (Config.SendInfoToDiscord)
-            //    DiscordInterop.DiscordRpcClient.UpdateDetails("In Game");
-            ////do
-            ////{
-
-            ////} while (Process.GetProcessesByName("EscapeFromTarkov") != null);
-            //if (Config.SendInfoToDiscord)
-            //    DiscordInterop.DiscordRpcClient.UpdateDetails("");
         }
 
         private void CleanupDirectory(string installLocation)
@@ -631,25 +657,29 @@ namespace SIT.Launcher
             try
             {
 
-                var github = new GitHubClient(new ProductHeaderValue("SIT-Launcher"));
-                var user = await github.User.Get("paulov-t");
-                var tarkovCoreReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Core", new ApiOptions() { });
-                var tarkovCoreReleasesOrdered = tarkovCoreReleases.OrderByDescending(x => x.CreatedAt).ToList();
-                Release latestCore = null;
-                if ((Config.AutomaticallyInstallSITPreRelease || Config.ForceInstallLatestSIT) && tarkovCoreReleasesOrdered[0].Prerelease)
-                    latestCore = tarkovCoreReleasesOrdered[0];
+                //var github = new GitHubClient(new ProductHeaderValue("SIT-Launcher"));
+                //var user = await github.User.Get("paulov-t");
+                //var tarkovCoreReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Core", new ApiOptions() { });
+                //var tarkovCoreReleasesOrdered = tarkovCoreReleases.OrderByDescending(x => x.CreatedAt).ToList();
+                Release latestCore = SelectedSITRelease;
+                //if ((Config.AutomaticallyInstallSITPreRelease || Config.ForceInstallLatestSIT) && tarkovCoreReleasesOrdered[0].Prerelease)
+                //    latestCore = tarkovCoreReleasesOrdered[0];
 
-                if (latestCore == null)
-                    latestCore = tarkovCoreReleasesOrdered.First(x => !x.Prerelease);
+                //if (latestCore == null)
+                //    latestCore = tarkovCoreReleasesOrdered.First(x => !x.Prerelease);
 
                 var clientModsDeliveryPath = Path.Combine(App.ApplicationDirectory, "ClientMods");
                 Directory.CreateDirectory(clientModsDeliveryPath);
 
                 // Checks the current downloaded version and only downloads if needed
-                if (File.Exists("CurrentSITVersion.txt") && File.ReadAllText("CurrentSITVersion.txt") == latestCore.Name)
+                if (File.Exists("CurrentSITVersion.txt")) 
+                {
+                    var currentSITVersionText = File.ReadAllText("CurrentSITVersion.txt");
+                }
+                if (File.Exists("CurrentSITVersion.txt") && File.ReadAllText("CurrentSITVersion.txt") == latestCore.Name && !Config.ForceInstallLatestSIT)
                     return true;
 
-                var maxSize = 100000000;
+                var maxSize = 90000000;
                 var allAssets = latestCore
                     .Assets
                     .Where(x => x.Size < maxSize)
@@ -671,7 +701,7 @@ namespace SIT.Launcher
                         var ms = new MemoryStream();
                         await response.Content.CopyToAsync(ms);
 
-                        var deliveryPath = Path.Combine(clientModsDeliveryPath, asset.Name); //App.ApplicationDirectory + "\\ClientMods\\" + asset.Name;
+                        var deliveryPath = Path.Combine(clientModsDeliveryPath, asset.Name);
                         var fiDelivery = new FileInfo(deliveryPath);
                         await File.WriteAllBytesAsync(deliveryPath, ms.ToArray());
                     }
@@ -688,8 +718,7 @@ namespace SIT.Launcher
                 {
                     if (clientModDLL.Contains("Assembly-CSharp"))
                     {
-                        var assemblyLocation = exeLocation.Replace("EscapeFromTarkov.exe", "");
-                        assemblyLocation += "EscapeFromTarkov_Data\\Managed\\Assembly-CSharp.dll";
+                        var assemblyLocation = Path.Combine(Directory.GetParent(exeLocation).FullName, "EscapeFromTarkov_Data", "Managed", "Assembly-CSharp.dll");
 
                         // Backup the Assembly-CSharp and place the newest clean one
                         if (!File.Exists(assemblyLocation + ".backup"))

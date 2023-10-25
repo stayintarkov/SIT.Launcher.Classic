@@ -20,7 +20,29 @@
         <ImageBrush ImageSource="/SIT.Launcher;component/Images/StayInTarkov.jpg"/>
     </Window.Background>
     <Window.Resources>
-
+        <Style TargetType="{x:Type mah:MetroTabItem}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type mah:MetroTabItem}">
+                        <Grid Name="Panel">
+                            <ContentPresenter x:Name="ContentSite"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Center"
+                                        ContentSource="Header"
+                                        Margin="10,2"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Panel" Property="Background" Value="#2233BB" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="False">
+                                <Setter TargetName="Panel" Property="Background" Value="#232323" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
     </Window.Resources>
     <Grid Margin="10">
@@ -82,11 +104,11 @@
             <Grid.RowDefinitions>
                 <RowDefinition MinHeight="180"></RowDefinition>
                 <RowDefinition Height="*" ></RowDefinition>
-                <RowDefinition MaxHeight="50" ></RowDefinition>
+                <RowDefinition MaxHeight="100" ></RowDefinition>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition MinWidth="250" Width="250"></ColumnDefinition>
-                <ColumnDefinition MinWidth="300" Width="*"></ColumnDefinition>
+                <ColumnDefinition MinWidth="275" Width="*"></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <Grid>
@@ -130,6 +152,18 @@
             
             <StackPanel Grid.Row="2" Grid.Column="2">
                 <Button x:Name="btnLaunchGame" Click="btnLaunchGame_Click" Content="{Binding LaunchButtonText, Mode=TwoWay}"></Button>
+                <Border Padding="0,1,0,1">
+                <ComboBox ItemsSource="{Binding SITReleases}" SelectedItem="{Binding SelectedSITRelease}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                </Border>
+                <CheckBox IsChecked="{Binding Config.AutomaticallyInstallSIT}">
+                    <TextBlock Text="{DynamicResource textAutoInstallSIT}"></TextBlock>
+                </CheckBox>
             </StackPanel>
         </Grid>
         <TextBlock Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="1">Stay in Tarkov - Powered by SPT-AKI Server</TextBlock>
@@ -193,28 +227,45 @@
             <TextBox x:Name="txtDeobfuscateLog" Grid.ColumnSpan="2" IsReadOnly="True" MaxLines="9999" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" Grid.Row="2"></TextBox>
         </Grid>
         <Grid x:Name="gridSettings" Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="3">
-            <StackPanel Margin="5" HorizontalAlignment="Left">
-                <StackPanel.Resources>
-                    <Style TargetType="{x:Type mah:MetroHeader}">
-                        <Setter Property="Margin" Value="5,5,0,5"/>
-                    </Style>
-                </StackPanel.Resources>
-                <mah:MetroHeader Content="{DynamicResource textAutoInstallSIT}" Foreground="White" />
-                <CheckBox IsChecked="{Binding Config.AutomaticallyInstallSIT}"></CheckBox>
-                <mah:MetroHeader Content="Force Install Latest SIT" ToolTip="This will install a Pre-Release of SIT, if available" Foreground="White" />
-                <CheckBox IsChecked="{Binding Config.ForceInstallLatestSIT}"></CheckBox>
-                <mah:MetroHeader Content="Install Aki Reflection Binaries" ToolTip="Installs Aki.Common and Aki.Reflection to Managed folder. Does not provide all client mods support!"  Foreground="White" />
-                <CheckBox IsChecked="{Binding Config.AutomaticallyInstallAkiSupport}"></CheckBox>
-                <mah:MetroHeader Content="Discord Integration" Foreground="White" />
-                <CheckBox IsChecked="{Binding Config.SendInfoToDiscord}"></CheckBox>
-                <mah:MetroHeader Content="Close Launcher after Game Launch" Foreground="White" />
-                <CheckBox IsChecked="{Binding Config.CloseLauncherAfterLaunch}"></CheckBox>
-                <mah:MetroHeader Content="Install Location" Foreground="White" />
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="{Binding Config.InstallLocation}" />
-                    <Button x:Name="btnChangeOfflineInstallPath" Click="btnChangeOfflineInstallPath_Click" Width="200" Margin="20,0">Change Offline Install Path</Button>
-                </StackPanel>
-            </StackPanel>
+            <TabControl>
+                <mah:MetroTabItem Header="Settings">
+                    <StackPanel Margin="5" HorizontalAlignment="Left">
+                        <StackPanel.Resources>
+                            <Style TargetType="{x:Type mah:MetroHeader}">
+                                <Setter Property="Margin" Value="5,5,0,5"/>
+                            </Style>
+                        </StackPanel.Resources>
+                        <mah:MetroHeader Content="{DynamicResource textAutoInstallSIT}" Foreground="White" />
+                        <CheckBox IsChecked="{Binding Config.AutomaticallyInstallSIT}"></CheckBox>
+                        <mah:MetroHeader Content="Force Install Latest SIT" ToolTip="This will install a Pre-Release of SIT, if available" Foreground="White" />
+                        <CheckBox IsChecked="{Binding Config.ForceInstallLatestSIT}"></CheckBox>
+                        <mah:MetroHeader Content="Install Aki Reflection Binaries" ToolTip="Installs Aki.Common and Aki.Reflection to Managed folder. Does not provide all client mods support!"  Foreground="White" />
+                        <CheckBox IsChecked="{Binding Config.AutomaticallyInstallAkiSupport}"></CheckBox>
+                        <mah:MetroHeader Content="Discord Integration" Foreground="White" />
+                        <CheckBox IsChecked="{Binding Config.SendInfoToDiscord}"></CheckBox>
+                        <mah:MetroHeader Content="Close Launcher after Game Launch" Foreground="White" />
+                        <CheckBox IsChecked="{Binding Config.CloseLauncherAfterLaunch}"></CheckBox>
+                        <mah:MetroHeader Content="Install Location" Foreground="White" />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Config.InstallLocation}" />
+                            <Button x:Name="btnChangeOfflineInstallPath" Click="btnChangeOfflineInstallPath_Click" Width="200" Margin="20,0">Change Offline Install Path</Button>
+                        </StackPanel>
+                    </StackPanel>
+                </mah:MetroTabItem>
+                <mah:MetroTabItem Header="Logs">
+                    <StackPanel>
+                        <Button x:Name="btnRefreshLogs" Content="Refresh"></Button>
+                        <TabControl>
+                            <mah:MetroTabItem Header="Error">
+                                <RichTextBox x:Name="txtLogsError">
+
+                                </RichTextBox>
+                            </mah:MetroTabItem>
+                        </TabControl>
+                    </StackPanel>
+                </mah:MetroTabItem>
+            </TabControl>
+            
         </Grid>
     </Grid> 
 </mah:MetroWindow>
