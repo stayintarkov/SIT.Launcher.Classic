@@ -677,7 +677,10 @@ namespace SIT.Launcher
                     var currentSITVersionText = File.ReadAllText("CurrentSITVersion.txt");
                 }
                 if (File.Exists("CurrentSITVersion.txt") && File.ReadAllText("CurrentSITVersion.txt") == latestCore.Name && !Config.ForceInstallLatestSIT)
+                {
+                    await loadingDialog.UpdateAsync(null, null);
                     return true;
+                }
 
                 var maxSize = 90000000;
                 var allAssets = latestCore
