@@ -82,7 +82,7 @@
     //"GClass1154": "BotMemoryClass",
     {
       "RenameClassNameTo": "BotMemoryClass",
-      "HasMethods": [ "LoseVisionCurrentEnemy", "GoToPoint", "AddEnemy" ]
+      "HasMethods": [ "LoseVisionCurrentEnemy", "ComeToPoint", "AddEnemy" ]
     },
     //"GClass1236": "LocalizationClass",
     //{
