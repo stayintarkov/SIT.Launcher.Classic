@@ -191,6 +191,25 @@
       "RenameClassNameTo": "ResourceBundleConstants",
       "IsClass": true,
       "HasFields": [ "PLAYER_BUNDLE_NAME" ]
+    },
+    {
+      "RenameClassNameTo": "KeyInteractionResult",
+      "IsClass": true,
+      "HasFields": [ "Key", "From", "Succeed", "DiscardResult" ],
+      "HasMethods": [ "CanExecute" ]
+    },
+    {
+      "RenameClassNameTo": "AbstractInternalOperation2",
+      "IsClass": true,
+      "InheritsClass": "AbstractInternalOperation",
+      "HasFields": [ "Item", "DestroysMainItem", "DestroyedItems" ],
+      "HasConstructorArgs": [ "id", "controller", "destroyedItems" ]
+    },
+    {
+      "RenameClassNameTo": "MoveInternalOperation",
+      "IsClass": true,
+      "InheritsClass": "AbstractInternalOperation2",
+      "ConvertInternalMethodsToPublic": true
     }
   ],
   "DefinedTypesToForcePublic": [
@@ -201,10 +220,10 @@
     //"EFT.Player/MedsController"
     "BodyPartState",
     "AHealthController/BodyPartState",
+    //"ItemController",
     "EFT.Player/PlayerInventoryController",
     "EFT.Player/PlayerOwnerInventoryController",
     "EFT.Player/SinglePlayerInventoryController",
-    //internal class EmptyHandsController : ItemHandsController, IHandsController, GInterface111, IHandsController0
     "EFT.Player/EmptyHandsController",
     "EasyBundle",
     "ProfileChangeHandler"
@@ -212,12 +231,16 @@
   ],
   "TypesToForceAllPublicMethods": [
     "EFT.BaseLocalGame",
-    "EFT.Player"
+    "EFT.Player",
+    "ItemController"
   ],
   "TypesToForceAllPublicFieldsAndProperties": [
     "BaseLocalGame",
-    "AbstractActiveHealthController"//,
+    "AbstractActiveHealthController" //,
     //"PlayerHealthController"
+  ],
+  "TypesToConvertConstructorsToPublic": [
+    "MoveInternalOperation"
   ],
   // Add SptUsec and SptBear to the Dll
   "EnableAddSPTUsecBearToDll": true
