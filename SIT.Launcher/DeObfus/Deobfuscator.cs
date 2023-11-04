@@ -13,6 +13,9 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
+using de4dot.cui;
+using System.Windows.Ink;
+using System.Runtime.CompilerServices;
 
 /**
  * Original code for this was written by Bepis here - https://dev.sp-tarkov.com/bepis/SPT-AssemblyTool/src/branch/master/SPT-AssemblyTool/Deobfuscator.cs
@@ -51,9 +54,25 @@ namespace SIT.Launcher.DeObfus
 
         internal static bool DeobfuscateAssembly(string assemblyPath, string managedPath, bool createBackup = true, bool overwriteExisting = false, bool doRemapping = false)
         {
+
             var executablePath = App.ApplicationDirectory;
             var cleanedDllPath = Path.Combine(Path.GetDirectoryName(assemblyPath), Path.GetFileNameWithoutExtension(assemblyPath) + "-cleaned.dll");
             var de4dotPath = Path.Combine(Path.GetDirectoryName(executablePath), "DeObfus", "de4dot", "de4dot.exe");
+
+            // If backup file exists, delete .dll and replace with .backup
+            if (File.Exists(assemblyPath + ".backup") || File.Exists(cleanedDllPath))
+            {
+                if(File.Exists(assemblyPath))
+                    File.Delete(assemblyPath);
+
+                if (File.Exists(cleanedDllPath))
+                    File.Delete(cleanedDllPath);
+
+                File.Move(assemblyPath + ".backup", assemblyPath);
+            }
+
+            if (createBackup)
+                BackupExistingAssembly(assemblyPath);
 
             De4DotDeobfuscate(assemblyPath, managedPath, cleanedDllPath, de4dotPath);
 
@@ -138,12 +157,48 @@ namespace SIT.Launcher.DeObfus
             psi.UseShellExecute = false;
             psi.RedirectStandardError = true;
             psi.RedirectStandardOutput = true;
-            psi.CreateNoWindow = true;
+            psi.CreateNoWindow = false;// true;
             psi.Arguments = $"--un-name \"!^<>[a-z0-9]$&!^<>[a-z0-9]__.*$&![A-Z][A-Z]\\$<>.*$&^[a-zA-Z_<{{$][a-zA-Z_0-9<>{{}}$.`-]*$\" \"{assemblyPath}\" --strtyp delegate --strtok \"{token}\"";
 
+            //var de4dotcuiAssembly = Assembly.LoadFile(de4dotPath.Replace(".exe", ".cui.dll"));
+            //var de4dotcuiTypes = de4dotcuiAssembly.GetTypes();
+            //var de4dotcuiProgramType = de4dotcuiTypes.FirstOrDefault(x => x.Name == "Program");
+            //var de4dotcuiProgramMainMethod = de4dotcuiProgramType.GetMethod("Main", BindingFlags.Public | BindingFlags.Static);
+
+            //de4dot.cui.Program
+            //try
+            //{
+            //    Directory.CreateDirectory("bin");
+            //    var de4dotresultcode = de4dotcuiProgramMainMethod.Invoke(null,
+            //        // method parameters
+            //        new object[] { 
+            
+            //    // args parameter
+            //    new string[]
+            //    {
+            //        "--un-name",
+            //        @"!^<>[a-z0-9]$&!^<>[a-z0-9]__.*$&![A-Z][A-Z]\$<>.*$&^[a-zA-Z_<{$][a-zA-Z_0-9<>{}$.`-]*$",
+            //        @"H:\EFT_OFFLINE\EscapeFromTarkov_Data\Managed\Assembly-CSharp.dll",
+            //        "--strtyp",
+            //        "delegate",
+            //        "--strtok",
+            //        "0x6011091"
+            //    }
+
+            //    });
+            //}
+            //catch (Exception ex)
+            //{
+            //    Debug.WriteLine(ex);
+            //}
+
             Process proc = Process.Start(psi);
-            proc.WaitForExit(new TimeSpan(0,2,0));
-            if(proc != null)
+            proc.EnableRaisingEvents = true;
+            proc.OutputDataReceived += (object sender, DataReceivedEventArgs e) => {
+                Debug.WriteLine(e.Data);
+            };
+            proc.WaitForExit(new TimeSpan(0,0,30));
+            if(proc != null && !proc.HasExited)
                 proc.Kill(true);
 
 
@@ -312,25 +367,7 @@ namespace SIT.Launcher.DeObfus
 
             foreach (var ctf in autoRemapperConfig.TypesToForceAllPublicMethods)
             {
-                var foundTypes = assemblyDefinition.MainModule.GetTypes()
-                    .Where(x => x.FullName.StartsWith(ctf, StringComparison.OrdinalIgnoreCase) || x.FullName.EndsWith(ctf));
-                foreach (var t in foundTypes)
-                {
-                    foreach (var m in t.Methods)
-                    {
-                        if (!m.IsPublic)
-                            m.IsPublic = true;
-                    }
-
-                    foreach (var nt in t.NestedTypes)
-                    {
-                        foreach (var m in nt.Methods)
-                        {
-                            if (!m.IsPublic)
-                                m.IsPublic = true;
-                        }
-                    }
-                }
+                ForcePublicMethodsForType(assemblyDefinition, ctf);
             }
 
             foreach (var ctf in autoRemapperConfig.TypesToForceAllPublicFieldsAndProperties)
@@ -355,6 +392,60 @@ namespace SIT.Launcher.DeObfus
                     }
                 }
             }
+
+            if (autoRemapperConfig.TypesToConvertConstructorsToPublic != null)
+            {
+                foreach (var ctf in autoRemapperConfig.TypesToConvertConstructorsToPublic)
+                {
+                    var foundTypes = assemblyDefinition.MainModule.GetTypes()
+                        .Where(x => x.FullName.StartsWith(ctf, StringComparison.OrdinalIgnoreCase) || x.FullName.EndsWith(ctf));
+                    foreach (var t in foundTypes)
+                    {
+                        foreach (var c in t.GetConstructors())
+                        {
+                            c.IsPublic = true;
+                        }
+                        t.Resolve();
+                    }
+                }
+            }
+        }
+
+        private static void ForcePublicMethodsForType(AssemblyDefinition assemblyDefinition, TypeDefinition t)
+        {
+            foreach (var m in t.Methods)
+            {
+                //if (m.Name.StartsWith("set_") || m.CustomAttributes.Any(y => y.GetType() == typeof(CompilerGeneratedAttribute)))
+                //{
+                //    continue;
+                //}
+
+                if (!m.IsPublic)
+                    m.IsPublic = true;
+            }
+
+            foreach (var nt in t.NestedTypes)
+            {
+                ForcePublicMethodsForType(assemblyDefinition, nt);
+            }
+
+            foreach (var otherT in assemblyDefinition.MainModule.GetTypes())
+            {
+                if (otherT.BaseType != null && otherT.BaseType.FullName != "System.Object" && otherT.BaseType == t)
+                {
+                    ForcePublicMethodsForType(assemblyDefinition, otherT);
+                }
+            }
+        }
+
+        private static void ForcePublicMethodsForType(AssemblyDefinition assemblyDefinition, string ctf)
+        {
+            var foundTypes = assemblyDefinition.MainModule.GetTypes()
+                                .Where(x => x.FullName.StartsWith(ctf, StringComparison.OrdinalIgnoreCase) || x.FullName.EndsWith(ctf));
+            foreach (var t in foundTypes)
+            {
+               ForcePublicMethodsForType(assemblyDefinition, t);
+            }
         }
 
 
@@ -368,8 +459,8 @@ namespace SIT.Launcher.DeObfus
             if (!config.EnableAddSPTUsecBearToDll.HasValue || !config.EnableAddSPTUsecBearToDll.Value)
                 return;
 
-            long sptUsecValue = 0x29L;
-            long sptBearValue = 0x30L;
+            long sptUsecValue = 0x29;
+            long sptBearValue = 0x2A;
 
             var botEnums = assembly.MainModule.GetType("EFT.WildSpawnType");
 
@@ -1123,6 +1214,8 @@ namespace SIT.Launcher.DeObfus
                                 }
                             }
                         }
+
+                        
                     }
                     else
                     {

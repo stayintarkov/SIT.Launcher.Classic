@@ -24,19 +24,23 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type mah:MetroTabItem}">
-                        <Grid Name="Panel">
-                            <ContentPresenter x:Name="ContentSite"
+                        <Border Name="Border">
+                            <Grid Name="Panel">
+                                <ContentPresenter x:Name="ContentSite"
                                         VerticalAlignment="Center"
                                         HorizontalAlignment="Center"
                                         ContentSource="Header"
-                                        Margin="10,2"/>
-                        </Grid>
+                                               
+                                        Margin="10,10"
+                                              />
+                            </Grid>
+                        </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Panel" Property="Background" Value="#2233BB" />
+                                <Setter TargetName="Panel" Property="Background" Value="#000000AA" />
                             </Trigger>
                             <Trigger Property="IsSelected" Value="False">
-                                <Setter TargetName="Panel" Property="Background" Value="#232323" />
+                                <Setter TargetName="Panel" Property="Background" Value="#00000000" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -61,211 +65,197 @@
         <local:LoadingDialog x:Name="loadingDialog" Grid.RowSpan="3" Grid.ColumnSpan="3" Panel.ZIndex="999">
 
         </local:LoadingDialog>
-        <Grid Grid.Row="0" Opacity="0.9" Grid.ColumnSpan="3">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
-            </Grid.ColumnDefinitions>
-            <Button Background="Transparent" BorderThickness="0" Grid.Column="0" ToolTip="Play" x:Name="btnPlay" Click="btnPlay_Click">
-                <StackPanel VerticalAlignment="Center"  HorizontalAlignment="Left" Orientation="Horizontal">
-                    <iconPacks:PackIconCodicons Kind="Play" Height="20" Width="20" VerticalAlignment="Center"></iconPacks:PackIconCodicons>
-                    <Label Content="Play" VerticalAlignment="Center" FontSize="16" />
-                </StackPanel>
-            </Button>
-            <Button Background="Transparent" BorderThickness="0" Grid.Column="1" ToolTip="SIT Versions" x:Name="btnSITVersions" Click="btnSITVersions_Click">
-                <StackPanel VerticalAlignment="Center"  HorizontalAlignment="Left" Orientation="Horizontal">
-                    <iconPacks:PackIconCodicons Kind="Github" Height="20" Width="20" VerticalAlignment="Center"></iconPacks:PackIconCodicons>
-                    <Label Content="SIT Versions" VerticalAlignment="Center" FontSize="16" />
-                </StackPanel>
-            </Button>
-            <Button Background="Transparent" BorderThickness="0" Grid.Column="3" ToolTip="Tools" x:Name="btnToToolsWindow" Click="btnToToolsWindow_Click">
-                <StackPanel VerticalAlignment="Center"  HorizontalAlignment="Left" Orientation="Horizontal">
-                    <iconPacks:PackIconCodicons Kind="Tools" Height="20" Width="20"  VerticalAlignment="Center"></iconPacks:PackIconCodicons>
-                    <Label Content="Tools" VerticalAlignment="Center" FontSize="16" />
-                </StackPanel>
-            </Button>
-            <Button Background="Transparent" BorderThickness="0" Grid.Column="4" ToolTip="Settings" x:Name="btnSettingsPopup" Click="btnSettingsPopup_Click">
-                <StackPanel VerticalAlignment="Center"  HorizontalAlignment="Left" Orientation="Horizontal">
-                    <iconPacks:PackIconCodicons Kind="Gear" Height="20" Width="20"  VerticalAlignment="Center"></iconPacks:PackIconCodicons>
-                    <Label Content="Settings" VerticalAlignment="Center" FontSize="16" />
-                </StackPanel>
-            </Button>
-        </Grid>
-        <Grid x:Name="gridPlay" Grid.Row="1" Grid.ColumnSpan="3">
-            <Grid.Resources >
-                <Style TargetType="Border" >
-                    <Setter Property="Padding" Value="5,5,5,5" />
-                </Style>
-            </Grid.Resources>
-
-            <Grid.RowDefinitions>
-                <RowDefinition MinHeight="180"></RowDefinition>
-                <RowDefinition Height="*" ></RowDefinition>
-                <RowDefinition MaxHeight="100" ></RowDefinition>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition MinWidth="250" Width="250"></ColumnDefinition>
-                <ColumnDefinition MinWidth="275" Width="*"></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
-            </Grid.ColumnDefinitions>
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="20"></RowDefinition>
-                    <RowDefinition></RowDefinition>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"></ColumnDefinition>
-                    <ColumnDefinition Width="*"></ColumnDefinition>
-                </Grid.ColumnDefinitions>
-            </Grid>
-
-            <Border  Grid.Column="0" Grid.ColumnSpan="2">
-                <Grid>
+        <mah:MetroAnimatedTabControl DockPanel.Dock="Top" Margin="0,0,0,0" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" 
+            Background="Transparent" Grid.ColumnSpan="3" Grid.RowSpan="2"  >
+            <mah:MetroTabItem Selector.IsSelected="True" Visibility="Visible" VerticalContentAlignment="Stretch" VerticalAlignment="Stretch" >
+                <mah:MetroTabItem.Header>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                        <MaterialDesign:PackIcon Kind="Play" VerticalAlignment="Center" />
+                        <Label Content="Play"></Label>
+                    </StackPanel>
+                </mah:MetroTabItem.Header>
+                <Grid x:Name="gridPlay" Grid.Row="1" Grid.ColumnSpan="3">
                     <Grid.Resources >
                         <Style TargetType="Border" >
                             <Setter Property="Padding" Value="5,5,5,5" />
                         </Style>
                     </Grid.Resources>
+
                     <Grid.RowDefinitions>
-                        <RowDefinition></RowDefinition>
+                        <RowDefinition MinHeight="180"></RowDefinition>
+                        <RowDefinition Height="*" ></RowDefinition>
+                        <RowDefinition MaxHeight="100" ></RowDefinition>
                     </Grid.RowDefinitions>
-                    <StackPanel>
-                        <mah:MetroHeader Content="Server" Foreground="White" />
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition MinWidth="250" Width="250"></ColumnDefinition>
+                        <ColumnDefinition MinWidth="275" Width="*"></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="20"></RowDefinition>
+                            <RowDefinition></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+
+                    <Border  Grid.Column="0" Grid.ColumnSpan="2">
                         <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="2*"></ColumnDefinition>
-                                <ColumnDefinition></ColumnDefinition>
-                            </Grid.ColumnDefinitions>
-                            <TextBox Text="{Binding Config.ServerInstance.ServerAddress}" HorizontalAlignment="Stretch"></TextBox>
-                            <!--<Button Grid.Column="1" x:Name="btnStartServer" Click="btnStartServer_Click">Start Server</Button>-->
+                            <Grid.Resources >
+                                <Style TargetType="Border" >
+                                    <Setter Property="Padding" Value="5,5,5,5" />
+                                </Style>
+                            </Grid.Resources>
+                            <Grid.RowDefinitions>
+                                <RowDefinition></RowDefinition>
+                            </Grid.RowDefinitions>
+                            <StackPanel>
+                                <mah:MetroHeader Content="Server" Foreground="White" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="2*"></ColumnDefinition>
+                                        <ColumnDefinition></ColumnDefinition>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Text="{Binding Config.ServerInstance.ServerAddress}" HorizontalAlignment="Stretch"></TextBox>
+                                    <!--<Button Grid.Column="1" x:Name="btnStartServer" Click="btnStartServer_Click">Start Server</Button>-->
+                                </Grid>
+                                <mah:MetroHeader  Content="Username" Foreground="White" />
+                                <TextBox Text="{Binding Config.Username}"></TextBox>
+                                <mah:MetroHeader Content="Password" Foreground="White" />
+                                <PasswordBox x:Name="txtPassword"></PasswordBox>
+                            </StackPanel>
                         </Grid>
-                        <mah:MetroHeader  Content="Username" Foreground="White" />
-                        <TextBox Text="{Binding Config.Username}"></TextBox>
-                        <mah:MetroHeader Content="Password" Foreground="White" />
-                        <PasswordBox x:Name="txtPassword"></PasswordBox>
+                    </Border>
+
+                    <StackPanel Grid.Row="2" Grid.Column="2">
+                        <Button x:Name="btnLaunchGame" Click="btnLaunchGame_Click" Content="{Binding LaunchButtonText, Mode=TwoWay}"></Button>
+                        <Border Padding="0,1,0,1">
+                            <ComboBox ItemsSource="{Binding SITReleases}" SelectedItem="{Binding SelectedSITRelease}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </Border>
+                        <CheckBox IsChecked="{Binding Config.AutomaticallyInstallSIT}">
+                            <TextBlock Text="{DynamicResource textAutoInstallSIT}"></TextBlock>
+                        </CheckBox>
                     </StackPanel>
                 </Grid>
-            </Border>
-            
-            <StackPanel Grid.Row="2" Grid.Column="2">
-                <Button x:Name="btnLaunchGame" Click="btnLaunchGame_Click" Content="{Binding LaunchButtonText, Mode=TwoWay}"></Button>
-                <Border Padding="0,1,0,1">
-                <ComboBox ItemsSource="{Binding SITReleases}" SelectedItem="{Binding SelectedSITRelease}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Name}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-                </Border>
-                <CheckBox IsChecked="{Binding Config.AutomaticallyInstallSIT}">
-                    <TextBlock Text="{DynamicResource textAutoInstallSIT}"></TextBlock>
-                </CheckBox>
-            </StackPanel>
-        </Grid>
-        <TextBlock Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="1">Stay in Tarkov - Powered by SPT-AKI Server</TextBlock>
-        <TextBlock Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" x:Name="InstallLocation" Text="{Binding Config.InstallLocation}"></TextBlock>
-        <Grid x:Name="gridServer" Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="3">
-            <Grid.RowDefinitions>
-                <RowDefinition MinHeight="30" Height="30"></RowDefinition>
-                <RowDefinition MinHeight="30" Height="30"></RowDefinition>
-                <RowDefinition MinHeight="100" Height="*"></RowDefinition>
-            </Grid.RowDefinitions>
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition></ColumnDefinition>
-                    <ColumnDefinition></ColumnDefinition>
-                </Grid.ColumnDefinitions>
-                <Button Content="Launch Server" x:Name="btnServerCommand" Click="btnServerCommand_Click" Grid.Column="0"></Button>
-                <Button Content="Launch Server EXE" x:Name="btnServerEXE" Click="btnServerEXE_Click" Grid.Column="1"></Button>
-            </Grid>
-            <Label Content="Log" Grid.Row="1"></Label>
-            <TextBox x:Name="txtServerLog" IsReadOnly="True" MaxLines="9999" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" Grid.Row="2"></TextBox>
-        </Grid>
-        <Grid x:Name="gridSITVersions" Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="3">
-            <Border  Grid.Row="0" Grid.Column="2">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="25"></RowDefinition>
-                        <RowDefinition Height="35"></RowDefinition>
-                        <RowDefinition MinHeight="200" Height="*"></RowDefinition>
-                        <RowDefinition Height="25"></RowDefinition>
 
-                    </Grid.RowDefinitions>
-                    <Label FontWeight="Bold">SIT Release News</Label>
-                    <TextBlock x:Name="txtSITLatestReleaseTitle" FontWeight="Bold" FontSize="14" Grid.Row="1" TextWrapping="Wrap"></TextBlock>
-                    <Border Grid.Row="2">
-                        <RichTextBox
-                    x:Name="rtbSITReleaseNews" 
-                    Padding="10" 
-                    Background="{DynamicResource MahApps.Brushes.Control.Background}" 
-                    Foreground="White"
-                    IsReadOnly="True"
-                    >
+            </mah:MetroTabItem>
+            <mah:MetroTabItem VerticalContentAlignment="Stretch" VerticalAlignment="Stretch" >
+                <mah:MetroTabItem.Header>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                        <MaterialDesign:PackIcon Kind="Github" VerticalAlignment="Center" />
+                        <Label Content="GitHub"></Label>
+                    </StackPanel>
+                </mah:MetroTabItem.Header>
+                <Grid x:Name="gridSITVersions" >
+                    <Border  Grid.Row="0" Grid.Column="2">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="25"></RowDefinition>
+                                <RowDefinition Height="35"></RowDefinition>
+                                <RowDefinition MinHeight="200" Height="*"></RowDefinition>
+                                <RowDefinition Height="25"></RowDefinition>
 
-                        </RichTextBox>
+                            </Grid.RowDefinitions>
+                            <Label FontWeight="Bold">SIT Release News</Label>
+                            <TextBlock x:Name="txtSITLatestReleaseTitle" FontWeight="Bold" FontSize="14" Grid.Row="1" TextWrapping="Wrap"></TextBlock>
+                            <Border Grid.Row="2">
+                                <RichTextBox
+            x:Name="rtbSITReleaseNews" 
+            Padding="10" 
+            Background="{DynamicResource MahApps.Brushes.Control.Background}" 
+            Foreground="White"
+            IsReadOnly="True"
+            >
+
+                                </RichTextBox>
+                            </Border>
+                        </Grid>
                     </Border>
                 </Grid>
-            </Border>
-        </Grid>
-        <Grid x:Name="gridTools" Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="3">
-                <Grid.RowDefinitions>
-                    <RowDefinition MinHeight="30" Height="30"></RowDefinition>
-                <RowDefinition MinHeight="30" Height="30"></RowDefinition>
-                <RowDefinition MinHeight="100" Height="*"></RowDefinition>
-                </Grid.RowDefinitions>
+            </mah:MetroTabItem>
+            <mah:MetroTabItem VerticalContentAlignment="Stretch" VerticalAlignment="Stretch" >
+                <mah:MetroTabItem.Header>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                        <MaterialDesign:PackIcon Kind="Toolbox" VerticalAlignment="Center" />
+                        <Label Content="Tools"></Label>
+                    </StackPanel>
+                </mah:MetroTabItem.Header>
+                <Grid x:Name="gridTools" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition MinHeight="30" Height="30"></RowDefinition>
+                        <RowDefinition MinHeight="30" Height="30"></RowDefinition>
+                        <RowDefinition MinHeight="100" Height="*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Button Content="Deobfuscate and Remap Assembly" x:Name="btnDeobfuscate" Click="btnDeobfuscate_Click" Grid.Row="0"></Button>
+                    <Button Content="Only Deobfuscate Assembly" x:Name="btnDeobfuscateOnly" Click="btnDeobfuscateOnly_Click" Grid.Row="0" Grid.Column="1"></Button>
+                    <Label Content="Log" Grid.Row="1"></Label>
+                    <TextBox x:Name="txtDeobfuscateLog" Grid.ColumnSpan="2" IsReadOnly="True" MaxLines="9999" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" Grid.Row="2"></TextBox>
+                </Grid>
+
+            </mah:MetroTabItem>
+            <mah:MetroTabItem VerticalContentAlignment="Stretch" VerticalAlignment="Stretch" >
+                <mah:MetroTabItem.Header>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                        <MaterialDesign:PackIcon Kind="SettingsBox" VerticalAlignment="Center" />
+                        <Label Content="Options"></Label>
+                    </StackPanel>
+                </mah:MetroTabItem.Header>
+                <Grid x:Name="gridSettings" >
+                    <TabControl Background="Transparent">
+                        <mah:MetroTabItem Header="Settings">
+                            <StackPanel Margin="5" HorizontalAlignment="Left">
+                                <StackPanel.Resources>
+                                    <Style TargetType="{x:Type mah:MetroHeader}">
+                                        <Setter Property="Margin" Value="5,5,0,5"/>
+                                    </Style>
+                                </StackPanel.Resources>
+                                <mah:MetroHeader Content="{DynamicResource textAutoInstallSIT}" Foreground="White" />
+                                <CheckBox IsChecked="{Binding Config.AutomaticallyInstallSIT}"></CheckBox>
+                                <mah:MetroHeader Content="Force Install Latest SIT" ToolTip="This will install a Pre-Release of SIT, if available" Foreground="White" />
+                                <CheckBox IsChecked="{Binding Config.ForceInstallLatestSIT}"></CheckBox>
+                                <mah:MetroHeader Content="Install Aki Reflection Binaries" ToolTip="Installs Aki.Common and Aki.Reflection to Managed folder. Does not provide all client mods support!"  Foreground="White" />
+                                <CheckBox IsChecked="{Binding Config.AutomaticallyInstallAkiSupport}"></CheckBox>
+                                <mah:MetroHeader Content="Discord Integration" Foreground="White" />
+                                <CheckBox IsChecked="{Binding Config.SendInfoToDiscord}"></CheckBox>
+                                <mah:MetroHeader Content="Close Launcher after Game Launch" Foreground="White" />
+                                <CheckBox IsChecked="{Binding Config.CloseLauncherAfterLaunch}"></CheckBox>
+                                <mah:MetroHeader Content="Install Location" Foreground="White" />
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Config.InstallLocation}" />
+                                    <Button x:Name="btnChangeOfflineInstallPath" Click="btnChangeOfflineInstallPath_Click" Width="200" Margin="20,0">Change Offline Install Path</Button>
+                                </StackPanel>
+                            </StackPanel>
+                        </mah:MetroTabItem>
+                    </TabControl>
+
+                </Grid>
+
+            </mah:MetroTabItem>
+        </mah:MetroAnimatedTabControl>
+            <Grid Grid.Row="0" Opacity="0.9" Grid.ColumnSpan="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <Button Content="Deobfuscate and Remap Assembly" x:Name="btnDeobfuscate" Click="btnDeobfuscate_Click" Grid.Row="0"></Button>
-            <Button Content="Only Deobfuscate Assembly" x:Name="btnDeobfuscateOnly" Click="btnDeobfuscateOnly_Click" Grid.Row="0" Grid.Column="1"></Button>
-            <Label Content="Log" Grid.Row="1"></Label>
-            <TextBox x:Name="txtDeobfuscateLog" Grid.ColumnSpan="2" IsReadOnly="True" MaxLines="9999" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" Grid.Row="2"></TextBox>
-        </Grid>
-        <Grid x:Name="gridSettings" Visibility="Collapsed" Grid.Row="1" Grid.ColumnSpan="3">
-            <TabControl>
-                <mah:MetroTabItem Header="Settings">
-                    <StackPanel Margin="5" HorizontalAlignment="Left">
-                        <StackPanel.Resources>
-                            <Style TargetType="{x:Type mah:MetroHeader}">
-                                <Setter Property="Margin" Value="5,5,0,5"/>
-                            </Style>
-                        </StackPanel.Resources>
-                        <mah:MetroHeader Content="{DynamicResource textAutoInstallSIT}" Foreground="White" />
-                        <CheckBox IsChecked="{Binding Config.AutomaticallyInstallSIT}"></CheckBox>
-                        <mah:MetroHeader Content="Force Install Latest SIT" ToolTip="This will install a Pre-Release of SIT, if available" Foreground="White" />
-                        <CheckBox IsChecked="{Binding Config.ForceInstallLatestSIT}"></CheckBox>
-                        <mah:MetroHeader Content="Install Aki Reflection Binaries" ToolTip="Installs Aki.Common and Aki.Reflection to Managed folder. Does not provide all client mods support!"  Foreground="White" />
-                        <CheckBox IsChecked="{Binding Config.AutomaticallyInstallAkiSupport}"></CheckBox>
-                        <mah:MetroHeader Content="Discord Integration" Foreground="White" />
-                        <CheckBox IsChecked="{Binding Config.SendInfoToDiscord}"></CheckBox>
-                        <mah:MetroHeader Content="Close Launcher after Game Launch" Foreground="White" />
-                        <CheckBox IsChecked="{Binding Config.CloseLauncherAfterLaunch}"></CheckBox>
-                        <mah:MetroHeader Content="Install Location" Foreground="White" />
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding Config.InstallLocation}" />
-                            <Button x:Name="btnChangeOfflineInstallPath" Click="btnChangeOfflineInstallPath_Click" Width="200" Margin="20,0">Change Offline Install Path</Button>
-                        </StackPanel>
-                    </StackPanel>
-                </mah:MetroTabItem>
-                <mah:MetroTabItem Header="Logs">
-                    <StackPanel>
-                        <Button x:Name="btnRefreshLogs" Content="Refresh"></Button>
-                        <TabControl>
-                            <mah:MetroTabItem Header="Error">
-                                <RichTextBox x:Name="txtLogsError">
-
-                                </RichTextBox>
-                            </mah:MetroTabItem>
-                        </TabControl>
-                    </StackPanel>
-                </mah:MetroTabItem>
-            </TabControl>
             
         </Grid>
+        <TextBlock Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="1">Stay in Tarkov - Powered by SPT-AKI Server</TextBlock>
+        <TextBlock Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" x:Name="InstallLocation" Text="{Binding Config.InstallLocation}"></TextBlock>
     </Grid> 
 </mah:MetroWindow>

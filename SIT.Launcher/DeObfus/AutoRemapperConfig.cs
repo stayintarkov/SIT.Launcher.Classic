@@ -19,6 +19,7 @@ namespace SIT.Launcher.DeObfus
         public string[] TypesToForceAllPublicMethods { get; set; }
         public string[] TypesToForceAllPublicFieldsAndProperties { get; set; }
 
+        public string[] TypesToConvertConstructorsToPublic { get; set; }
         public bool? EnableAddSPTUsecBearToDll { get; set; }
 
     }

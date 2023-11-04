@@ -465,6 +465,9 @@
     <PackageReference Include="System.IO.Compression" Version="4.3.0" />
   </ItemGroup>
 	<ItemGroup>
+		<Reference Include="de4dot.cui">
+		  <HintPath>DeObfus\de4dot\de4dot.cui.dll</HintPath>
+		</Reference>
 		<Reference Include="References/bsg.componentace.compression.libs.zlib.dll"></Reference>
 	</ItemGroup>
 

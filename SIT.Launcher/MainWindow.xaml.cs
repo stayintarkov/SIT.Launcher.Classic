@@ -968,7 +968,6 @@ namespace SIT.Launcher
         private void CollapseAll()
         {
             gridPlay.Visibility = Visibility.Collapsed;
-            gridServer.Visibility = Visibility.Collapsed;
             gridTools.Visibility = Visibility.Collapsed;
             gridSettings.Visibility = Visibility.Collapsed;
             gridSITVersions.Visibility = Visibility.Collapsed;
@@ -1033,7 +1032,6 @@ namespace SIT.Launcher
         private void btnServer_Click(object sender, RoutedEventArgs e)
         {
             CollapseAll();
-            gridServer.Visibility = Visibility.Visible;
         }
 
         private void btnServerEXE_Click(object sender, RoutedEventArgs e)
@@ -1073,7 +1071,6 @@ namespace SIT.Launcher
         {
             Dispatcher.Invoke(() => {
 
-                txtServerLog.Text += e.Data ?? e.Data;
             
             });
         }
