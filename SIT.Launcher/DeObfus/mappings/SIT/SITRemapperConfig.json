@@ -210,6 +210,12 @@
       "IsClass": true,
       "InheritsClass": "AbstractInternalOperation2",
       "ConvertInternalMethodsToPublic": true
+    },
+    {
+      "RenameClassNameTo": "SOperationResult",
+      "HasFields": [ "Error", "Succeeded", "Failed" ],
+      //"InheritsClass": "IOperationResult",
+      "IsStruct": true
     }
   ],
   "DefinedTypesToForcePublic": [
