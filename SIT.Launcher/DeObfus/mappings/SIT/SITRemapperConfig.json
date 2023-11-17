@@ -214,8 +214,13 @@
     {
       "RenameClassNameTo": "SOperationResult",
       "HasFields": [ "Error", "Succeeded", "Failed" ],
-      //"InheritsClass": "IOperationResult",
       "IsStruct": true
+    },
+    {
+      "RenameClassNameTo": "AmmoManipulationInternalOperation",
+      "IsClass": true,
+      "InheritsClass": "AbstractInternalOperation",
+      "HasMethods": [ "SucceedAmmoManipulationHandler" ]
     }
   ],
   "DefinedTypesToForcePublic": [
@@ -238,7 +243,8 @@
   "TypesToForceAllPublicMethods": [
     "EFT.BaseLocalGame",
     "EFT.Player",
-    "ItemController"
+    "ItemController",
+    "AbstractInternalOperation"
   ],
   "TypesToForceAllPublicFieldsAndProperties": [
     "BaseLocalGame",
