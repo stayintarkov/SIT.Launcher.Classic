@@ -57,6 +57,7 @@
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
     <NoWarn>$(NoWarn);NU1702</NoWarn>
     <PackageCertificateThumbprint>67DEB728A34B6654BDD2095C54415E8E615FCBE1</PackageCertificateThumbprint>
+    <EntryPointProjectUniqueName>..\SIT.Launcher\SIT.Launcher.csproj</EntryPointProjectUniqueName>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -76,5 +77,8 @@
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.756" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SIT.Launcher\SIT.Launcher.csproj" />
   </ItemGroup>
 </Project>
