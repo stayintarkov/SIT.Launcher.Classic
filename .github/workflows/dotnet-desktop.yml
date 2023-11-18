@@ -88,18 +88,12 @@ jobs:
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: SIT Launcher Release
+        name: SIT-Launcher-Release
         path: ${{ env.PublishedPath }}
-        
-    - name: Check files in .
-      run: dir .
-    
-    - name: Check files in ${{ env.PublishedPath }}
-      run: dir ${{ env.PublishedPath }}
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
         draft: true
         generate_release_notes: true
-        files: ${{ env.PublishedPath }}
+        files: SIT-Launcher-Release.zip
