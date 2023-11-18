@@ -340,17 +340,19 @@ namespace SIT.Launcher
             }
             TarkovRequesting requesting = new TarkovRequesting(null, ServerAddress, false);
 
-            Dictionary<string, string> data = new Dictionary<string, string>();
-            data.Add("username", Username);
-            data.Add("email", Username);
-            data.Add("edition", "Edge Of Darkness"); // default to EoD
+            Dictionary<string, string> loginData = new Dictionary<string, string>();
+            loginData.Add("username", Username);
+            loginData.Add("email", Username);
+            loginData.Add("edition", "Edge Of Darkness"); // default to EoD
             //data.Add("edition", "Standard");
             if (string.IsNullOrEmpty(txtPassword.Password))
             {
                 MessageBox.Show("You cannot use an empty Password for your account!");
                 return null;
             }
-            data.Add("password", txtPassword.Password);
+            loginData.Add("password", txtPassword.Password);
+            // Add backendUrl to support people who connect locally
+            loginData.Add("backendUrl", Config.ServerInstance.ServerAddress);
 
             // connect and get editions
             //var returnDataConnect = requesting.PostJson("/launcher/server/connect", JsonConvert.SerializeObject(data));
@@ -358,7 +360,7 @@ namespace SIT.Launcher
             try
             {
                 // attempt to login
-                var returnData = requesting.PostJson("/launcher/profile/login", JsonConvert.SerializeObject(data));
+                var returnData = requesting.PostJson("/launcher/profile/login", JsonConvert.SerializeObject(loginData));
 
                 // If failed, attempt to register
                 if (returnData == "FAILED")
@@ -367,9 +369,9 @@ namespace SIT.Launcher
                     if (messageBoxResult == MessageBoxResult.Yes)
                     {
                         // Register
-                        returnData = requesting.PostJson("/launcher/profile/register", JsonConvert.SerializeObject(data));
+                        returnData = requesting.PostJson("/launcher/profile/register", JsonConvert.SerializeObject(loginData));
                         // Login attempt after register
-                        returnData = requesting.PostJson("/launcher/profile/login", JsonConvert.SerializeObject(data));
+                        returnData = requesting.PostJson("/launcher/profile/login", JsonConvert.SerializeObject(loginData));
 
                     }
                     else
