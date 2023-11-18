@@ -55,7 +55,7 @@ jobs:
 
     env:
       Solution_Name: SIT.Launcher.sln                        # Replace with your solution name, i.e. MyWpfApp.sln.
-      PublishedPath: SIT.Launcher\SIT.Launcher\bin\Release\net7.0-windows\win-x64\publish\           
+      PublishedPath: SIT.Launcher\bin\Release\net7.0-windows\win-x64\publish\           
       Test_Project_Path: SIT.Launcher/SIT.Launcher.csproj                 # Replace with the path to your test project, i.e. MyWpfApp.Tests\MyWpfApp.Tests.csproj.
 
     steps:
@@ -81,9 +81,6 @@ jobs:
     # Publish the Launcher as Self-Contained Single-File
     - name: dotnet Publish
       run: dotnet publish ${{ env.Test_Project_Path }} --self-contained true -r win-x64 /p:PublishSingleFile=true -c Release
-
-    - name: debug1 
-      run: dir SIT.Launcher\SIT.Launcher\SIT.Launcher
 
     - name: Create ZIP archive
       run: tar -cf SIT-Launcher-Release.zip ${{ env.PublishedPath }}
