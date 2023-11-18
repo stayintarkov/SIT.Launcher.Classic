@@ -93,7 +93,6 @@ jobs:
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
       with:
         draft: true
         generate_release_notes: true
