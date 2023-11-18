@@ -39,8 +39,6 @@
 name: .NET Core Desktop
 
 on:
-  push:
-    branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
 
@@ -88,7 +86,7 @@ jobs:
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: SIT-Launcher-Release
+        name: SIT-Launcher-Release.zip
         path: ${{ env.PublishedPath }}
 
     - name: Create GitHub Release
