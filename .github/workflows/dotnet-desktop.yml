@@ -90,6 +90,12 @@ jobs:
       with:
         name: SIT Launcher Release
         path: ${{ env.PublishedPath }}
+        
+    - name: Check files in .
+      run: dir .
+    
+    - name: Check files in ${{ env.PublishedPath }}
+      run: dir ${{ env.PublishedPath }}
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
