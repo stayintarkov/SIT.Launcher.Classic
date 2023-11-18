@@ -82,6 +82,9 @@ jobs:
     - name: dotnet Publish
       run: dotnet publish ${{ env.Test_Project_Path }} --self-contained true -r win-x64 /p:PublishSingleFile=true -c Release
 
+    - name: debug once again
+      run: cd && dir && dir ${{ env.PublishedPath }}
+
     - name: Create ZIP archive from ${{ env.PublishedPath }}
       run: tar -cf SIT-Launcher-Release.zip ${{ env.PublishedPath }}
 
