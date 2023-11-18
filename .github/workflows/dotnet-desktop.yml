@@ -57,6 +57,7 @@ jobs:
 
     env:
       Solution_Name: SIT.Launcher.sln                        # Replace with your solution name, i.e. MyWpfApp.sln.
+      PublishedPath: SIT.Launcher\SIT.Launcher\SIT.Launcher\bin\Release\net7.0-windows\win-x64\publish\               
       Test_Project_Path: SIT.Launcher\SIT.Launcher.csproj                 # Replace with the path to your test project, i.e. MyWpfApp.Tests\MyWpfApp.Tests.csproj.
 
     steps:
@@ -88,11 +89,12 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: SIT Launcher Release
-        path: ${{ env.Test_Project_Path }}
+        path: ${{ env.PublishedPath }}
 
     - name: Create GitHub Release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
-      run: |
-        gh release create "SIT.Launcher.Release" --prerelease --draft --title "SIT.Launcher.Release"
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        draft: true
+        generate_release_notes: true
+        files: ${{ env.PublishedPath }}
