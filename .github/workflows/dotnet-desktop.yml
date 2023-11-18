@@ -57,9 +57,8 @@ jobs:
 
     env:
       Solution_Name: SIT.Launcher.sln                        # Replace with your solution name, i.e. MyWpfApp.sln.
+      PublishedPath: SIT.Launcher\SIT.Launcher\SIT.Launcher\bin\Release\net7.0-windows\win-x64\publish\               
       Test_Project_Path: SIT.Launcher\SIT.Launcher.csproj                 # Replace with the path to your test project, i.e. MyWpfApp.Tests\MyWpfApp.Tests.csproj.
-      Wap_Project_Directory: SIT.Launcher.Packaging    # Replace with the Wap project directory relative to the solution, i.e. MyWpfApp.Package.
-      Wap_Project_Path: SIT.Launcher.Packaging\SIT.Launcher.Packaging.wapproj                   # Replace with the path to your Wap project, i.e. MyWpf.App.Package\MyWpfApp.Package.wapproj.
 
     steps:
     - name: Checkout
@@ -73,43 +72,29 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
+    # Add MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.2
 
-    # Execute all unit tests in the solution
-    # - name: Execute unit tests
-    #  run: dotnet test
+    # Restore all projects
+    - name: dotnet Restore
+      run: dotnet restore
 
-    # Restore the application to populate the obj folder with RuntimeIdentifiers
-    - name: Restore the application
-      run: msbuild $env:Solution_Name /t:Restore /p:Configuration=$env:Configuration
-      env:
-        Configuration: ${{ matrix.configuration }}
+    # Publish the Launcher as Self-Contained Single-File
+    - name: dotnet Publish
+      run: dotnet publish SIT.Launcher/SIT.Launcher.csproj --self-contained true -r win-x64 /p:PublishSingleFile=true -c Release
 
-    # Decode the base 64 encoded pfx and save the Signing_Certificate
-    - name: Decode the pfx
-      run: |
-        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
-        $certificatePath = Join-Path -Path $env:Wap_Project_Directory -ChildPath GitHubActionsWorkflow.pfx
-        [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
-
-    # Create the app package by building and packaging the Windows Application Packaging project
-    - name: Create the app package
-      run: msbuild $env:Wap_Project_Path /p:Configuration=$env:Configuration /p:Platform=x64 /p:UapAppxPackageBuildMode=$env:Appx_Package_Build_Mode /p:AppxBundle=$env:Appx_Bundle /p:PackageCertificateKeyFile=GitHubActionsWorkflow.pfx /p:PackageCertificatePassword=${{ secrets.Pfx_Key }}
-      env:
-        Appx_Bundle: Always
-        Appx_Bundle_Platforms: x64
-        Appx_Package_Build_Mode: StoreUpload
-        Configuration: ${{ matrix.configuration }}
-
-    # Remove the pfx
-    - name: Remove the pfx
-      run: Remove-Item -path $env:Wap_Project_Directory\GitHubActionsWorkflow.pfx
-
-    # Upload the MSIX package: https://github.com/marketplace/actions/upload-a-build-artifact
+    # Upload the Package: https://github.com/marketplace/actions/upload-a-build-artifact
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: MSIX Package
-        path: ${{ env.Wap_Project_Directory }}\AppPackages
+        name: SIT Launcher Release
+        path: ${{ env.PublishedPath }}
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        draft: true
+        generate_release_notes: true
+        files: ${{ env.PublishedPath }}
