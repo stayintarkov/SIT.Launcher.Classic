@@ -86,7 +86,7 @@ namespace SIT.Launcher
         {
             var github = new GitHubClient(new ProductHeaderValue("SIT-Launcher"));
             var user = await github.User.Get("paulov-t");
-            SITReleases = new ObservableCollection<Release>(await github.Repository.Release.GetAll("paulov-t", "SIT.Core", new ApiOptions() { }));
+            SITReleases = new ObservableCollection<Release>(await github.Repository.Release.GetAll("stayintarkov", "StayInTarkov.Client", new ApiOptions() { }));
             SelectedSITRelease = SITReleases.OrderByDescending(x => x.CreatedAt).First();
 
             rtbSITReleaseNews.Document = HtmlToFlowDocument(SelectedSITRelease.Body);
@@ -232,7 +232,7 @@ namespace SIT.Launcher
             await loadingDialog.UpdateAsync("Installing", $"Installing BepInEx");
             await DownloadAndInstallBepInEx5(exeLocation);
            
-            await loadingDialog.UpdateAsync("Installing", $"Installing SIT.Core");
+            await loadingDialog.UpdateAsync("Installing", $"Installing StayInTarkov.Client");
             await DownloadAndInstallSIT(exeLocation);
 
           
@@ -635,7 +635,7 @@ namespace SIT.Launcher
             if (!Directory.Exists(bepinexPluginsPath))
                 return false;
 
-            return File.Exists(bepinexPluginsPath + "SIT.Core.dll");
+            return File.Exists(bepinexPluginsPath + "StayInTarkov.dll");
         }
 
         private async Task<bool> DownloadAndInstallSIT(string exeLocation, bool forceInstall = false)
@@ -657,16 +657,7 @@ namespace SIT.Launcher
             try
             {
 
-                //var github = new GitHubClient(new ProductHeaderValue("SIT-Launcher"));
-                //var user = await github.User.Get("paulov-t");
-                //var tarkovCoreReleases = await github.Repository.Release.GetAll("paulov-t", "SIT.Core", new ApiOptions() { });
-                //var tarkovCoreReleasesOrdered = tarkovCoreReleases.OrderByDescending(x => x.CreatedAt).ToList();
                 Release latestCore = SelectedSITRelease;
-                //if ((Config.AutomaticallyInstallSITPreRelease || Config.ForceInstallLatestSIT) && tarkovCoreReleasesOrdered[0].Prerelease)
-                //    latestCore = tarkovCoreReleasesOrdered[0];
-
-                //if (latestCore == null)
-                //    latestCore = tarkovCoreReleasesOrdered.First(x => !x.Prerelease);
 
                 var clientModsDeliveryPath = Path.Combine(App.ApplicationDirectory, "ClientMods");
                 Directory.CreateDirectory(clientModsDeliveryPath);

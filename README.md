@@ -1,6 +1,6 @@
 ﻿# Summary
 
-This Launcher is designed to work with [SPT-AKI](https://dev.sp-tarkov.com/SPT-AKI/Server) & [Stay In Tarkov](https://github.com/paulov-t/SIT.Core)
+This Launcher is designed to work with [SPT-AKI](https://dev.sp-tarkov.com/SPT-AKI/Server) & [Stay In Tarkov](https://github.com/stayintarkov/StayInTarkov.Client)
 
 ---
 
@@ -24,7 +24,7 @@ You can obtain it here. [https://www.escapefromtarkov.com](https://www.escapefro
 No license is provided. This is open source but I would prefer if credit was given if some of it used in your projects.
 
 # Installation
-**Better Installation instructions are found on [Stay In Tarkov - Core Repository](https://github.com/paulov-t/SIT.Core)**
+**Better Installation instructions are found on [Stay In Tarkov - Core Repository](https://github.com/stayintarkov/StayInTarkov.Client)**
 - Buy, download and install BattleState Games Escape from Tarkov
 - Copy and paste the latest live BSG Tarkov client (downloaded through their launcher) somewhere (i.e. D:\EmuTarkov)
 - Download latest [SPT-AKI Bleeding Edge Server](https://dev.sp-tarkov.com/SPT-AKI/Server) and follow instructions to setup (subject to change)
