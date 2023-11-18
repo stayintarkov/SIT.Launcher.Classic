@@ -82,14 +82,10 @@ jobs:
     - name: dotnet Publish
       run: dotnet publish ${{ env.Test_Project_Path }} --self-contained true -r win-x64 /p:PublishSingleFile=true -c Release
 
-    # Upload the Package: https://github.com/marketplace/actions/upload-a-build-artifact
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: SIT-Launcher-Release.zip
-        path: ${{ env.PublishedPath }}
+    - name: Create ZIP archive from ${{ env.PublishedPath }}
+      run: tar -cf SIT-Launcher-Release.zip ${{ env.PublishedPath }}
 
-    - name: Create GitHub Release
+    - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
         draft: true
