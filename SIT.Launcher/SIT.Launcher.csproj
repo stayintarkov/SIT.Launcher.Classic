@@ -8,7 +8,7 @@
 	  <ApplicationIcon>Stay-In-Tarkov-512.ico</ApplicationIcon>
 	  <!--<PublishSingleFile>true</PublishSingleFile>-->
 	  <!-- <SelfContained>true</SelfContained>-->
-	  <!--<RuntimeIdentifier>win-x64</RuntimeIdentifier>-->
+	  <RuntimeIdentifier>win-x64</RuntimeIdentifier>
 
 	  <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 	  <Deterministic>false</Deterministic>
