@@ -82,7 +82,7 @@ jobs:
 
     # Publish the Launcher as Self-Contained Single-File
     - name: dotnet Publish
-      run: dotnet publish {env.Test_Project_Path} --self-contained true -r win-x64 /p:PublishSingleFile=true -c Release
+      run: dotnet publish ${{ env.Test_Project_Path }} --self-contained true -r win-x64 /p:PublishSingleFile=true -c Release
 
     # Upload the Package: https://github.com/marketplace/actions/upload-a-build-artifact
     - name: Upload build artifacts
