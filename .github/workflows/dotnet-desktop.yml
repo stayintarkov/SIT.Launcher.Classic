@@ -39,7 +39,6 @@
 name: .NET Core Desktop
 
 on:
-  
   pull_request:
     branches: [ "master" ]
 
@@ -82,10 +81,8 @@ jobs:
     # Publish the Launcher as Self-Contained Single-File
     - name: dotnet Publish
       run: |
-        echo ${{ github.workspace}}
-        cd .
         dotnet publish ${{ env.Test_Project_Path }} --self-contained true -r win-x64 /p:PublishSingleFile=true -c Release
-        tar -f ${{ env.SolutionName }}-Release.zip -c ${{ env.PublishedPath }}
+        tar -f ${{ env.SolutionName }}-Release.zip -C ${{ env.PublishedPath }}
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
