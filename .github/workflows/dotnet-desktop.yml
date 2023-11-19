@@ -49,13 +49,22 @@ jobs:
       run: |
         mkdir ${{ env.SolutionName }}
         dotnet publish ${{ env.CSProj }} --self-contained true -r win-x64 /p:PublishSingleFile=true -c Release -o ${{ env.SolutionName }}
-        tar -cf ${{ env.SolutionName }}-Release.zip ${{ env.SolutionName }}
+        tar -cf ${{ env.SolutionName }}.zip ${{ env.SolutionName }}
+    
+    # Upload artifact unless its merge to master
+    - name: Upload build artifacts
+      if: github.ref == 'refs/heads/master' && github.action != 'merge'
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.SolutionName }}
+        path: ${{ env.SolutionName }}.zip
     
     # Create release from the compressed file
     - name: Create Release
       uses: softprops/action-gh-release@v1
+      if: github.ref == 'refs/heads/master' && github.action == 'merge'
       with:
         draft: false
         generate_release_notes: true
-        files: ${{ env.SolutionName }}-Release.zip
-        tag_name: test
+        files: ${{ env.SolutionName }}.zip
+        tag_name: release
