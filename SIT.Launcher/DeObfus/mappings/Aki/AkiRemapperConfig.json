@@ -318,9 +318,8 @@
     {
       "RenameClassNameTo": "ISession",
       "IsInterface": true,
-      "HasEvents": [ "InventoryErrorHappened" ],
-      "HasFields": [ "QueueStatus", "Acceleration" ],
-      "HasMethods": [ "AddToWishList" ]
+      "HasFields": [ "SocialNetwork", "ChatServers" ],
+      "HasMethods": [ "ChatGetDialogList", "ChatCreateGroupDialog", "ChatSendMessage", "ChatDeleteMessage" ]
     },
     {
       "RenameClassNameTo": "IConnectionHandler",
