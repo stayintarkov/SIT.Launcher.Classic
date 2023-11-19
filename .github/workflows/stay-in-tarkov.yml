@@ -8,8 +8,7 @@ on:
   push:
     branches: [ "master" ]
   pull_request:
-    branches: [ "master" ]
-    types: ["opened","edited"]
+    types: ["opened", "edited"]
 
 jobs:
 
@@ -54,7 +53,6 @@ jobs:
     
     # Upload artifact unless its merge to master
     - name: Upload build artifacts
-      if: github.action == 'pull_request'
       uses: actions/upload-artifact@v3
       with:
         name: ${{ env.SolutionName }}
