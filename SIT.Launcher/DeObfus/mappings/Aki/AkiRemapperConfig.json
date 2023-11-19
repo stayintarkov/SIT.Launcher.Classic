@@ -90,12 +90,12 @@
     //  "HasFields": [ "mail", "repeatableQuest", "handbook", "preset", "error", "quest" ]
     //},
     //"GClass1301": "BotControllerClass",
-    {
-      "RenameClassNameTo": "BotControllerClass",
-      "IsClass": true,
-      "HasFields": [ "BotGame" ],
-      "HasMethods": [ "ActivateBotsByWave", "ActivateBotsWithoutWave", "AddEnemyToAllGroups", "BotDied", "SpawnBossDebug", "SpawnBotDebugClient", "SpawnBotDebugServer" ]
-    },
+    //{
+    //  "RenameClassNameTo": "BotControllerClass",
+    //  "IsClass": true,
+    //  "HasFields": [ "BotGame" ],
+    //  "HasMethods": [ "ActivateBotsByWave", "ActivateBotsWithoutWave", "AddEnemyToAllGroups", "BotDied", "SpawnBossDebug", "SpawnBotDebugClient", "SpawnBotDebugServer" ]
+    //},
     //"GClass1305": "WaveInfo",
     {
       "RenameClassNameTo": "WaveInfo",
