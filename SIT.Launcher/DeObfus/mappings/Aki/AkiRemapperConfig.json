@@ -297,10 +297,10 @@
       "HasFields": [ "BaseBrain", "Agent", "LastDecision" ],
       "HasMethods": [ "Activate" ]
     },
-    {
-      "RenameClassNameTo": "BotGroupClass",
-      "HasMethods": [ "IsPlayerEnemyByRole" ]
-    },
+    //{
+    //  "RenameClassNameTo": "BotGroupClass",
+    //  "HasMethods": [ "IsPlayerEnemyByRole" ]
+    //},
     {
       "RenameClassNameTo": "BotSettingsClass",
       "HasFields": [ "IsLastPositionChecked", "LastChangeVisionTime" ],
