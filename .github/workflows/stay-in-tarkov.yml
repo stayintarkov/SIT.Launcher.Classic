@@ -54,7 +54,7 @@ jobs:
     # Upload artifact unless its merge to master
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
-      if: !github.event.pull_request.merged
+      if: !(github.event.pull_request.merged)
       with:
         name: ${{ env.SolutionName }}
         path: ${{ env.SolutionName }}.zip
