@@ -53,7 +53,7 @@ jobs:
     
     # Upload artifact unless its merge to master
     - name: Upload build artifacts
-      if: github.ref == 'refs/heads/master' && github.action == 'pull_request'
+      if: github.action == 'pull_request'
       uses: actions/upload-artifact@v3
       with:
         name: ${{ env.SolutionName }}
@@ -62,7 +62,7 @@ jobs:
     # Create release from the compressed file
     - name: Create Release
       uses: softprops/action-gh-release@v1
-      if: github.ref == 'refs/heads/master' && github.action == 'merge'
+      if: github.action == 'merge'
       with:
         draft: false
         generate_release_notes: true
