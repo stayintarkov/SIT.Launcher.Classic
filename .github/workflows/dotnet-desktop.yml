@@ -81,9 +81,8 @@ jobs:
     - name: dotnet Publish
       run: |
         mkdir ${{ env.SolutionName }}
-        dotnet publish ${{ env.CSProj }} --self-contained true -r win-x64 /p:PublishSingleFile=true -c Release -o ./${{ env.SolutionName }}
-        cd ${{ env.SolutionName }}
-        tar -cf ../${{ env.SolutionName }}-Release.zip ${{ env.SolutionName }}
+        dotnet publish ${{ env.CSProj }} --self-contained true -r win-x64 /p:PublishSingleFile=true -c Release -o ${{ env.SolutionName }}
+        tar -cf ${{ env.SolutionName }}-Release.zip ${{ env.SolutionName }}
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
