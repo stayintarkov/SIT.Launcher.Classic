@@ -306,10 +306,10 @@
       "HasFields": [ "IsLastPositionChecked", "LastChangeVisionTime" ],
       "HasMethods": [ "GetPositionForSearch", "SetSuppressEndTime", "IsSuppressed" ]
     },
-    {
-      "RenameClassNameTo": "AiDataClass",
-      "HasMethods": [ "IsBossOrFollowerRequireRevenge", "KillEnemy", "DoMove", "LeavePlace" ]
-    },
+    //{
+    //  "RenameClassNameTo": "AiDataClass",
+    //  "HasMethods": [ "IsBossOrFollowerRequireRevenge", "KillEnemy", "DoMove", "LeavePlace" ]
+    //},
     {
       "RenameClassNameTo": "BotsPresets",
       "HasFields": [ "BundlesLoading" ],
@@ -392,6 +392,12 @@
     {
       "RenameClassNameTo": "BotSettingsValuesClass",
       "HasFields": [ "IsBoss", "IsFollower", "IsHostileToEverybody", "CountAsBoss", "ScavRoleKey", "PhraseTag" ]
+
+    },
+    {
+      "RenameClassNameTo": "IBotController",
+      "IsInterface": true,
+      "HasFields": [ "Position", "GoalEnemy", "Settings", "BossToFollow", "Covers", "Id", "IsDamaged", "Brain" ]
 
     },
     {
