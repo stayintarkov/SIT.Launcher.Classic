@@ -83,7 +83,7 @@ jobs:
       run: |
         dotnet publish ${{ env.CSProj }} --self-contained true -r win-x64 /p:PublishSingleFile=true -c Release
         cd ${{ env.PublishedPath }}
-        tar -f ${{github.workspace}}\${{ env.SolutionName }}-Release.zip -C ${{ env.PublishedPath }}
+        tar -cf ${{github.workspace}}\${{ env.SolutionName }}-Release.zip ${{ env.PublishedPath }}
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
