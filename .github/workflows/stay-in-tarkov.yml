@@ -2,7 +2,7 @@
 #### StayInTarkov Build Workflow
 ####  
 
-name: SIT BUILD
+name: SIT Build
 
 on:
   push:
