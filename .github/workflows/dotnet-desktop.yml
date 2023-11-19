@@ -55,7 +55,7 @@ jobs:
                              # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
 
     env:
-      Solution_Name: SIT.Launcher.sln                        # Replace with your solution name, i.e. MyWpfApp.sln.
+      SolutionName: SIT.Launcher                        # Replace with your solution name, i.e. MyWpfApp.sln.
       PublishedPath: SIT.Launcher\bin\Release\net7.0-windows\win-x64\publish        
       Test_Project_Path: SIT.Launcher/SIT.Launcher.csproj                 # Replace with the path to your test project, i.e. MyWpfApp.Tests\MyWpfApp.Tests.csproj.
 
@@ -85,11 +85,11 @@ jobs:
         echo ${{ github.workspace}}
         cd .
         dotnet publish ${{ env.Test_Project_Path }} --self-contained true -r win-x64 /p:PublishSingleFile=true -c Release
-        tar -cf SIT-Launcher-Release.zip ${{ env.PublishedPath }}
+        tar -f ${{ env.SolutionName }}-Release.zip -c ${{ env.PublishedPath }}
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
         draft: true
         generate_release_notes: true
-        files: SIT-Launcher-Release.zip
+        files: ${{ env.SolutionName }}-Release.zip
