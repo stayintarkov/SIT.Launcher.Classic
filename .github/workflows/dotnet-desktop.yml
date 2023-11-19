@@ -81,9 +81,9 @@ jobs:
     # Publish the Launcher as Self-Contained Single-File
     - name: dotnet Publish
       run: |
-        dotnet publish ${{ env.CSProj }} --self-contained true -r win-x64 /p:PublishSingleFile=true -c Release
-        cd ${{ env.PublishedPath }}
-        tar -cf ${{github.workspace}}\${{ env.SolutionName }}-Release.zip ${{ env.PublishedPath }}
+        mkdir build
+        dotnet publish ${{ env.CSProj }} --self-contained true -r win-x64 /p:PublishSingleFile=true -c Release -o .\build
+        tar -cf ${{ env.SolutionName }}-Release.zip .\build
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
