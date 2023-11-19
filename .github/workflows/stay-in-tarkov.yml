@@ -8,8 +8,7 @@ on:
   push:
     branches: [ "master" ]
   pull_request:
-    branches: ["*"]
-    types: ["opened", "edited"]
+    types: [opened, edited, review_requested]
 
 jobs:
 
