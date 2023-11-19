@@ -56,7 +56,7 @@ jobs:
     env:
       SolutionName: SIT.Launcher                        # Replace with your solution name, i.e. MyWpfApp.sln.
       PublishedPath: SIT.Launcher\bin\Release\net7.0-windows\win-x64\publish        
-      Test_Project_Path: SIT.Launcher/SIT.Launcher.csproj                 # Replace with the path to your test project, i.e. MyWpfApp.Tests\MyWpfApp.Tests.csproj.
+      CSProj: SIT.Launcher/SIT.Launcher.csproj                 # Replace with the path to your test project, i.e. MyWpfApp.Tests\MyWpfApp.Tests.csproj.
 
     steps:
     - name: Checkout
@@ -81,8 +81,9 @@ jobs:
     # Publish the Launcher as Self-Contained Single-File
     - name: dotnet Publish
       run: |
-        dotnet publish ${{ env.Test_Project_Path }} --self-contained true -r win-x64 /p:PublishSingleFile=true -c Release
-        tar -f ${{ env.SolutionName }}-Release.zip -C ${{ env.PublishedPath }}
+        dotnet publish ${{ env.CSProj }} --self-contained true -r win-x64 /p:PublishSingleFile=true -c Release
+        cd ${{ env.PublishedPath }}
+        tar -f ${{github.workspace}}\${{ env.SolutionName }}-Release.zip -C ${{ env.PublishedPath }}
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
