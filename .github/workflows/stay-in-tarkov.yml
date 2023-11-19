@@ -61,7 +61,7 @@ jobs:
     # Create release from the compressed file
     - name: Create Release
       uses: softprops/action-gh-release@v1
-      if: github.action == 'merge'
+      if: github.event.pull_request.merged == true
       with:
         draft: false
         generate_release_notes: true
