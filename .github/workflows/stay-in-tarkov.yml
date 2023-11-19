@@ -11,7 +11,7 @@ on:
     types: [opened, edited, review_requested, closed]
 
 jobs:
-
+  
   build:
 
     strategy:
@@ -54,7 +54,7 @@ jobs:
     # Upload artifact unless its merge to master
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
-      if: github.event.pull_request.merged == false
+      if: github.event_name == 'pull_request'
       with:
         name: ${{ env.SolutionName }}
         path: ${{ env.SolutionName }}.zip
@@ -62,7 +62,7 @@ jobs:
     # Create release from the compressed file
     - name: Create Release
       uses: softprops/action-gh-release@v1
-      if: github.event.pull_request.merged == true
+      if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged
       with:
         draft: false
         generate_release_notes: true
