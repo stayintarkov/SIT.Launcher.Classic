@@ -62,7 +62,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: ${{ env.SolutionName }}-${{ env.NOW }}
-        path: ${{ env.SolutionName }}-${{ env.NOW }}.zip
+        path: ${{ env.SolutionName }}.zip
 
     # Create release from the compressed file
     - name: Create Release
