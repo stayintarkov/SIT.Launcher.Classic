@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -45,12 +46,13 @@ namespace SIT.Launcher
             this.Closing += MainWindow_Closing;
         }
 
-        private void MainWindow_ContentRendered(object sender, EventArgs e)
+        private async void MainWindow_ContentRendered(object sender, EventArgs e)
         {
-            NewInstallFromOfficial();
-            _ = UpdateInstallFromOfficial();
+            await GetLatestSITRelease();
 
-            _ = DisplayLatestReleaseNews();
+            NewInstallFromOfficial();
+            await UpdateInstallFromOfficial();
+
 
             DisplayLatestLogs();
         }
@@ -71,7 +73,10 @@ namespace SIT.Launcher
 
         private void DisplayLatestLogs()
         {
-            var pathToLogs = Path.Combine(Directory.GetParent(OfficialGameFinder.FindOfficialGame().FullName).FullName, "Logs");
+            if (EFTGameChecker.FindOfficialGame() == null)
+                return;
+
+            var pathToLogs = Path.Combine(Directory.GetParent(EFTGameChecker.FindOfficialGame().FullName).FullName, "Logs");
             var filesInLogs = Directory.GetFiles(pathToLogs);
             if (!filesInLogs.Any())
                 return;
@@ -82,7 +87,7 @@ namespace SIT.Launcher
             }
         }
 
-        private async Task DisplayLatestReleaseNews()
+        private async Task GetLatestSITRelease()
         {
             var github = new GitHubClient(new ProductHeaderValue("SIT-Launcher"));
             var user = await github.User.Get("paulov-t");
@@ -114,7 +119,7 @@ namespace SIT.Launcher
             {
                 var exeLocation = string.Empty;
                 exeLocation = await CopyInstallFromOfficial(
-                    OfficialGameFinder.FindOfficialGame()
+                    EFTGameChecker.FindOfficialGame()
                     , Directory.GetParent(Config.InstallLocation).FullName
                     , exeLocation);
             }
@@ -126,10 +131,21 @@ namespace SIT.Launcher
             if (string.IsNullOrEmpty(Config.InstallLocation))
                 return false;
 
-            if (OfficialGameFinder.FindOfficialGame() == null)
-                return false;
+            if (EFTGameChecker.FindOfficialGame() == null)
+            {
+                try
+                {
+                    throw new Exception("Official EFT has not been found!");
+                }
+                catch(Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    return false;
+                }
+            }
 
-            var officialAssemblyCSharpPath = new FileInfo(Path.Combine(Directory.GetParent(OfficialGameFinder.FindOfficialGame().FullName).FullName, "EscapeFromTarkov_Data", "Managed", "Assembly-CSharp.dll"));
+
+            var officialAssemblyCSharpPath = new FileInfo(Path.Combine(Directory.GetParent(EFTGameChecker.FindOfficialGame().FullName).FullName, "EscapeFromTarkov_Data", "Managed", "Assembly-CSharp.dll"));
             if (!officialAssemblyCSharpPath.Exists)
                 return false;
 
@@ -161,7 +177,7 @@ namespace SIT.Launcher
             {
                 if (MessageBox.Show("No OFFLINE install found. Would you like to install now?", "Install", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
-                    var fiOfficialGame = OfficialGameFinder.FindOfficialGame();
+                    var fiOfficialGame = EFTGameChecker.FindOfficialGame();
                     if (fiOfficialGame == null)
                         return;
 
@@ -710,9 +726,18 @@ namespace SIT.Launcher
 
                 UpdateButtonText("Installing SIT");
 
-                foreach (var clientModDLL in Directory.GetFiles(App.ApplicationDirectory + "\\ClientMods\\").Where(x => !x.Contains("DONOTDELETE")))
+                using (var z = ZipFile.OpenRead(Path.Combine(App.ApplicationDirectory, "ClientMods", "StayInTarkov-Release.zip"))) 
                 {
-                    if (clientModDLL.Contains("Assembly-CSharp"))
+                    foreach (var ent in z.Entries)
+                    {
+                        ent.ExtractToFile(Path.Combine(App.ApplicationDirectory, "ClientMods", ent.Name), true);
+                    }
+                }
+                File.Delete(Path.Combine(App.ApplicationDirectory, "ClientMods", "StayInTarkov-Release.zip"));
+
+                foreach (var clientFile in Directory.GetFiles(Path.Combine(App.ApplicationDirectory, "ClientMods")).Where(x => !x.Contains("DONOTDELETE")))
+                {
+                    if (clientFile.Contains("Assembly-CSharp"))
                     {
                         var assemblyLocation = Path.Combine(Directory.GetParent(exeLocation).FullName, "EscapeFromTarkov_Data", "Managed", "Assembly-CSharp.dll");
 
@@ -720,20 +745,20 @@ namespace SIT.Launcher
                         if (!File.Exists(assemblyLocation + ".backup"))
                         {
                             File.Copy(assemblyLocation, assemblyLocation + ".backup");
-                            File.Copy(clientModDLL, assemblyLocation, true);
+                            File.Copy(clientFile, assemblyLocation, true);
                         }
 
                         if (Config.ForceInstallLatestSIT)
-                            File.Copy(clientModDLL, assemblyLocation, true);
+                            File.Copy(clientFile, assemblyLocation, true);
                     }
                     else
                     {
                         bool shouldCopy = false;
-                        var fiClientMod = new FileInfo(clientModDLL);
+                        var fiClientMod = new FileInfo(clientFile);
                         var fiExistingMod = new FileInfo(bepinexPluginsPath + "\\" + fiClientMod.Name);
-                        if (fiExistingMod.Exists && allAssets.Any(x => x.Name == fiClientMod.Name))
+                        if (fiExistingMod.Exists)
                         {
-                            var createdDateOfDownloadedAsset = allAssets.FirstOrDefault(x => x.Name == fiClientMod.Name).CreatedAt;
+                            var createdDateOfDownloadedAsset = allAssets.First().CreatedAt;
                             shouldCopy = (fiExistingMod.LastWriteTime < createdDateOfDownloadedAsset);
                         }
                         else
@@ -743,7 +768,7 @@ namespace SIT.Launcher
                             shouldCopy = true;
 
                         if (shouldCopy)
-                            File.Copy(clientModDLL, bepinexPluginsPath + "\\" + fiClientMod.Name, true);
+                            File.Copy(clientFile, bepinexPluginsPath + "\\" + fiClientMod.Name, true);
                     }
                 }
 
@@ -1093,6 +1118,16 @@ namespace SIT.Launcher
         {
             CollapseAll();
             gridSITVersions.Visibility = Visibility.Visible;
+        }
+
+        private void btnNewSITManagerAvailable_Click(object sender, RoutedEventArgs e)
+        {
+            var destinationurl = "https://github.com/stayintarkov/SIT.Manager/releases";
+            var sInfo = new System.Diagnostics.ProcessStartInfo(destinationurl)
+            {
+                UseShellExecute = true,
+            };
+            System.Diagnostics.Process.Start(sInfo);
         }
     }
 }

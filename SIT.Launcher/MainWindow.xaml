@@ -56,17 +56,32 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="60"></RowDefinition>
+            <RowDefinition Height="30"></RowDefinition>
             <RowDefinition Height="*">
 
             </RowDefinition>
             <RowDefinition Height="30"></RowDefinition>
         </Grid.RowDefinitions>
+        <Border Grid.Row="0" Grid.ColumnSpan="3"  Margin="-10,-10,-10,0" HorizontalAlignment="Stretch" Background="Orange">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="4*"></ColumnDefinition>
+                    <ColumnDefinition Width="2*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <Label Content="A new application called SIT Manager is now available!" Foreground="Black" FontWeight="Bold" VerticalContentAlignment="Center"></Label>
+                <Button Grid.Column="1" x:Name="btnNewSITManagerAvailable" Click="btnNewSITManagerAvailable_Click" Margin="2">
+                    <StackPanel Orientation="Horizontal">
+                        <MaterialDesign:PackIcon Kind="Idea"></MaterialDesign:PackIcon>
+                        <Label Content="Download Now"></Label>
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Border>
         <local:LoadingDialog x:Name="loadingDialog" Grid.RowSpan="3" Grid.ColumnSpan="3" Panel.ZIndex="999">
 
         </local:LoadingDialog>
-        <mah:MetroAnimatedTabControl DockPanel.Dock="Top" Margin="0,0,0,0" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" 
-            Background="Transparent" Grid.ColumnSpan="3" Grid.RowSpan="2"  >
+        <mah:MetroAnimatedTabControl Grid.Row="1" Grid.RowSpan="1" DockPanel.Dock="Top" Margin="10" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch" 
+            Background="Transparent" Grid.ColumnSpan="3"   >
             <mah:MetroTabItem Selector.IsSelected="True" Visibility="Visible" VerticalContentAlignment="Stretch" VerticalAlignment="Stretch" >
                 <mah:MetroTabItem.Header>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Center">
@@ -74,7 +89,8 @@
                         <Label Content="Play"></Label>
                     </StackPanel>
                 </mah:MetroTabItem.Header>
-                <Grid x:Name="gridPlay" Grid.Row="1" Grid.ColumnSpan="3">
+                
+                <Grid x:Name="gridPlay" Margin="5" Grid.Row="1" Grid.ColumnSpan="3">
                     <Grid.Resources >
                         <Style TargetType="Border" >
                             <Setter Property="Padding" Value="5,5,5,5" />
@@ -82,27 +98,20 @@
                     </Grid.Resources>
 
                     <Grid.RowDefinitions>
-                        <RowDefinition MinHeight="180"></RowDefinition>
-                        <RowDefinition Height="*" ></RowDefinition>
-                        <RowDefinition MaxHeight="100" ></RowDefinition>
+                        <RowDefinition MinHeight="150"></RowDefinition>
+                        <RowDefinition Height="20" ></RowDefinition>
+                        <RowDefinition MaxHeight="90" ></RowDefinition>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition MinWidth="250" Width="250"></ColumnDefinition>
                         <ColumnDefinition MinWidth="275" Width="*"></ColumnDefinition>
                         <ColumnDefinition></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="20"></RowDefinition>
-                            <RowDefinition></RowDefinition>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"></ColumnDefinition>
-                            <ColumnDefinition Width="*"></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
-                    </Grid>
+                  
 
-                    <Border  Grid.Column="0" Grid.ColumnSpan="2">
+
+
+                    <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
                         <Grid>
                             <Grid.Resources >
                                 <Style TargetType="Border" >
@@ -129,6 +138,8 @@
                             </StackPanel>
                         </Grid>
                     </Border>
+                    
+                    
 
                     <StackPanel Grid.Row="2" Grid.Column="2">
                         <Button x:Name="btnLaunchGame" Click="btnLaunchGame_Click" Content="{Binding LaunchButtonText, Mode=TwoWay}"></Button>
