@@ -9,6 +9,7 @@ on:
     branches: [ "master" ]
   pull_request:
     types: [opened, edited, review_requested, closed]
+  workflow_dispatch:
 
 jobs:
   
@@ -62,7 +63,6 @@ jobs:
     # Create release from the compressed file
     - name: Create Release
       uses: softprops/action-gh-release@v1
-      if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged
       with:
         draft: false
         generate_release_notes: true
