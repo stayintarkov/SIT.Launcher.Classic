@@ -221,6 +221,16 @@
       "IsClass": true,
       "InheritsClass": "AbstractInternalOperation",
       "HasMethods": [ "SucceedAmmoManipulationHandler" ]
+    },
+    {
+      "RenameClassNameTo": "TokenStarter",
+      "IsClass": true,
+      "HasMethodsStatic": [ "Start", "Finish", "StartWithToken", "GetReport", "PrintReport" ]
+    },
+    {
+      "RenameClassNameTo": "AIActionNodeAssigner",
+      "IsClass": true,
+      "HasMethodsStatic": [ "ActionsList", "CreateNode" ]
     }
   ],
   "DefinedTypesToForcePublic": [
