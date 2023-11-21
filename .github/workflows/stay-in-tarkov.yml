@@ -41,6 +41,11 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.2
 
+    - name: Set build date
+      run: |
+        $NOW=& Get-Date -format yyyy-MM-dd-HH-mm
+        echo "NOW=$NOW" >> $env:GITHUB_ENV
+
     # Restore all projects
     - name: dotnet Restore
       run: dotnet restore
@@ -55,16 +60,15 @@ jobs:
     # Upload artifact unless its merge to master
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
-      if: github.event_name == 'pull_request'
       with:
-        name: ${{ env.SolutionName }}
-        path: ${{ env.SolutionName }}.zip
+        name: ${{ env.SolutionName }}-${{ env.NOW }}
+        path: ${{ env.SolutionName }}-${{ env.NOW }}.zip
 
     # Create release from the compressed file
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        draft: false
+        draft: true
         generate_release_notes: true
         files: ${{ env.SolutionName }}.zip
-        tag_name: release
+        tag_name: ${{ env.SolutionName }}-${{ env.NOW }}
