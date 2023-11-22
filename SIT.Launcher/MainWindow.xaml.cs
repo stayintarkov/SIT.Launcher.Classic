@@ -54,7 +54,10 @@ namespace SIT.Launcher
             await UpdateInstallFromOfficial();
 
 
+            //ArchangelWTF: This function makes people crash due to it not being fully finished yet, only run in debug for now.
+#if DEBUG
             DisplayLatestLogs();
+#endif
         }
 
         public static readonly DependencyProperty SITReleasesProperty = DependencyProperty.Register("SITReleases", typeof(ObservableCollection<Release>), typeof(MainWindow), new FrameworkPropertyMetadata(null));
