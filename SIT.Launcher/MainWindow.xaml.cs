@@ -250,7 +250,10 @@ namespace SIT.Launcher
            
             await loadingDialog.UpdateAsync("Installing", $"Installing BepInEx");
             await DownloadAndInstallBepInEx5(exeLocation);
-           
+
+            await loadingDialog.UpdateAsync("Installing", $"Deobfuscating Assembly-CSharp. This can take some time...");
+            await Deobfuscate(exeLocation);
+
             await loadingDialog.UpdateAsync("Installing", $"Installing StayInTarkov.Client");
             await DownloadAndInstallSIT(exeLocation);
 
@@ -670,11 +673,10 @@ namespace SIT.Launcher
             var bepinexPath = exeLocation.Replace("EscapeFromTarkov.exe", "");
             bepinexPath += "BepInEx";
 
-            var bepinexPluginsPath = bepinexPath + "\\plugins\\";
+            var bepinexPluginsPath = Path.Combine(bepinexPath, "plugins");
             if (!Directory.Exists(bepinexPluginsPath))
                 return false;
 
-       
             try
             {
 
@@ -731,7 +733,7 @@ namespace SIT.Launcher
 
                 using (var z = ZipFile.OpenRead(Path.Combine(App.ApplicationDirectory, "ClientMods", "StayInTarkov-Release.zip"))) 
                 {
-                    foreach (var ent in z.Entries)
+                    foreach (var ent in z.Entries.Where(x => !string.IsNullOrEmpty(x.Name)))
                     {
                         ent.ExtractToFile(Path.Combine(App.ApplicationDirectory, "ClientMods", ent.Name), true);
                     }
