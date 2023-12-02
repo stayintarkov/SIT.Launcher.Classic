@@ -44,6 +44,33 @@ namespace SIT.Launcher
             if(Config.SendInfoToDiscord)
                 new DiscordInterop().StartDiscordClient("V." + ProductVersion);
         }
-       
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            AppDomain currentDomain = AppDomain.CurrentDomain;
+            currentDomain.UnhandledException += new UnhandledExceptionEventHandler(MyHandler);
+
+            base.OnStartup(e);
+        }
+
+        private void MyHandler(object sender, UnhandledExceptionEventArgs args)
+        {
+            Exception e = (Exception)args.ExceptionObject;
+
+            if (File.Exists("ErrorLogging.txt"))
+                File.Delete("ErrorLogging.txt");
+
+            using (StreamWriter stream = new StreamWriter("ErrorLogging.txt"))
+            {
+                stream.WriteLine(e.ToString());
+            }
+
+            Trace.WriteLine(e.ToString());
+            Console.WriteLine(e.ToString());
+            Debug.WriteLine(e.ToString());
+
+            MessageBoxResult result = MessageBox.Show(e.ToString());
+        }
+
     }
 }

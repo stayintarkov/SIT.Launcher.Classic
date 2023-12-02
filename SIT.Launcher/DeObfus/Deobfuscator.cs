@@ -251,6 +251,18 @@ namespace SIT.Launcher.DeObfus
             var managedFiles = Directory.GetFiles(managedPath).Where(x => !x.Contains("AssemblyCSharp"));
             foreach (var managedFile in managedFiles)
             {
+                if (managedFile.Contains("DOTween", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                if (managedFile.Contains("FilesChecker", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                if (managedFile.Contains("TextMeshPro", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                if (managedFile.Contains("UnityEngine.CoreModule", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
                 try
                 {
                     using (var fsManagedFile = new FileStream(managedFile, FileMode.Open))
@@ -267,9 +279,9 @@ namespace SIT.Launcher.DeObfus
                         }
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-
+                    Debug.WriteLine(ex.Message);
                 }
             }
 
@@ -570,7 +582,9 @@ namespace SIT.Launcher.DeObfus
             if (!autoRemapperConfig.EnableAutomaticRemapping.HasValue || !autoRemapperConfig.EnableAutomaticRemapping.Value)
                 return;
 
-            var allTypes = assemblyDefinition.MainModule.GetTypes();
+            var allTypes = assemblyDefinition.MainModule.GetTypes()
+                .Where(x => !x.Name.Contains("MainModule") && !x.Name.Contains("<M"))
+                .ToArray();
             var gclasses = assemblyDefinition.MainModule.GetTypes()
                 .Where(x => 
                 x.Name.StartsWith("GClass") 
@@ -834,12 +848,18 @@ namespace SIT.Launcher.DeObfus
 
         private static void RemapAutoDiscoverAndCountByProperties(ref Dictionary<string, int> gclassToNameCounts, TypeDefinition t, IEnumerable<TypeDefinition> allTypes)
         {
-            foreach (var other in allTypes)
+            foreach (var other in allTypes.Where(x => x.HasProperties))
             {
 
-                if (!other.HasFields && !other.HasProperties)
-                    continue;
-
+                try
+                {
+                    if (!other.HasFields && !other.HasProperties)
+                        continue;
+                }
+                catch 
+                { 
+                
+                }
     #if DEBUG
                 if (other.FullName.Contains("EFT.Player"))
                 {
