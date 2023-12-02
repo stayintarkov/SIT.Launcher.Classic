@@ -812,35 +812,6 @@ namespace SIT.Launcher.DeObfus
                 renamedClasses.Add(oldClassName, t);
                 Log($"Remapper: Auto Remapped {oldClassName} to {newClassName}");
 
-
-                //if (!assemblyDefinition.MainModule.Types.Any(x => x.Name == oldClassName && x.Namespace == t.Namespace))
-                //{
-                //    TypeDefinition stubOldType = new TypeDefinition(t.Namespace, oldClassName, t.Attributes);
-                //    stubOldType.ClassSize = t.ClassSize;
-                //    stubOldType.DeclaringType = t.DeclaringType;
-                //    //foreach(var gp in t.GenericParameters)
-                //    //{
-                //    //    stubOldType.GenericParameters.Add(gp);
-                //    //}
-                //    stubOldType.MetadataToken = t.MetadataToken;
-                //    foreach (var m in t.Methods.Where(x=>x.IsConstructor))
-                //    {
-                //        MethodDefinition method = new MethodDefinition(m.Name, m.Attributes, m.ReturnType);
-                //        var il = method.Body = new Mono.Cecil.Cil.MethodBody(method);
-                //        stubOldType.Methods.Add(method);
-                //    }
-                //    stubOldType.Name = oldClassName;
-                //    stubOldType.PackingSize = t.PackingSize;
-                //    stubOldType.Scope = t.Scope;
-                //    foreach (var sd in t.SecurityDeclarations)
-                //    {
-                //        stubOldType.SecurityDeclarations.Add(sd);
-                //    }
-                //    //stubOldType.BaseType = t;
-                //    assemblyDefinition.MainModule.Types.Add(stubOldType);
-                //    //Log($"Remapper: Added {oldClassName} stub to support Aki Client Mods");
-                //}
-
             }
 
             return renamedClasses;
@@ -850,43 +821,11 @@ namespace SIT.Launcher.DeObfus
         {
             foreach (var other in allTypes.Where(x => x.HasProperties))
             {
-
-                try
-                {
-                    if (!other.HasFields && !other.HasProperties)
-                        continue;
-                }
-                catch 
-                { 
-                
-                }
-    #if DEBUG
-                if (other.FullName.Contains("EFT.Player"))
-                {
-
-                }
-    #endif
-
-                PropertyDefinition[] propertyDefinitions = null;
-                try
-                {
-                    propertyDefinitions = other.Properties.Where(p =>
+                PropertyDefinition[] propertyDefinitions = other.Properties.Where(p =>
                                     p.PropertyType.Name == t.Name
                                     && p.PropertyType.Name.Length > 4
-                                    // p.PropertyType.Name.StartsWith("GClass")
-                                    // || p.PropertyType.Name.StartsWith("GStruct")
-                                    // || p.PropertyType.Name.StartsWith("GInterface")
-                                    // || p.PropertyType.Name.StartsWith("Class")
                                     ).ToArray();
-                }
-                catch (Exception)
-                {
-                    return;
-                }
-
-                if (propertyDefinitions == null)
-                    return;
-
+               
                 foreach (var prop in propertyDefinitions)
                 {
                     // if the property name includes "gclass" or whatever, then ignore it as its useless to us
@@ -911,42 +850,41 @@ namespace SIT.Launcher.DeObfus
 
                     gclassToNameCounts[n]++;
                 }
+            }
 
-                try
+            RemapAutoDiscoverAndCountByFields(ref gclassToNameCounts, t, allTypes);
+        }
+
+        private static void RemapAutoDiscoverAndCountByFields(ref Dictionary<string, int> gclassToNameCounts, TypeDefinition t, IEnumerable<TypeDefinition> allTypes)
+        {
+            foreach (var other in allTypes.Where(x => x.HasFields))
+            {
+                foreach (var prop in other.Fields.Where(p =>
+                                    p.FieldType.Name == t.Name
+                                    && p.FieldType.Name.Length > 4
+                                    ))
                 {
+                    // if the property name includes "gclass" or whatever, then ignore it as its useless to us
+                    if (prop.Name.StartsWith("GClass", StringComparison.OrdinalIgnoreCase)
+                        || prop.Name.StartsWith("GStruct", StringComparison.OrdinalIgnoreCase)
+                        || prop.Name.StartsWith("GInterface", StringComparison.OrdinalIgnoreCase)
+                        || prop.Name.StartsWith("Class", StringComparison.OrdinalIgnoreCase)
+                        )
+                        continue;
 
-                    foreach (var prop in other.Fields.Where(p =>
-                                        p.FieldType.Name == t.Name
-                                        && p.FieldType.Name.Length > 4
+                    var n = prop.FieldType.Name
+                        .Replace("[]", "")
+                        .Replace("`1", "")
+                        .Replace("`2", "")
+                        .Replace("`3", "")
+                        .Replace("&", "")
+                        .Replace(" ", "")
+                        + "." + char.ToUpper(prop.Name[0]) + prop.Name.Substring(1)
+                        ;
+                    if (!gclassToNameCounts.ContainsKey(n))
+                        gclassToNameCounts.Add(n, 0);
 
-                                        ))
-                    {
-                        // if the property name includes "gclass" or whatever, then ignore it as its useless to us
-                        if (prop.Name.StartsWith("GClass", StringComparison.OrdinalIgnoreCase)
-                            || prop.Name.StartsWith("GStruct", StringComparison.OrdinalIgnoreCase)
-                            || prop.Name.StartsWith("GInterface", StringComparison.OrdinalIgnoreCase)
-                            || prop.Name.StartsWith("Class", StringComparison.OrdinalIgnoreCase)
-                            )
-                            continue;
-
-                        var n = prop.FieldType.Name
-                            .Replace("[]", "")
-                            .Replace("`1", "")
-                            .Replace("`2", "")
-                            .Replace("`3", "")
-                            .Replace("&", "")
-                            .Replace(" ", "")
-                            + "." + char.ToUpper(prop.Name[0]) + prop.Name.Substring(1)
-                            ;
-                        if (!gclassToNameCounts.ContainsKey(n))
-                            gclassToNameCounts.Add(n, 0);
-
-                        gclassToNameCounts[n]++;
-                    }
-                }
-                catch
-                {
-
+                    gclassToNameCounts[n]++;
                 }
             }
         }
