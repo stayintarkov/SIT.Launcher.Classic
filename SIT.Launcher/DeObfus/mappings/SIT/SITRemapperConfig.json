@@ -231,6 +231,11 @@
       "RenameClassNameTo": "AIActionNodeAssigner",
       "IsClass": true,
       "HasMethodsStatic": [ "ActionsList", "CreateNode" ]
+    },
+    {
+      "RenameClassNameTo": "SpawnPoints",
+      "IsClass": true,
+      "HasMethodsStatic": [ "CreateFromScene" ]
     }
   ],
   "DefinedTypesToForcePublic": [
