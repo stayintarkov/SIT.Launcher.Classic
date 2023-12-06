@@ -52,20 +52,22 @@
       "RenameClassNameTo": "AirdropManagerAbstractClass",
       "HasMethods": [ "TakeAirdropPoint" ]
     },
-    {
-      "RenameClassNameTo": "AirdropLogicClass",
-      "OnlyRemapFirstFoundType": true,
-      "IsClass": true,
-      "HasFields": [],
-      "HasMethods": [ "Init", "InitStaticObject", "SetSyncObject", "ManualUpdate", "UpdateSyncObjectData", "TakeFromPool", "ReturnToPool" ]
-    },
+    // These two Airdrop classes are VERY similar
+    // Airdrops: Run this first
     {
       "RenameClassNameTo": "AirplaneLogicClass",
       "OnlyRemapFirstFoundType": true,
       "IsClass": true,
-      "MustBeGClass": true,
-      "HasFields": [],
-      "HasMethods": [ "Init", "InitStaticObject", "SetSyncObject", "ManualUpdate", "UpdateSyncObjectData", "TakeFromPool", "ReturnToPool" ]
+      "HasFields": [ "bool_0", "float_0", "float_11", "synchronizableObjectType_0" ],
+      "HasMethods": [ "CollisionEnter", "Init", "InitStaticObject", "SetSyncObject", "ManualUpdate", "UpdateSyncObjectData", "TakeFromPool", "ReturnToPool", "method_2" ]
+    },
+    // Airdrops: Run this second
+    {
+      "RenameClassNameTo": "AirdropLogicClass",
+      "OnlyRemapFirstFoundType": true,
+      "IsClass": true,
+      "HasFields": [ "airdropSynchronizableObject_0", "airdropSurfaceSet_0" ],
+      "HasMethods": [ "CollisionEnter", "Init", "InitStaticObject", "SetSyncObject", "ManualUpdate", "UpdateSyncObjectData", "TakeFromPool", "ReturnToPool", "method_6" ]
     },
     {
       "RenameClassNameTo": "QuestControllerClass",
