@@ -24,7 +24,8 @@ namespace SIT.Launcher.DeObfus
 {
 	internal static class Deobfuscator
 	{
-        public static List<string> UsedTypesByOtherDlls { get; } = new List<string>();
+
+        public static HashSet<string> UsedTypesByOtherDlls { get; } = new HashSet<string>();
 
         public delegate void LogHandler(string text);
         public static event LogHandler OnLog;
@@ -77,7 +78,7 @@ namespace SIT.Launcher.DeObfus
             De4DotDeobfuscate(assemblyPath, managedPath, cleanedDllPath, de4dotPath);
 
             if (doRemapping)
-                RemapKnownClasses(managedPath, cleanedDllPath);
+                RemapClasses(managedPath, cleanedDllPath);
             // Do final backup
             if (createBackup)
                 BackupExistingAssembly(assemblyPath);
@@ -217,6 +218,7 @@ namespace SIT.Launcher.DeObfus
                     assemblyDefinition.Write(cleanedDllPath);
                 }
             }
+
         }
 
         private static void OverwriteExistingAssembly(string assemblyPath, string cleanedDllPath, bool deleteCleaned = true)
@@ -239,7 +241,7 @@ namespace SIT.Launcher.DeObfus
         /// </summary>
         /// <param name="managedPath"></param>
         /// <param name="assemblyPath"></param>
-        private static void RemapKnownClasses(string managedPath, string assemblyPath)
+        private static void RemapClasses(string managedPath, string assemblyPath)
         {
             var resolver = new DefaultAssemblyResolver();
             resolver.AddSearchDirectory(managedPath);
@@ -248,9 +250,12 @@ namespace SIT.Launcher.DeObfus
 
             UsedTypesByOtherDlls.Clear();
 
-            var managedFiles = Directory.GetFiles(managedPath).Where(x => !x.Contains("AssemblyCSharp"));
+            var managedFiles = Directory.GetFiles(managedPath);
             foreach (var managedFile in managedFiles)
             {
+                if (managedFile.Contains("Assembly-CSharp", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
                 if (managedFile.Contains("DOTween", StringComparison.OrdinalIgnoreCase))
                     continue;
 
@@ -303,26 +308,24 @@ namespace SIT.Launcher.DeObfus
                             Log($"{fI.Name}");
 
                             AutoRemapperConfig autoRemapperConfig = JsonConvert.DeserializeObject<AutoRemapperConfig>(File.ReadAllText(fI.FullName));
-                            RemapByAutoConfiguration(oldAssembly, autoRemapperConfig);
-                            if (autoRemapperConfig.EnableAutomaticRemapping.HasValue && autoRemapperConfig.EnableAutomaticRemapping.Value)
-                            {
-                                var gclasses = oldAssembly.MainModule.GetTypes()
-                                .Where(x => x.Name.StartsWith("GClass") || x.Name.StartsWith("GStruct") || x.Name.StartsWith("Class") || x.Name.StartsWith("GInterface"))
-                                .OrderBy(x => x.Name)
-                                .ToArray();
-                                var gclassToNameCounts = new Dictionary<string, int>();
-                                foreach (var t in gclasses)
-                                {
-                                    RemapAutoDiscoverAndCountByBaseType(ref gclassToNameCounts, t);
-                                    RemapAutoDiscoverAndCountByInterfaces(ref gclassToNameCounts, t);
-                                }
-                                RenameClassesByCounts(oldAssembly, gclassToNameCounts);
-                            }
 
+                            // If the Remapper Config is set to use Auto Configuration. Run these two passes
+                            Log("Remapping by Auto Configuration: PASS 1");
+                            var renamedClasses = new HashSet<TypeDefinition>();
+                            RemapByAutoConfiguration(oldAssembly, autoRemapperConfig, ref renamedClasses, pass: 1);
+                            // A second pass finds unmapped GClass that use Interfaces that have been renamed
+                            Log("Remapping by Auto Configuration: PASS 2");
+                            RemapByAutoConfiguration(oldAssembly, autoRemapperConfig, ref renamedClasses, pass: 2);
+
+                            // Run the defined mapping in the configuration file
+                            Log("Remapping by Defined Configuration");
                             RemapByDefinedConfiguration(oldAssembly, autoRemapperConfig);
-                            RemapAddSPTUsecAndBear(oldAssembly, autoRemapperConfig);
-                            RemapPublicTypesMethodsAndFields(oldAssembly, autoRemapperConfig);
 
+                            // Add SPT Usec & Bear to the WildSpawnType Enums
+                            RemapAddSPTUsecAndBear(oldAssembly, autoRemapperConfig);
+
+                            // Remap the Public Types dependant on mapping
+                            RemapPublicTypesMethodsAndFields(oldAssembly, autoRemapperConfig);
 
                             Log(Environment.NewLine);
 
@@ -577,10 +580,17 @@ namespace SIT.Launcher.DeObfus
         /// </summary>
         /// <param name="assemblyDefinition"></param>
         /// <param name="autoRemapperConfig"></param>
-        private static void RemapByAutoConfiguration(AssemblyDefinition assemblyDefinition, AutoRemapperConfig autoRemapperConfig)
+        private static void RemapByAutoConfiguration(
+            AssemblyDefinition assemblyDefinition
+            , AutoRemapperConfig autoRemapperConfig
+            , ref HashSet<TypeDefinition> renamedClasses
+            , int pass = 1)
         {
             if (!autoRemapperConfig.EnableAutomaticRemapping.HasValue || !autoRemapperConfig.EnableAutomaticRemapping.Value)
                 return;
+
+            Log("Remapping by Auto Configuration");
+            Stopwatch stopwatch = Stopwatch.StartNew();
 
             var allTypes = assemblyDefinition.MainModule.GetTypes()
                 .Where(x => !x.Name.Contains("MainModule") && !x.Name.Contains("<M"))
@@ -594,20 +604,25 @@ namespace SIT.Launcher.DeObfus
                 // .Where(x => !x.Name.Contains("`"))
                 .OrderBy(x => x.Name)
                 .ToArray();
-            var gclassToNameCounts = new Dictionary<string, int>();
+            var gclassToNameCounts = new Dictionary<(string, TypeDefinition), int>();
 
-            foreach (var t in gclasses)
+            if (pass == 1)
             {
+                foreach (var t in gclasses)
+                {
+                    // --------------------------------------------------------
+                    // Renaming by the classes being in methods
+                    RemapAutoDiscoverAndCountByMethodParameters(ref gclassToNameCounts, t, allTypes);
 
-                // --------------------------------------------------------
-                // Renaming by the classes being in methods
-                RemapAutoDiscoverAndCountByMethodParameters(ref gclassToNameCounts, t, allTypes);
+                    // --------------------------------------------------------
+                    // Renaming by the classes being used as Members/Properties/Fields in other classes
+                    RemapAutoDiscoverAndCountByProperties(ref gclassToNameCounts, t, allTypes);
 
-                // --------------------------------------------------------
-                // Renaming by the classes being used as Members/Properties/Fields in other classes
-                RemapAutoDiscoverAndCountByProperties(ref gclassToNameCounts, t, allTypes);
+                    RemapAutoDiscoverAndCountByNameMethod(ref gclassToNameCounts, t);
 
-                RemapAutoDiscoverAndCountByNameMethod(ref gclassToNameCounts, t);
+
+                    //RemapAutoDiscoverAndCountByMethodBody(ref gclassToNameCounts, t, allTypes);
+                }
             }
 
             foreach (var t in gclasses)
@@ -620,7 +635,7 @@ namespace SIT.Launcher.DeObfus
 
             // ----------------------------------------------------------------------------------------
             // Rename classes based on discovery above
-            Dictionary<string, TypeDefinition> renamedClasses = RenameClassesByCounts(assemblyDefinition, gclassToNameCounts);
+            RenameClassesByCounts(assemblyDefinition, ref gclassToNameCounts, ref renamedClasses);
             // end of renaming based on discovery
             // ---------------------------------------------------------------------------------------
             
@@ -658,7 +673,7 @@ namespace SIT.Launcher.DeObfus
                     var oldClassName = nc.Name;
                     var newClassName = t.Name + "Sub" + indexOfControllerNest++;
                     nc.Name = newClassName;
-                    renamedClasses.Add(oldClassName, t);
+                    renamedClasses.Add(t);
                     Log($"Remapper: Auto Remapped {oldClassName} to {newClassName}");
                     //nc.Name = nc.Name.Replace("Class", newStartOfName).Substring(0, newStartOfName.Length) + indexOfControllerNest.ToString();
                 }
@@ -685,59 +700,59 @@ namespace SIT.Launcher.DeObfus
             {
                 foreach (var m in t.Methods.Where(x => x.Name.StartsWith("ReadEFT")))
                 {
-                    if (m.ReturnType.Name.StartsWith("GClass"))
+                    if (m.ReturnType.Name.StartsWith("GClass") || m.ReturnType.Name.StartsWith("Descriptor"))
                     {
                         var rT = assemblyDefinition.MainModule.GetTypes().FirstOrDefault(x => x == m.ReturnType);
                         if (rT != null)
                         {
                             var oldTypeName = rT.Name;
                             rT.Name = m.Name.Replace("ReadEFT", "");
-                            renamedClasses.Add(oldTypeName, rT);
+                            renamedClasses.Add(rT);
                             Log($"Remapper: Auto Remapped {oldTypeName} to {rT.Name}");
                         }
                     }
                 }
             }
 
-
-
             autoRemappedClassCount = renamedClasses.Count;
-            Log($"Remapper: Auto Remapped {autoRemappedClassCount} classes");
+            Log($"Remapper: Auto Remapped {autoRemappedClassCount} classes in {stopwatch.Elapsed}");
         }
 
-        private static Dictionary<string, TypeDefinition> RenameClassesByCounts(AssemblyDefinition assemblyDefinition, Dictionary<string, int> gclassToNameCounts)
+        private static void RenameClassesByCounts
+            (
+            AssemblyDefinition assemblyDefinition
+            , ref Dictionary<(string, TypeDefinition), int> gclassToNameCounts
+            , ref HashSet<TypeDefinition> renamedClasses
+            )
         {
             var orderedGClassCounts = gclassToNameCounts
             .Where(x => x.Value > 0)
-            // .Where(x => !x.Key.Contains("`"))
-            .Where(x => !x.Key.Contains("_"))
-            .Where(x => !x.Key.Contains("("))
-            .Where(x => !x.Key.Contains(")"))
-            .Where(x => !x.Key.Contains("<"))
-            .Where(x => !x.Key.Contains(".Value", StringComparison.OrdinalIgnoreCase))
-            .Where(x => !x.Key.Contains(".Attribute", StringComparison.OrdinalIgnoreCase))
-            .Where(x => !x.Key.Contains(".Instance", StringComparison.OrdinalIgnoreCase))
-            .Where(x => !x.Key.Contains(".Default", StringComparison.OrdinalIgnoreCase))
-            .Where(x => !x.Key.Contains(".Current", StringComparison.OrdinalIgnoreCase))
+            .Where(x => !x.Key.Item1.Contains("_"))
+            .Where(x => !x.Key.Item1.Contains("("))
+            .Where(x => !x.Key.Item1.Contains(")"))
+            .Where(x => !x.Key.Item1.Contains("<"))
+            .Where(x => !x.Key.Item1.Contains(".Value", StringComparison.OrdinalIgnoreCase))
+            .Where(x => !x.Key.Item1.Contains(".Attribute", StringComparison.OrdinalIgnoreCase))
+            .Where(x => !x.Key.Item1.Contains(".Instance", StringComparison.OrdinalIgnoreCase))
+            .Where(x => !x.Key.Item1.Contains(".Default", StringComparison.OrdinalIgnoreCase))
+            .Where(x => !x.Key.Item1.Contains(".Current", StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(x => x.Value)
             .ToArray();
 
-#if DEBUG
-
-            if (gclassToNameCounts.Any(z => z.Key.Contains("GClass2103")))
-            {
-
-            }
-#endif
-
-            int counter = 0;
             var usedNamesCount = new Dictionary<string, int>();
-            var renamedClasses = new Dictionary<string, TypeDefinition>();
             foreach (var g in orderedGClassCounts)
             {
-                var keySplit = g.Key.Split('.');
+                var keySplit = g.Key.Item1.Split('.');
                 var className = keySplit[0];
                 var classNameNew = keySplit[1];
+
+#if DEBUG
+
+                if (className.Equals("GClass2779"))
+                {
+
+                }
+#endif 
 
                 if (classNameNew.Length <= 3)
                     continue;
@@ -748,7 +763,7 @@ namespace SIT.Launcher.DeObfus
                     || classNameNew.StartsWith("_", StringComparison.OrdinalIgnoreCase)
                     || classNameNew.StartsWith("<", StringComparison.OrdinalIgnoreCase)
                     || Assembly.GetAssembly(typeof(Attribute)).GetTypes().Any(x => x.Name.StartsWith(classNameNew, StringComparison.OrdinalIgnoreCase))
-                    || assemblyDefinition.MainModule.GetTypes().Any(x => x.Name.Equals(classNameNew, StringComparison.OrdinalIgnoreCase))
+                    //|| assemblyDefinition.MainModule.GetTypes().Any(x => x.Name.Equals(classNameNew, StringComparison.OrdinalIgnoreCase))
                     )
                     continue;
 
@@ -756,68 +771,111 @@ namespace SIT.Launcher.DeObfus
                 if (t == null)
                     continue;
 
+                // Follow standard naming convention, PascalCase all class names
+                var ultimateGoalName = char.ToUpper(classNameNew[0]) + classNameNew.Substring(1);
+                // Following BSG naming convention, begin Abstract classes names with "Abstract"
+                if (t.IsAbstract && !t.IsInterface)
+                    ultimateGoalName = "Abstract" + ultimateGoalName;
+                // Follow standard naming convention, Interface names begin with "I"
+                else if (t.IsInterface)
+                    ultimateGoalName = "I" + ultimateGoalName;
+
+                if (string.IsNullOrEmpty(t.Namespace)
+                    && 
+                     (
+                        assemblyDefinition.MainModule.GetTypes().Count(x => x.Name.Equals(ultimateGoalName, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(x.Namespace)) > 0
+                        ||
+                        renamedClasses.Count(x => x.Name.Equals(ultimateGoalName) && !string.IsNullOrEmpty(x.Namespace)) > 0
+                        //|| 
+                        //UsedTypesByOtherDlls.Count(x => x.Equals(ultimateGoalName)) > 0
+                     )
+                    )
+                    ultimateGoalName = "G" + ultimateGoalName;
+
+#if DEBUG
+                if (ultimateGoalName == "Stamina")
+                {
+
+                }
+
+                if (ultimateGoalName == "Health")
+                {
+
+                }
+#endif
+                // If the class is nested in another class
+                // Use the Class Name (this will include namespace "." too)
+                if (t.FullName.Contains("/"))
+                {
+                    t.Resolve();
+                    if (t.DeclaringType.Properties.Any(x => x.Name.Equals(ultimateGoalName)) || t.DeclaringType.Fields.Any(x => x.Name.Equals(ultimateGoalName)))
+                    {
+                        ultimateGoalName = t.FullName.Split('/')[0] + ultimateGoalName;
+                    }
+                }
+
+                // If the new name contains a "." (namespace), then remove the namespace from the new name
+                if (ultimateGoalName.Contains("."))
+                {
+                    var indexOfLastDot = ultimateGoalName.LastIndexOf(".");
+                    if (indexOfLastDot != -1)
+                    {
+                        ultimateGoalName = ultimateGoalName.Substring(indexOfLastDot + 1, ultimateGoalName.Length - indexOfLastDot - 1);
+                    }
+                }
+
+                ultimateGoalName = ultimateGoalName.Replace(".", "");
+
+                // Do a check. You cannot have two classes with the same name.
+                var countOfExisting = assemblyDefinition.MainModule.GetTypes().Count(x => x.Name.Equals(ultimateGoalName, StringComparison.OrdinalIgnoreCase));
+                countOfExisting += renamedClasses.Count(x => x.Name.Equals(ultimateGoalName));
+                countOfExisting += UsedTypesByOtherDlls.Count(x => x.Equals(ultimateGoalName));
+                if (countOfExisting > 0)
+                {
+                    countOfExisting++;
+                    ultimateGoalName += countOfExisting.ToString();
+                }
+
                 // Store the old name
                 var oldClassName = t.Name;
 
-                // Follow standard naming convention, PascalCase all class names
-                var newClassName = char.ToUpper(classNameNew[0]) + classNameNew.Substring(1);
-
-                // The class has already been renamed, ignore
-                if (renamedClasses.ContainsKey(oldClassName))
+                if (UsedTypesByOtherDlls.Contains(ultimateGoalName))
                     continue;
+
+                ultimateGoalName = ultimateGoalName.Replace("`1", "");
+                ultimateGoalName = ultimateGoalName.Replace("`2", "");
+                ultimateGoalName = ultimateGoalName.Replace("`3", "");
+                ultimateGoalName = ultimateGoalName.Replace("`4", "");
+
+                if (Assembly.GetAssembly(typeof(Attribute)).GetTypes().Any(x => x.Name.Contains(ultimateGoalName, StringComparison.OrdinalIgnoreCase)))
+                    continue;
+
 
                 // The new class name has already been used, ignore
-                if (renamedClasses.Values.Any(x => x.Name == newClassName && x.Namespace == t.Namespace))
+                if (renamedClasses.Any(x => x.Name.Equals(ultimateGoalName)))
                     continue;
 
-                if (UsedTypesByOtherDlls.Contains(newClassName))
-                    continue;
-
-                // Following BSG naming convention, begin Abstract classes names with "Abstract"
-                if (t.IsAbstract && !t.IsInterface)
-                    newClassName = "Abstract" + newClassName;
-                // Follow standard naming convention, Interface names begin with "I"
-                else if (t.IsInterface)
-                    newClassName = "I" + newClassName;
-
-                newClassName = newClassName.Replace("`1", "");
-                newClassName = newClassName.Replace("`2", "");
-                newClassName = newClassName.Replace("`3", "");
-                newClassName = newClassName.Replace("`4", "");
-
-                if (!usedNamesCount.ContainsKey(newClassName))
-                    usedNamesCount.Add(newClassName, 0);
-
-                usedNamesCount[newClassName]++;
-
-                if (usedNamesCount[newClassName] > 1)
-                    newClassName += usedNamesCount[newClassName];
-
-                if (assemblyDefinition.MainModule.GetTypes().Any(x => x.Name.Equals(newClassName, StringComparison.OrdinalIgnoreCase)))
+#if DEBUG
+                if (ultimateGoalName.Equals("JsonConverter2"))
                 {
-                    newClassName += counter;
+
                 }
-                else if (assemblyDefinition.MainModule.GetTypes().Any(x => x.FullName.Contains($"/{newClassName}", StringComparison.OrdinalIgnoreCase)))
+#endif
+                if (renamedClasses.Add(t))
                 {
-                    newClassName += counter;
-                    //continue;
+                    Log($"Remapper: Auto Remapped {oldClassName} to {ultimateGoalName}");
+                    t.Name = ultimateGoalName;
                 }
-
-                if (Assembly.GetAssembly(typeof(Attribute)).GetTypes().Any(x => x.Name.StartsWith(newClassName, StringComparison.OrdinalIgnoreCase)))
-                    continue;
-
-                t.Name = newClassName;
-              
-                // Add the oldClassName as the Key with the newClassName as the Value
-                renamedClasses.Add(oldClassName, t);
-                Log($"Remapper: Auto Remapped {oldClassName} to {newClassName}");
+                else
+                {
+                    Log($"Remapper (ERROR): Unable to Auto Remap {oldClassName} to {ultimateGoalName}. {ultimateGoalName} has already been used!");
+                }
 
             }
 
-            return renamedClasses;
         }
 
-        private static void RemapAutoDiscoverAndCountByProperties(ref Dictionary<string, int> gclassToNameCounts, TypeDefinition t, IEnumerable<TypeDefinition> allTypes)
+        private static void RemapAutoDiscoverAndCountByProperties(ref Dictionary<(string, TypeDefinition), int> gclassToNameCounts, TypeDefinition t, IEnumerable<TypeDefinition> allTypes)
         {
             foreach (var other in allTypes.Where(x => x.HasProperties))
             {
@@ -845,17 +903,17 @@ namespace SIT.Launcher.DeObfus
                         .Replace(" ", "")
                         + "." + char.ToUpper(prop.Name[0]) + prop.Name.Substring(1)
                         ;
-                    if (!gclassToNameCounts.ContainsKey(n))
-                        gclassToNameCounts.Add(n, 0);
+                    if (!gclassToNameCounts.ContainsKey((n, t)))
+                        gclassToNameCounts.Add((n, t), 0);
 
-                    gclassToNameCounts[n]++;
+                    gclassToNameCounts[(n, t)]++;
                 }
             }
 
             RemapAutoDiscoverAndCountByFields(ref gclassToNameCounts, t, allTypes);
         }
 
-        private static void RemapAutoDiscoverAndCountByFields(ref Dictionary<string, int> gclassToNameCounts, TypeDefinition t, IEnumerable<TypeDefinition> allTypes)
+        private static void RemapAutoDiscoverAndCountByFields(ref Dictionary<(string, TypeDefinition), int> gclassToNameCounts, TypeDefinition t, IEnumerable<TypeDefinition> allTypes)
         {
             foreach (var other in allTypes.Where(x => x.HasFields))
             {
@@ -881,15 +939,15 @@ namespace SIT.Launcher.DeObfus
                         .Replace(" ", "")
                         + "." + char.ToUpper(prop.Name[0]) + prop.Name.Substring(1)
                         ;
-                    if (!gclassToNameCounts.ContainsKey(n))
-                        gclassToNameCounts.Add(n, 0);
+                    if (!gclassToNameCounts.ContainsKey((n, t)))
+                        gclassToNameCounts.Add((n, t), 0);
 
-                    gclassToNameCounts[n]++;
+                    gclassToNameCounts[(n, t)]++;
                 }
             }
         }
 
-        private static void RemapAutoDiscoverAndCountByNameMethod(ref Dictionary<string, int> gclassToNameCounts, TypeDefinition t)
+        private static void RemapAutoDiscoverAndCountByNameMethod(ref Dictionary<(string, TypeDefinition), int> gclassToNameCounts, TypeDefinition t)
         {
             try
             {
@@ -913,84 +971,133 @@ namespace SIT.Launcher.DeObfus
                         return;
 
                     var matchingGClassName = t.Name + "." + instructionString.Operand.ToString().Replace(" ", "").Replace("&", "");
-                    if (!gclassToNameCounts.ContainsKey(matchingGClassName))
-                        gclassToNameCounts.Add(matchingGClassName, 0);
+                    if (!gclassToNameCounts.ContainsKey((matchingGClassName, t)))
+                        gclassToNameCounts.Add((matchingGClassName, t), 0);
 
-                    gclassToNameCounts[matchingGClassName]++;
+                    gclassToNameCounts[(matchingGClassName, t)]++;
                 }
             }
             catch { }
         }
 
-        private static void RemapAutoDiscoverAndCountByMethodParameters(ref Dictionary<string, int> gclassToNameCounts, TypeDefinition t, IEnumerable<TypeDefinition> otherTypes)
+        private static void RemapAutoDiscoverAndCountByMethodParameters(ref Dictionary<(string, TypeDefinition), int> gclassToNameCounts, TypeDefinition t, IEnumerable<TypeDefinition> otherTypes)
         {
-            try
+            foreach (var other in otherTypes)
             {
-#if DEBUG
-                if(t.Name == "GStruct143")
+                if (!other.HasMethods || other.Methods == null)
+                    continue;
+
+                if (other.FullName.Contains("FirearmController"))
                 {
 
                 }
-                if (t.Name.Contains("/"))
+
+                foreach (var method in other.Methods)
                 {
-
-                }
-#endif 
-
-
-                foreach (var other in otherTypes)
-                {
-                    if (!other.HasMethods || other.Methods == null)
+                    if (!method.HasBody)
                         continue;
 
-                    if (other.FullName.Contains("FirearmController")) 
-                    { 
+                    if (!method.Parameters.Any())
+                        continue;
 
-                    }
-
-                    foreach (var method in other.Methods)
+                    if (method.Name == "SetLightsState")
                     {
-                        if (!method.HasBody)
-                            continue;
 
-                        if (!method.Parameters.Any())
-                            continue;
-
-                        if(method.Name == "SetLightsState")
-                        {
-
-                        }
-
-                        foreach (var parameter in method.Parameters
-                            .Where(x => x.ParameterType.Name.Replace("[]","").Replace("`1", "") == t.Name)
-                            .Where(x => x.ParameterType.Name.Length > 3)
-                            )
-                        {
-                            
-
-                            var n = 
-                            // Key Value is Built like so. KEY.VALUE
-                            parameter.ParameterType.Name
-                            .Replace("[]", "")
-                            .Replace("`1", "")
-                            .Replace("`2", "")
-                            .Replace("`3", "")
-                            .Replace("&", "")
-                            .Replace(" ", "")
-                            + "." 
-                            + char.ToUpper(parameter.Name[0]) + parameter.Name.Substring(1)
-                            ;
-                            if (!gclassToNameCounts.ContainsKey(n))
-                                gclassToNameCounts.Add(n, 0);
-
-                            gclassToNameCounts[n]++;
-                        }
                     }
 
+                    foreach (var parameter in method.Parameters
+                        .Where(x => x.ParameterType.Name.Replace("[]", "").Replace("`1", "") == t.Name)
+                        .Where(x => x.ParameterType.Name.Length > 3)
+                        )
+                    {
+
+
+                        var n =
+                        // Key Value is Built like so. KEY.VALUE
+                        parameter.ParameterType.Name
+                        .Replace("[]", "")
+                        .Replace("`1", "")
+                        .Replace("`2", "")
+                        .Replace("`3", "")
+                        .Replace("&", "")
+                        .Replace(" ", "")
+                        + "."
+                        + char.ToUpper(parameter.Name[0]) + parameter.Name.Substring(1)
+                        ;
+                        if (!gclassToNameCounts.ContainsKey((n, t)))
+                            gclassToNameCounts.Add((n, t), 0);
+
+                        gclassToNameCounts[(n, t)]++;
+                    }
                 }
+
             }
-            catch { }
         }
+
+//        private static void RemapAutoDiscoverAndCountByMethodBody(ref Dictionary<(string, TypeDefinition), int> gclassToNameCounts, TypeDefinition t, IEnumerable<TypeDefinition> otherTypes)
+//        {
+//            foreach (var other in otherTypes)
+//            {
+//                if (!other.HasMethods || other.Methods == null)
+//                    continue;
+
+//                foreach (var method in other.Methods)
+//                {
+//                    if (!method.HasBody)
+//                        continue;
+
+//                    if (!method.Parameters.Any())
+//                        continue;
+
+//                    var methodBody = method.Body;
+//                    if (methodBody == null)
+//                        continue;
+
+//#if DEBUG
+//                    //if (other.Name.Contains("BaseLocalGame", StringComparison.OrdinalIgnoreCase))
+//                    //{
+//                    //    if(method.Name.Contains("method_4", StringComparison.OrdinalIgnoreCase))
+//                    //    {
+//                    //        foreach (var instruction in methodBody.Instructions)
+//                    //        {
+//                    //            Debug.WriteLine($"{instruction.OpCode} \"{instruction.Operand}\"");
+//                    //        }
+//                    //    }
+//                    //}
+
+                    
+
+//#endif
+
+
+//                    foreach (var parameter in method.Parameters
+//                        .Where(x => x.ParameterType.Name.Replace("[]", "").Replace("`1", "") == t.Name)
+//                        .Where(x => x.ParameterType.Name.Length > 3)
+//                        )
+//                    {
+
+
+//                        var n =
+//                        // Key Value is Built like so. KEY.VALUE
+//                        parameter.ParameterType.Name
+//                        .Replace("[]", "")
+//                        .Replace("`1", "")
+//                        .Replace("`2", "")
+//                        .Replace("`3", "")
+//                        .Replace("&", "")
+//                        .Replace(" ", "")
+//                        + "."
+//                        + char.ToUpper(parameter.Name[0]) + parameter.Name.Substring(1)
+//                        ;
+//                        if (!gclassToNameCounts.ContainsKey((n, t)))
+//                            gclassToNameCounts.Add((n, t), 0);
+
+//                        gclassToNameCounts[(n, t)]++;
+//                    }
+//                }
+
+//            }
+//        }
 
         /// <summary>
         /// This will likely only work on a 2nd pass
@@ -998,17 +1105,8 @@ namespace SIT.Launcher.DeObfus
         /// <param name="gclassToNameCounts"></param>
         /// <param name="t"></param>
         /// <param name="allTypes"></param>
-        private static void RemapAutoDiscoverAndCountByBaseType(ref Dictionary<string, int> gclassToNameCounts, TypeDefinition t)
+        private static void RemapAutoDiscoverAndCountByBaseType(ref Dictionary<(string, TypeDefinition), int> gclassToNameCounts, TypeDefinition t)
         {
-            try
-            {
-
-#if DEBUG
-    if(t.Name.Contains("GClass2103"))
-                {
-
-                }
-#endif
 
                 if (t.BaseType == null)
                     return;
@@ -1037,26 +1135,15 @@ namespace SIT.Launcher.DeObfus
                 // + (t.BaseType.Name.Contains("`1") ? "`1" : "") // cater for `1
                 // + (t.BaseType.Name.Contains("`2") ? "`2" : "") // cater for `2
                 ;
-                if (!gclassToNameCounts.ContainsKey(n))
-                    gclassToNameCounts.Add(n, 0);
+                if (!gclassToNameCounts.ContainsKey((n, t)))
+                    gclassToNameCounts.Add((n, t), 0);
 
-                gclassToNameCounts[n]++;
-                 
-            }
-            catch { }
+                gclassToNameCounts[(n, t)]++;
         }
 
-        private static void RemapAutoDiscoverAndCountByInterfaces(ref Dictionary<string, int> gclassToNameCounts, TypeDefinition t)
+        private static void RemapAutoDiscoverAndCountByInterfaces(ref Dictionary<(string, TypeDefinition), int> gclassToNameCounts, TypeDefinition t)
         {
-            try
-            {
-
-#if DEBUG
-                if (t.Name.Contains("GClass2103"))
-                {
-
-                }
-#endif
+         
                 if (t.Interfaces == null)
                     return;
 
@@ -1089,14 +1176,13 @@ namespace SIT.Launcher.DeObfus
 
                     + char.ToUpper(interf.InterfaceType.Name[1]) + interf.InterfaceType.Name.Substring(2)
                     ;
-                    if (!gclassToNameCounts.ContainsKey(n))
-                        gclassToNameCounts.Add(n, 0);
 
-                    gclassToNameCounts[n]++;
+                    if (!gclassToNameCounts.ContainsKey((n, t)))
+                        gclassToNameCounts.Add((n, t), 0);
+
+                    gclassToNameCounts[(n, t)]++;
 
                 }
-            }
-            catch { }
         }
 
         private static void RemapByDefinedConfiguration(AssemblyDefinition assembly, AutoRemapperConfig autoRemapperConfig)
@@ -1194,6 +1280,13 @@ namespace SIT.Launcher.DeObfus
 
         private static List<TypeDefinition> DiscoverTypeByMapping(AssemblyDefinition assembly, AutoRemapperInfo config)
         {
+
+#if DEBUG
+            if(config.RenameClassNameTo == "AirplaneLogicClass")
+            {
+
+            }
+#endif 
             var findTypes
                                     = assembly
                                     .MainModule
