@@ -71,7 +71,6 @@
     {
       "RenameClassNameTo": "FilterCustomizationClass",
       "IsClass": true,
-      "MustBeGClass": true,
       "HasMethods": [ "FilterCustomization" ]
     },
     {
@@ -236,6 +235,45 @@
       "RenameClassNameTo": "SpawnPoints",
       "IsClass": true,
       "HasMethodsStatic": [ "CreateFromScene" ]
+    },
+    {
+      "RenameClassNameTo": "BotSpawnWave",
+      "IsClass": true,
+      "HasFields": [ "BotsCount", "Side", "SpawnAreaName", "Time", "WildSpawnType", "IsPlayers", "Difficulty", "ChanceGroup" ]
+    },
+    {
+      "RenameClassNameTo": "BotCreator",
+      "IsClass": true,
+      "HasFields": [ "BotsLoading", "StartProfilesLoaded", "BundlesLoading" ],
+      "HasMethods": [ "ActivateBot", "GenerateProfile" ]
+    },
+    {
+      "RenameClassNameTo": "LightsStates",
+      "IsStruct": true,
+      "HasFields": [ "Id", "IsActive", "LightMode" ],
+      "HasMethodsStatic": [ "Serialize" ]
+    },
+    {
+      "RenameClassNameTo": "ScopeStates",
+      "IsStruct": true,
+      "HasFields": [ "Id", "ScopeMode", "ScopeIndexInsideSight", "ScopeCalibrationIndex" ],
+      "HasMethodsStatic": [ "IsScopeStatesDifferent" ]
+    },
+    {
+      "RenameClassNameTo": "StashGrid",
+      "IsClass": true,
+      "HasFields": [ "CanStretchVertically", "ParentItem" ],
+      "HasMethods": [ "FindLocationForItem", "CheckCompatibility", "CanReplace", "Resize", "FindLocationsForSwap" ]
+    },
+    {
+      "RenameClassNameTo": "ServerBotSettingsClass",
+      "IsClass": true,
+      "HasMethodsStatic": [ "CountAsBossForStatistics" ]
+    },
+    {
+      "RenameClassNameTo": "ServerBotSettingsValuesClass",
+      "IsClass": true,
+      "HasFields": [ "CountAsBossForStatistics", "IsBoss", "IsFollower" ]
     }
   ],
   "DefinedTypesToForcePublic": [

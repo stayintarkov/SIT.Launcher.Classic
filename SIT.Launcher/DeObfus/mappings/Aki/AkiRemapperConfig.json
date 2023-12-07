@@ -192,7 +192,14 @@
       "RenameClassNameTo": "IBotController",
       "IsInterface": true,
       "HasFields": [ "Position", "GoalEnemy", "Settings", "BossToFollow", "Covers", "Id", "IsDamaged", "Brain" ]
-
+    },
+    {
+      "RenameClassNameTo": "ISession",
+      "IsInterface": true,
+      "HasFields": [  ],
+      "HasEvents": [ "InventoryErrorHappened", "InventoryWarningHappened" ],
+      "HasMethods": [ "GetProfiles", "SetMainProfile", "RagfairAddOffer", "RagfairRemoveOffer", "RagfairRenewOffer", "RagfairPurchaseOffers", "RagfairGetPrices" ],
+      "OnlyRemapFirstFoundType": true
     },
     {
       "RenameClassNameTo": "LayerMaskClass",
