@@ -929,19 +929,14 @@ namespace SIT.Launcher
             //Deobfuscator.OnLog += OnDeobfuscateLog;
             await Dispatcher.InvokeAsync(() =>
             {
-                txtDeobfuscateLog.Text = String.Empty;
-                OnDeobfuscateLog("--------------------------------------------------------------------------");
-                OnDeobfuscateLog("Deobfuscate started!" + Environment.NewLine);
                 btnDeobfuscate.IsEnabled = false;
                 btnDeobfuscateOnly.IsEnabled = false;
             });
+            loadingDialog.Update("Deobfuscating", "Deobfuscating");
+
             var result = await Deobfuscator.DeobfuscateAsync(exeLocation, createBackup, overwriteExisting, doRemapping, this);
             await Dispatcher.InvokeAsync(() =>
             {
-                //foreach (var logg in Deobfuscator.Logged)
-                //{
-                //    txtDeobfuscateLog.Text += logg + Environment.NewLine;
-                //}
                 btnDeobfuscate.IsEnabled = true;
                 btnDeobfuscateOnly.IsEnabled = true;
             });
@@ -952,6 +947,10 @@ namespace SIT.Launcher
 
             await File.WriteAllTextAsync(deobfuscateLogPath, txtDeobfuscateLog.Text);
             //Deobfuscator.OnLog -= OnDeobfuscateLog;
+            txtDeobfuscateLog.ScrollToEnd();
+
+            loadingDialog.Update("", "");
+
             return result;
         }
 
@@ -1048,7 +1047,7 @@ namespace SIT.Launcher
             await Dispatcher.InvokeAsync(() =>
             {
                 txtDeobfuscateLog.Text += message + Environment.NewLine;
-                txtDeobfuscateLog.ScrollToEnd();
+                //txtDeobfuscateLog.ScrollToEnd();
             });
         }
 

@@ -27,29 +27,16 @@ namespace SIT.Launcher.DeObfus
 
         public static HashSet<string> UsedTypesByOtherDlls { get; } = new HashSet<string>();
 
-        public delegate void LogHandler(string text);
-        public static event LogHandler OnLog;
-        public static List<string> Logged = new List<string>();
+        public static List<string> Logged { get; } = new List<string>();
 
-        private static ILogger NestedLogger { get; set; }
+        private static ILogger Logger { get; set; }
 
         internal static void Log(string text)
         {
-            if (NestedLogger != null) 
+            if (Logger != null) 
             {
-                NestedLogger.Log(text);
+                Logger.Log(text);
                 return;
-            }
-
-            if (OnLog != null)
-            {
-                OnLog(text);
-            }
-            else
-            {
-                Debug.WriteLine(text);
-                Console.WriteLine(text);
-                Logged.Add(text);
             }
         }
 
@@ -635,7 +622,7 @@ namespace SIT.Launcher.DeObfus
 
             // ----------------------------------------------------------------------------------------
             // Rename classes based on discovery above
-            RenameClassesByCounts(assemblyDefinition, ref gclassToNameCounts, ref renamedClasses);
+            RenameClassesByScore(assemblyDefinition, ref gclassToNameCounts, ref renamedClasses);
             // end of renaming based on discovery
             // ---------------------------------------------------------------------------------------
             
@@ -700,7 +687,7 @@ namespace SIT.Launcher.DeObfus
             {
                 foreach (var m in t.Methods.Where(x => x.Name.StartsWith("ReadEFT")))
                 {
-                    if (m.ReturnType.Name.StartsWith("GClass") || m.ReturnType.Name.StartsWith("Descriptor"))
+                    //if (m.ReturnType.Name.StartsWith("GClass") || m.ReturnType.Name.StartsWith("Descriptor"))
                     {
                         var rT = assemblyDefinition.MainModule.GetTypes().FirstOrDefault(x => x == m.ReturnType);
                         if (rT != null)
@@ -716,9 +703,24 @@ namespace SIT.Launcher.DeObfus
 
             autoRemappedClassCount = renamedClasses.Count;
             Log($"Remapper: Auto Remapped {autoRemappedClassCount} classes in {stopwatch.Elapsed}");
+
+            RemapBrokenArrayNames(assemblyDefinition);
         }
 
-        private static void RenameClassesByCounts
+        private static void RemapBrokenArrayNames(AssemblyDefinition assemblyDefinition)
+        {
+            var brokenArrayTypes = assemblyDefinition.MainModule.GetTypes().Where(x => x.Name.EndsWith("[]"));
+
+            if (!brokenArrayTypes.Any())
+                return;
+
+            foreach (var t in brokenArrayTypes)
+            {
+                t.Name = t.Name.Replace("[]", string.Empty);
+            }
+        }
+
+        private static void RenameClassesByScore
             (
             AssemblyDefinition assemblyDefinition
             , ref Dictionary<(string, TypeDefinition), int> gclassToNameCounts
@@ -737,6 +739,7 @@ namespace SIT.Launcher.DeObfus
             .Where(x => !x.Key.Item1.Contains(".Default", StringComparison.OrdinalIgnoreCase))
             .Where(x => !x.Key.Item1.Contains(".Current", StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(x => x.Value)
+            //.ThenByDescending(x => x.Key.Item1.Length)
             .ToArray();
 
             var usedNamesCount = new Dictionary<string, int>();
@@ -745,14 +748,7 @@ namespace SIT.Launcher.DeObfus
                 var keySplit = g.Key.Item1.Split('.');
                 var className = keySplit[0];
                 var classNameNew = keySplit[1];
-
-#if DEBUG
-
-                if (className.Equals("GClass2779"))
-                {
-
-                }
-#endif 
+                var value = g.Value;
 
                 if (classNameNew.Length <= 3)
                     continue;
@@ -762,113 +758,145 @@ namespace SIT.Launcher.DeObfus
                     || classNameNew.StartsWith("Instance", StringComparison.OrdinalIgnoreCase)
                     || classNameNew.StartsWith("_", StringComparison.OrdinalIgnoreCase)
                     || classNameNew.StartsWith("<", StringComparison.OrdinalIgnoreCase)
-                    || Assembly.GetAssembly(typeof(Attribute)).GetTypes().Any(x => x.Name.StartsWith(classNameNew, StringComparison.OrdinalIgnoreCase))
-                    //|| assemblyDefinition.MainModule.GetTypes().Any(x => x.Name.Equals(classNameNew, StringComparison.OrdinalIgnoreCase))
+                    //|| Assembly.GetAssembly(typeof(Attribute)).GetTypes().Any(x => x.Name.StartsWith(classNameNew, StringComparison.OrdinalIgnoreCase))
                     )
+                {
+                    Log($"Remapper (ERROR): Unable to Auto Remap {className} to {classNameNew}. {classNameNew} has an exception value!");
                     continue;
+                }
 
                 var t = assemblyDefinition.MainModule.GetTypes().FirstOrDefault(x => x.Name == className);
                 if (t == null)
+                {
+                    Log($"Remapper (ERROR): Unable to Auto Remap {className} to {classNameNew}. {className} could not be found!");
                     continue;
+                }
+
 
                 // Follow standard naming convention, PascalCase all class names
-                var ultimateGoalName = char.ToUpper(classNameNew[0]) + classNameNew.Substring(1);
+                var desiredName = char.ToUpper(classNameNew[0]) + classNameNew.Substring(1);
                 // Following BSG naming convention, begin Abstract classes names with "Abstract"
                 if (t.IsAbstract && !t.IsInterface)
-                    ultimateGoalName = "Abstract" + ultimateGoalName;
+                    desiredName = "Abstract" + desiredName;
                 // Follow standard naming convention, Interface names begin with "I"
                 else if (t.IsInterface)
-                    ultimateGoalName = "I" + ultimateGoalName;
+                    desiredName = "I" + desiredName;
 
                 if (string.IsNullOrEmpty(t.Namespace)
                     && 
                      (
-                        assemblyDefinition.MainModule.GetTypes().Count(x => x.Name.Equals(ultimateGoalName, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(x.Namespace)) > 0
+                        assemblyDefinition.MainModule.GetTypes().Count(x => x.Name.Equals(desiredName, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(x.Namespace)) > 0
                         ||
-                        renamedClasses.Count(x => x.Name.Equals(ultimateGoalName) && !string.IsNullOrEmpty(x.Namespace)) > 0
+                        renamedClasses.Count(x => x.Name.Equals(desiredName) && !string.IsNullOrEmpty(x.Namespace)) > 0
                         //|| 
                         //UsedTypesByOtherDlls.Count(x => x.Equals(ultimateGoalName)) > 0
                      )
                     )
-                    ultimateGoalName = "G" + ultimateGoalName;
+                    desiredName = "G" + desiredName;
 
-#if DEBUG
-                if (ultimateGoalName == "Stamina")
-                {
-
-                }
-
-                if (ultimateGoalName == "Health")
-                {
-
-                }
-#endif
                 // If the class is nested in another class
                 // Use the Class Name (this will include namespace "." too)
                 if (t.FullName.Contains("/"))
                 {
                     t.Resolve();
-                    if (t.DeclaringType.Properties.Any(x => x.Name.Equals(ultimateGoalName)) || t.DeclaringType.Fields.Any(x => x.Name.Equals(ultimateGoalName)))
+                    if (t.DeclaringType.Properties.Any(x => x.Name.Equals(desiredName)) || t.DeclaringType.Fields.Any(x => x.Name.Equals(desiredName)))
                     {
-                        ultimateGoalName = t.FullName.Split('/')[0] + ultimateGoalName;
+                        desiredName = t.FullName.Split('/')[0] + desiredName;
                     }
                 }
 
                 // If the new name contains a "." (namespace), then remove the namespace from the new name
-                if (ultimateGoalName.Contains("."))
+                if (desiredName.Contains("."))
                 {
-                    var indexOfLastDot = ultimateGoalName.LastIndexOf(".");
+                    var indexOfLastDot = desiredName.LastIndexOf(".");
                     if (indexOfLastDot != -1)
                     {
-                        ultimateGoalName = ultimateGoalName.Substring(indexOfLastDot + 1, ultimateGoalName.Length - indexOfLastDot - 1);
+                        desiredName = desiredName.Substring(indexOfLastDot + 1, desiredName.Length - indexOfLastDot - 1);
                     }
                 }
 
-                ultimateGoalName = ultimateGoalName.Replace(".", "");
+                desiredName = desiredName.Replace(".", "");
 
                 // Do a check. You cannot have two classes with the same name.
-                var countOfExisting = assemblyDefinition.MainModule.GetTypes().Count(x => x.Name.Equals(ultimateGoalName, StringComparison.OrdinalIgnoreCase));
-                countOfExisting += renamedClasses.Count(x => x.Name.Equals(ultimateGoalName));
-                countOfExisting += UsedTypesByOtherDlls.Count(x => x.Equals(ultimateGoalName));
-                if (countOfExisting > 0)
+                var countOfExisting = 0;
+                var countOfMainModule = assemblyDefinition.MainModule.GetTypes().Count(x => x.Name.Equals(desiredName, StringComparison.OrdinalIgnoreCase));
+                var countOfOtherDllTypes = UsedTypesByOtherDlls.Count(x => x.Equals(desiredName));
+                if (countOfMainModule > 0 || countOfOtherDllTypes > 0)
                 {
-                    countOfExisting++;
-                    ultimateGoalName += countOfExisting.ToString();
+                    countOfExisting = countOfMainModule + countOfOtherDllTypes;
                 }
+                var loopName = desiredName;
+                if (UsedTypesByOtherDlls.Any(x => x.Equals(loopName)))
+                {
+                    while (UsedTypesByOtherDlls.Any(x => x.Equals(loopName)))
+                    {
+                        countOfExisting++;
+                        loopName = desiredName + countOfExisting.ToString();
+                    }
+                }
+                if (renamedClasses.Any(x => x.Name.Equals(loopName)))
+                {
+                    while (renamedClasses.Any(x => x.Name.Equals(loopName)))
+                    {
+                        countOfExisting++;
+                        loopName = desiredName + countOfExisting.ToString();
+                    }
+                }
+                desiredName = loopName;
 
                 // Store the old name
                 var oldClassName = t.Name;
 
-                if (UsedTypesByOtherDlls.Contains(ultimateGoalName))
+                desiredName = desiredName.Replace("`1", "");
+                desiredName = desiredName.Replace("`2", "");
+                desiredName = desiredName.Replace("`3", "");
+                desiredName = desiredName.Replace("`4", "");
+
+                if (string.IsNullOrEmpty(t.Namespace)
+                    &&
+                    Assembly.GetAssembly(typeof(Attribute))
+                    .GetTypes()
+                    .Any(x => x.Name.Contains(desiredName, StringComparison.OrdinalIgnoreCase))
+                    )
+                {
+                    //    //t.Namespace = "EFT";
                     continue;
-
-                ultimateGoalName = ultimateGoalName.Replace("`1", "");
-                ultimateGoalName = ultimateGoalName.Replace("`2", "");
-                ultimateGoalName = ultimateGoalName.Replace("`3", "");
-                ultimateGoalName = ultimateGoalName.Replace("`4", "");
-
-                if (Assembly.GetAssembly(typeof(Attribute)).GetTypes().Any(x => x.Name.Contains(ultimateGoalName, StringComparison.OrdinalIgnoreCase)))
-                    continue;
-
+                }
 
                 // The new class name has already been used, ignore
-                if (renamedClasses.Any(x => x.Name.Equals(ultimateGoalName)))
-                    continue;
-
-#if DEBUG
-                if (ultimateGoalName.Equals("JsonConverter2"))
+                if (renamedClasses.Any(x => x.Name.Equals(desiredName)))
                 {
-
+                    Log($"Remapper (ERROR): Unable to Auto Remap {oldClassName} to {desiredName}. {desiredName} has already been used!");
+                    continue;
                 }
-#endif
+
+                if (assemblyDefinition.MainModule.GetTypes().Any(x => x.Name.Equals(desiredName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    Log($"Remapper (ERROR): Unable to Auto Remap {oldClassName} to {desiredName}. {desiredName} has already been by BSG or previous process!");
+                    continue;
+                }
+
+                if (UsedTypesByOtherDlls.Contains(desiredName))
+                {
+                    Log($"Remapper (ERROR): Unable to Auto Remap {oldClassName} to {desiredName}. {desiredName} has already been used by another Dll!");
+                    continue;
+                }
+
+                if (desiredName.Equals("Time"))
+                {
+                    Log($"Remapper (ERROR): You cannot remap to \"Time\"");
+                    continue;
+                }
+
+
                 if (renamedClasses.Add(t))
                 {
-                    Log($"Remapper: Auto Remapped {oldClassName} to {ultimateGoalName}");
-                    t.Name = ultimateGoalName;
+                    Log($"Remapper: Auto Remapped {oldClassName} to {desiredName}");
+                    t.Name = desiredName;
                 }
                 else
                 {
-                    Log($"Remapper (ERROR): Unable to Auto Remap {oldClassName} to {ultimateGoalName}. {ultimateGoalName} has already been used!");
+                    Log($"Remapper (ERROR): Unable to Auto Remap {oldClassName} to {desiredName}. {desiredName} has already been used!");
                 }
 
             }
@@ -906,7 +934,7 @@ namespace SIT.Launcher.DeObfus
                     if (!gclassToNameCounts.ContainsKey((n, t)))
                         gclassToNameCounts.Add((n, t), 0);
 
-                    gclassToNameCounts[(n, t)]++;
+                    gclassToNameCounts[(n, t)] += 1;
                 }
             }
 
@@ -942,7 +970,7 @@ namespace SIT.Launcher.DeObfus
                     if (!gclassToNameCounts.ContainsKey((n, t)))
                         gclassToNameCounts.Add((n, t), 0);
 
-                    gclassToNameCounts[(n, t)]++;
+                    gclassToNameCounts[(n, t)] += 1;
                 }
             }
         }
@@ -982,36 +1010,18 @@ namespace SIT.Launcher.DeObfus
 
         private static void RemapAutoDiscoverAndCountByMethodParameters(ref Dictionary<(string, TypeDefinition), int> gclassToNameCounts, TypeDefinition t, IEnumerable<TypeDefinition> otherTypes)
         {
-            foreach (var other in otherTypes)
+            var otherTypesWithMethods = otherTypes
+                .Where(x => x.IsClass && x.HasMethods && x.Methods.Any(m => m.HasParameters));
+            foreach (var other in otherTypesWithMethods)
             {
-                if (!other.HasMethods || other.Methods == null)
-                    continue;
-
-                if (other.FullName.Contains("FirearmController"))
+                var validMethods = other.Methods
+                    .Where(method => method.Parameters.Any(x => x.ParameterType.Equals(t)));
+                foreach (var method in validMethods)
                 {
-
-                }
-
-                foreach (var method in other.Methods)
-                {
-                    if (!method.HasBody)
-                        continue;
-
-                    if (!method.Parameters.Any())
-                        continue;
-
-                    if (method.Name == "SetLightsState")
-                    {
-
-                    }
-
-                    foreach (var parameter in method.Parameters
-                        .Where(x => x.ParameterType.Name.Replace("[]", "").Replace("`1", "") == t.Name)
-                        .Where(x => x.ParameterType.Name.Length > 3)
+                    foreach (var parameter 
+                        in method.Parameters.Where(x => x.ParameterType.Equals(t))
                         )
                     {
-
-
                         var n =
                         // Key Value is Built like so. KEY.VALUE
                         parameter.ParameterType.Name
@@ -1450,7 +1460,7 @@ namespace SIT.Launcher.DeObfus
 
         internal static async Task<bool> DeobfuscateAsync(string exeLocation, bool createBackup = true, bool overwriteExisting = false, bool doRemapping = false, ILogger logger = null)
 		{
-            NestedLogger = logger;
+            Logger = logger;
 			return await Task.Run(() => { return Deobfuscate(exeLocation, createBackup, overwriteExisting, doRemapping); });
 		}
 	}
