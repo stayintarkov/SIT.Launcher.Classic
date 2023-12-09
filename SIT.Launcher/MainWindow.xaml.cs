@@ -459,7 +459,7 @@ namespace SIT.Launcher
             if (string.IsNullOrEmpty(Config.InstallLocation) || !File.Exists(Config.InstallLocation))
             {
                 OpenFileDialog openFileDialog = new OpenFileDialog();
-                openFileDialog.Filter = "Executable (EscapeFromTarkov.exe)|EscapeFromTarkov.exe;";
+                openFileDialog.Filter = "EFT executatable|EscapeFromTarkov*";
                 if (openFileDialog.ShowDialog() == true)
                 {
                     var fvi = FileVersionInfo.GetVersionInfo(openFileDialog.FileName);
@@ -540,31 +540,43 @@ namespace SIT.Launcher
             {
                 Directory.Delete(battlEyeDirPath, true);
             }
-            var battlEyeExePath = installLocation.Replace("EscapeFromTarkov", "EscapeFromTarkov_BE");
-            if (File.Exists(battlEyeExePath))
-            {
-                File.Delete(battlEyeExePath);
+
+            var BEExePaths = Directory.GetFiles(Directory.GetParent(installLocation).FullName, "*_BE.exe");
+            foreach(var beexepath in BEExePaths) 
+            { 
+                File.Delete(beexepath);
             }
-            var cacheDirPath = Directory.GetParent(installLocation).FullName + "\\cache";
-            if (Directory.Exists(cacheDirPath))
-            {
-                Directory.Delete(cacheDirPath, true);
-            }
-            var consistancyInfoPath = installLocation.Replace("EscapeFromTarkov.exe", "ConsistencyInfo");
-            if (File.Exists(consistancyInfoPath))
-            {
-                File.Delete(consistancyInfoPath);
-            }
-            var uninstallPath = installLocation.Replace("EscapeFromTarkov.exe", "Uninstall.exe");
-            if (File.Exists(uninstallPath))
-            {
-                File.Delete(uninstallPath);
-            }
-            var logsDirPath = System.IO.Path.Combine(Directory.GetParent(installLocation).FullName, "Logs");
-            if (Directory.Exists(logsDirPath))
-            {
-                Directory.Delete(logsDirPath, true);
-            }
+
+            //var battlEyeExePath = installLocation.Replace("EscapeFromTarkov", "EscapeFromTarkov_BE");
+            //if (File.Exists(battlEyeExePath))
+            //{
+            //    File.Delete(battlEyeExePath);
+            //}
+            //var arenaBattlEyeExePath = installLocation.Replace("EscapeFromTarkovArena", "EscapeFromTarkovArena_BE");
+            //if (File.Exists(arenaBattlEyeExePath))
+            //{
+            //    File.Delete(arenaBattlEyeExePath);
+            //}
+            //var cacheDirPath = Directory.GetParent(installLocation).FullName + "\\cache";
+            //if (Directory.Exists(cacheDirPath))
+            //{
+            //    Directory.Delete(cacheDirPath, true);
+            //}
+            //var consistancyInfoPath = installLocation.Replace("EscapeFromTarkov.exe", "ConsistencyInfo");
+            //if (File.Exists(consistancyInfoPath))
+            //{
+            //    File.Delete(consistancyInfoPath);
+            //}
+            //var uninstallPath = installLocation.Replace("EscapeFromTarkov.exe", "Uninstall.exe");
+            //if (File.Exists(uninstallPath))
+            //{
+            //    File.Delete(uninstallPath);
+            //}
+            //var logsDirPath = System.IO.Path.Combine(Directory.GetParent(installLocation).FullName, "Logs");
+            //if (Directory.Exists(logsDirPath))
+            //{
+            //    Directory.Delete(logsDirPath, true);
+            //}
         }
 
         private bool DoesBepInExExistInInstall(string exeLocation)

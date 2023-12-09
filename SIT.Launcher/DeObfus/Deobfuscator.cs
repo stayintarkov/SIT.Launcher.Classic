@@ -80,8 +80,12 @@ namespace SIT.Launcher.DeObfus
 
         internal static bool Deobfuscate(string exeLocation, bool createBackup = true, bool overwriteExisting = false, bool doRemapping = false)
         {
-            var assemblyPath = exeLocation.Replace("EscapeFromTarkov.exe", "");
-            var managedPath = Path.Combine(assemblyPath, "EscapeFromTarkov_Data", "Managed");
+            // Get the Assembly Path by removing the .exe file in the path
+            var assemblyPath = exeLocation
+                .Replace(".exe", "", StringComparison.InvariantCulture);
+            // Add "_Data" to get the Data folder
+            var managedPath = Path.Combine(assemblyPath + "_Data", "Managed");
+            // Find the Assembly-CSharp.dll
             assemblyPath = Path.Combine(managedPath, "Assembly-CSharp.dll");
 
             return DeobfuscateAssembly(assemblyPath, managedPath, createBackup, overwriteExisting, doRemapping);
@@ -185,7 +189,9 @@ namespace SIT.Launcher.DeObfus
             proc.OutputDataReceived += (object sender, DataReceivedEventArgs e) => {
                 Debug.WriteLine(e.Data);
             };
-            proc.WaitForExit(new TimeSpan(0,0,30));
+            while (!proc.WaitForExit(new TimeSpan(0, 0, 30)))
+            {
+            }
             if(proc != null && !proc.HasExited)
                 proc.Kill(true);
 
@@ -772,11 +778,10 @@ namespace SIT.Launcher.DeObfus
                     continue;
                 }
 
-
                 // Follow standard naming convention, PascalCase all class names
                 var desiredName = char.ToUpper(classNameNew[0]) + classNameNew.Substring(1);
                 // Following BSG naming convention, begin Abstract classes names with "Abstract"
-                if (t.IsAbstract && !t.IsInterface)
+                if (t.IsAbstract && !t.IsInterface && !desiredName.Contains("Abstract"))
                     desiredName = "Abstract" + desiredName;
                 // Follow standard naming convention, Interface names begin with "I"
                 else if (t.IsInterface)
@@ -819,16 +824,10 @@ namespace SIT.Launcher.DeObfus
 
                 // Do a check. You cannot have two classes with the same name.
                 var countOfExisting = 0;
-                var countOfMainModule = assemblyDefinition.MainModule.GetTypes().Count(x => x.Name.Equals(desiredName, StringComparison.OrdinalIgnoreCase));
-                var countOfOtherDllTypes = UsedTypesByOtherDlls.Count(x => x.Equals(desiredName));
-                if (countOfMainModule > 0 || countOfOtherDllTypes > 0)
-                {
-                    countOfExisting = countOfMainModule + countOfOtherDllTypes;
-                }
                 var loopName = desiredName;
-                if (UsedTypesByOtherDlls.Any(x => x.Equals(loopName)))
+                if (assemblyDefinition.MainModule.GetTypes().Any(x => x.Name.Equals(loopName)))
                 {
-                    while (UsedTypesByOtherDlls.Any(x => x.Equals(loopName)))
+                    while (assemblyDefinition.MainModule.GetTypes().Any(x => x.Name.Equals(loopName)))
                     {
                         countOfExisting++;
                         loopName = desiredName + countOfExisting.ToString();
@@ -837,6 +836,14 @@ namespace SIT.Launcher.DeObfus
                 if (renamedClasses.Any(x => x.Name.Equals(loopName)))
                 {
                     while (renamedClasses.Any(x => x.Name.Equals(loopName)))
+                    {
+                        countOfExisting++;
+                        loopName = desiredName + countOfExisting.ToString();
+                    }
+                }
+                if (UsedTypesByOtherDlls.Any(x => x.Equals(loopName)))
+                {
+                    while (UsedTypesByOtherDlls.Any(x => x.Equals(loopName)))
                     {
                         countOfExisting++;
                         loopName = desiredName + countOfExisting.ToString();
@@ -872,7 +879,7 @@ namespace SIT.Launcher.DeObfus
 
                 if (assemblyDefinition.MainModule.GetTypes().Any(x => x.Name.Equals(desiredName, StringComparison.OrdinalIgnoreCase)))
                 {
-                    Log($"Remapper (ERROR): Unable to Auto Remap {oldClassName} to {desiredName}. {desiredName} has already been by BSG or previous process!");
+                    Log($"Remapper (ERROR): Unable to Auto Remap {oldClassName} to {desiredName}. {desiredName} has already been used by BSG or previous process!");
                     continue;
                 }
 
@@ -1153,46 +1160,47 @@ namespace SIT.Launcher.DeObfus
 
         private static void RemapAutoDiscoverAndCountByInterfaces(ref Dictionary<(string, TypeDefinition), int> gclassToNameCounts, TypeDefinition t)
         {
-         
-                if (t.Interfaces == null)
-                    return;
 
-                foreach (var interf in t.Interfaces) {
+            if (t.Interfaces == null)
+                return;
 
-                    if (interf.InterfaceType.Name.Contains("GClass")
-                        || interf.InterfaceType.Name.Contains("GStruct") 
-                        || interf.InterfaceType.Name.Contains("GInterface") 
-                        || interf.InterfaceType.Name.Contains("Class")
-                        || interf.InterfaceType.Name.Contains("Disposable")
-                        || interf.InterfaceType.Name.Contains("Enumerator")
-                        || interf.InterfaceType.Name.Contains("Comparer")
-                        || interf.InterfaceType.Name.Contains("Enumerable")
-                        || interf.InterfaceType.Name.Contains("Interface")
-                        || interf.InterfaceType.Name.Contains("Equatable")
-                        || interf.InterfaceType.Name.Contains("Exchangeable")
-                        ) 
-                        continue;
+            foreach (var interf in t.Interfaces.OrderByDescending(x => x.InterfaceType.Name.Length))
+            {
 
-                    var n =
-                    // Key Value is Built like so. KEY.VALUE
-                    t.Name
-                    .Replace("[]", "")
-                    .Replace("`1", "")
-                    .Replace("`2", "")
-                    .Replace("`3", "")
-                    .Replace("&", "")
-                    .Replace(" ", "")
-                    + "."
+                if (interf.InterfaceType.Name.Contains("GClass")
+                    || interf.InterfaceType.Name.Contains("GStruct")
+                    || interf.InterfaceType.Name.Contains("GInterface")
+                    || interf.InterfaceType.Name.Contains("Class")
+                    || interf.InterfaceType.Name.Contains("Disposable")
+                    || interf.InterfaceType.Name.Contains("Enumerator")
+                    || interf.InterfaceType.Name.Contains("Comparer")
+                    || interf.InterfaceType.Name.Contains("Enumerable")
+                    || interf.InterfaceType.Name.Contains("Interface")
+                    || interf.InterfaceType.Name.Contains("Equatable")
+                    || interf.InterfaceType.Name.Contains("Exchangeable")
+                    )
+                    continue;
 
-                    + char.ToUpper(interf.InterfaceType.Name[1]) + interf.InterfaceType.Name.Substring(2)
-                    ;
+                var n =
+                // Key Value is Built like so. KEY.VALUE
+                t.Name
+                .Replace("[]", "")
+                .Replace("`1", "")
+                .Replace("`2", "")
+                .Replace("`3", "")
+                .Replace("&", "")
+                .Replace(" ", "")
+                + "."
 
-                    if (!gclassToNameCounts.ContainsKey((n, t)))
-                        gclassToNameCounts.Add((n, t), 0);
+                + char.ToUpper(interf.InterfaceType.Name[1]) + interf.InterfaceType.Name.Substring(2)
+                ;
 
-                    gclassToNameCounts[(n, t)]++;
+                if (!gclassToNameCounts.ContainsKey((n, t)))
+                    gclassToNameCounts.Add((n, t), 0);
 
-                }
+                gclassToNameCounts[(n, t)]++;
+
+            }
         }
 
         private static void RemapByDefinedConfiguration(AssemblyDefinition assembly, AutoRemapperConfig autoRemapperConfig)
@@ -1241,6 +1249,13 @@ namespace SIT.Launcher.DeObfus
                                 Log($"Remapper: Remapped {oldClassName} to {newClassName}");
                                 countOfDefinedMappingSucceeded++;
 
+                                if(config.ConvertInternalMethodsToPublic ?? true)
+                                {
+                                    foreach(var m in t.Methods)
+                                    {
+                                        m.IsPublic = true;
+                                    }
+                                }
                             }
                         }
                         else

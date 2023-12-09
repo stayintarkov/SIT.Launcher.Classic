@@ -198,28 +198,9 @@
       "HasMethods": [ "CanExecute" ]
     },
     {
-      "RenameClassNameTo": "AbstractInternalOperation2",
-      "IsClass": true,
-      "InheritsClass": "AbstractInternalOperation",
-      "HasFields": [ "Item", "DestroysMainItem", "DestroyedItems" ],
-      "HasConstructorArgs": [ "id", "controller", "destroyedItems" ]
-    },
-    {
-      "RenameClassNameTo": "MoveInternalOperation",
-      "IsClass": true,
-      "InheritsClass": "AbstractInternalOperation2",
-      "ConvertInternalMethodsToPublic": true
-    },
-    {
       "RenameClassNameTo": "SOperationResult",
       "HasFields": [ "Error", "Succeeded", "Failed" ],
       "IsStruct": true
-    },
-    {
-      "RenameClassNameTo": "AmmoManipulationInternalOperation",
-      "IsClass": true,
-      "InheritsClass": "AbstractInternalOperation",
-      "HasMethods": [ "SucceedAmmoManipulationHandler" ]
     },
     {
       "RenameClassNameTo": "TokenStarter",
@@ -274,6 +255,39 @@
       "RenameClassNameTo": "ServerBotSettingsValuesClass",
       "IsClass": true,
       "HasFields": [ "CountAsBossForStatistics", "IsBoss", "IsFollower" ]
+    },
+    {
+      "RenameClassNameTo": "AbstractInventoryOperation",
+      "IsClass": true,
+      "IsAbstract": true,
+      "HasFields": [ "commandStatus_0" ],
+      "ConvertInternalMethodsToPublic": true
+    },
+    {
+      "RenameClassNameTo": "OperationToDescriptorHelpers",
+      "IsClass": true,
+      "HasMethodsStatic": [ "FromContainer", "FromSlotItemAddress", "FromStackSlotItemAddress", "FromGridItemAddress", "FromOwnerItself", "FromItemAddress", "FromInventoryOperation", "ToItemsDescriptorData", "FromAddOperation" ]
+    },
+    {
+      "RenameClassNameTo": "AbstractInventoryOperation2",
+      "IsClass": true,
+      "InheritsClass": "AbstractInventoryOperation",
+      "HasFields": [ "Item", "DestroysMainItem", "DestroyedItems" ],
+      "HasConstructorArgs": [ "id", "controller", "destroyedItems" ],
+      "ConvertInternalMethodsToPublic": true
+    },
+    {
+      "RenameClassNameTo": "MoveInternalOperation",
+      "IsClass": true,
+      "InheritsClass": "AbstractInventoryOperation2",
+      "ConvertInternalMethodsToPublic": true
+    },
+    {
+      "RenameClassNameTo": "AmmoManipulationOperation",
+      "IsClass": true,
+      "InheritsClass": "AbstractInventoryOperation",
+      "HasMethods": [ "SucceedAmmoManipulationHandler" ],
+      "ConvertInternalMethodsToPublic": true
     }
   ],
   "DefinedTypesToForcePublic": [
@@ -297,7 +311,7 @@
     "EFT.BaseLocalGame",
     "EFT.Player",
     "ItemController",
-    "AbstractInternalOperation"
+    "AbstractInventoryOperation"
   ],
   "TypesToForceAllPublicFieldsAndProperties": [
     "BaseLocalGame",
@@ -305,7 +319,9 @@
     //"PlayerHealthController"
   ],
   "TypesToConvertConstructorsToPublic": [
-    "MoveInternalOperation"
+    "AbstractInventoryOperation",
+    "MoveInternalOperation",
+    "FoldOperation"
   ],
   // Add SptUsec and SptBear to the Dll
   "EnableAddSPTUsecBearToDll": true
