@@ -895,6 +895,12 @@ namespace SIT.Launcher.DeObfus
                     continue;
                 }
 
+                if (assemblyDefinition.MainModule.GetTypes().Any(x => x.Namespace.Equals(desiredName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    Log($"Remapper (ERROR): Unable to Auto Remap {oldClassName} to {desiredName}. {desiredName} is a namespace!");
+                    continue;
+                }
+
 
                 if (renamedClasses.Add(t))
                 {
@@ -946,6 +952,7 @@ namespace SIT.Launcher.DeObfus
             }
 
             RemapAutoDiscoverAndCountByFields(ref gclassToNameCounts, t, allTypes);
+            RemapAutoDiscoverAndCountByEnumerationFields(ref gclassToNameCounts, t, allTypes);
         }
 
         private static void RemapAutoDiscoverAndCountByFields(ref Dictionary<(string, TypeDefinition), int> gclassToNameCounts, TypeDefinition t, IEnumerable<TypeDefinition> allTypes)
@@ -978,6 +985,39 @@ namespace SIT.Launcher.DeObfus
                         gclassToNameCounts.Add((n, t), 0);
 
                     gclassToNameCounts[(n, t)] += 1;
+                }
+            }
+        }
+
+        private static void RemapAutoDiscoverAndCountByEnumerationFields(ref Dictionary<(string, TypeDefinition), int> gclassToNameCounts, TypeDefinition t, IEnumerable<TypeDefinition> allTypes)
+        {
+            foreach (var other in allTypes.Where(x => x.HasFields))
+            {
+                foreach (var prop in other.Fields.Where(p =>
+                                    p.FieldType.HasGenericParameters
+                                    ))
+                {
+                    // if the property name includes "gclass" or whatever, then ignore it as its useless to us
+                    //if (prop.Name.StartsWith("GClass", StringComparison.OrdinalIgnoreCase)
+                    //    || prop.Name.StartsWith("GStruct", StringComparison.OrdinalIgnoreCase)
+                    //    || prop.Name.StartsWith("GInterface", StringComparison.OrdinalIgnoreCase)
+                    //    || prop.Name.StartsWith("Class", StringComparison.OrdinalIgnoreCase)
+                    //    )
+                    //    continue;
+
+                    //var n = prop.FieldType.Name
+                    //    .Replace("[]", "")
+                    //    .Replace("`1", "")
+                    //    .Replace("`2", "")
+                    //    .Replace("`3", "")
+                    //    .Replace("&", "")
+                    //    .Replace(" ", "")
+                    //    + "." + char.ToUpper(prop.Name[0]) + prop.Name.Substring(1)
+                    //    ;
+                    //if (!gclassToNameCounts.ContainsKey((n, t)))
+                    //    gclassToNameCounts.Add((n, t), 0);
+
+                    //gclassToNameCounts[(n, t)] += 1;
                 }
             }
         }
