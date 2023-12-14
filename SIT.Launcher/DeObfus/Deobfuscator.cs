@@ -362,7 +362,7 @@ namespace SIT.Launcher.DeObfus
                         {
 
                         }
-                        t.Resolve();
+                        //t.Resolve();
                     }
                     else
                     {
@@ -413,7 +413,7 @@ namespace SIT.Launcher.DeObfus
                         {
                             c.IsPublic = true;
                         }
-                        t.Resolve();
+                        //t.Resolve();
                     }
                 }
             }
