@@ -24,6 +24,17 @@ namespace SIT.Launcher.DeObfus
 {
 	internal static class Deobfuscator
 	{
+        static HashSet<string> TypesToNotRemap = new HashSet<string>
+            {
+                "module", "data", "object", "entities", "value",
+                "body", "result", "parent", "area",
+                "place", "info", "shot", "request",
+                "source", "writer", "graph", "currequest",
+                "controller", "counter", "closest", "newobject",
+                "setting", "dictionary", "instance", "settings",
+                "variation", "operation", "template", "emitter"
+            };
+
 
         public static HashSet<string> UsedTypesByOtherDlls { get; } = new HashSet<string>();
 
@@ -238,7 +249,7 @@ namespace SIT.Launcher.DeObfus
         {
             var resolver = new DefaultAssemblyResolver();
             resolver.AddSearchDirectory(managedPath);
-            var readerParameters = new ReaderParameters { AssemblyResolver = resolver };
+            var readerParameters = new ReaderParameters { AssemblyResolver = resolver, InMemory = false };
 
 
             UsedTypesByOtherDlls.Clear();
@@ -413,7 +424,7 @@ namespace SIT.Launcher.DeObfus
                         {
                             c.IsPublic = true;
                         }
-                        t.Resolve();
+                        //t.Resolve();
                     }
                 }
             }
@@ -502,17 +513,11 @@ namespace SIT.Launcher.DeObfus
             var types = assembly
                 .MainModule
                 .GetTypes()
-                .Where(x => 
-                x.IsClass 
-                && x.IsDefinition 
-                //&& x.Namespace.StartsWith("EFT")
-                && !x.Name.Contains("<")
-                && !x.Name.Contains(">")
-                && !x.Name.Contains("Module")
-                && !Assembly.GetAssembly(typeof(Attribute))
-                    .GetTypes()
-                    .Any(y => y.Name.StartsWith(x.Name, StringComparison.OrdinalIgnoreCase))
-                );
+                .Where(x =>
+                x.IsClass
+                && x.IsDefinition
+                && !TypesToNotRemap.Contains(x.Name.ToLower())
+                ).ToArray();
 
             var nonPublicTypes = types
                 .Where(x => !x.IsNested && x.IsNotPublic).ToList();
@@ -520,33 +525,11 @@ namespace SIT.Launcher.DeObfus
             var nonPublicNestedTypes = types
                 .Where(x => x.IsNested && !x.IsNestedPublic).ToList();
 
-            //var nonPublicClasses = nonPublicTypes.Where(t =>
-            //    t.IsClass
-            //        && t.IsDefinition
-            //        && t.BaseType != null
-            //        //&& (t.BaseType.FullName != "System.Object")
-            //        && !Assembly.GetAssembly(typeof(Attribute))
-            //            .GetTypes()
-            //            .Any(x => x.Name.StartsWith(t.Name, StringComparison.OrdinalIgnoreCase))
-            //        ).ToList();
-
             foreach (var t in nonPublicTypes)
             {
-                if (t.IsNested)
-                {
-                    t.IsNestedPublic = true;
-                    if (!t.DeclaringType.IsPublic)
-                    {
-                        t.DeclaringType.IsPublic = true;
-                    }
-                }
-                else
+                if (t.IsNotPublic)
                 {
                     t.IsPublic = true;
-                    if (t.BaseType != null)
-                    {
-                        t.BaseType.Resolve().IsPublic = true;
-                    }
                 }
                 countOfPublications++;
             }
