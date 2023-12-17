@@ -19,16 +19,6 @@
     <None Remove="AkiSupport\Bepinex\aki-custom.dll" />
     <None Remove="AkiSupport\Bepinex\Patchers\DONOTDELETE.txt" />
     <None Remove="AkiSupport\Bepinex\Plugins\DONOTDELETE.txt" />
-    <None Remove="DeObfus\BaseRemapperConfig.json" />
-    <None Remove="DeObfus\de4dot\AssemblyData.dll" />
-    <None Remove="DeObfus\de4dot\de4dot.blocks.dll" />
-    <None Remove="DeObfus\de4dot\de4dot.code.dll" />
-    <None Remove="DeObfus\de4dot\de4dot.cui.dll" />
-    <None Remove="DeObfus\de4dot\de4dot.exe" />
-    <None Remove="DeObfus\de4dot\de4dot.mdecrypt.dll" />
-    <None Remove="DeObfus\de4dot\dnlib.dll" />
-    <None Remove="DeObfus\mappings\Aki\AkiRemapperConfig.json" />
-    <None Remove="DeObfus\mappings\SITRemapperConfig.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -57,47 +47,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	</Content>
-	   
-	    <Content Include="DeObfus\de4dot\AssemblyData.dll">
-	      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-		</Content>
-		<Content Include="DeObfus\de4dot\de4dot.blocks.dll">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-		</Content>
-	    <Content Include="DeObfus\de4dot\de4dot.code.dll">
-	      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-		</Content>
-	    <Content Include="DeObfus\de4dot\de4dot.cui.dll">
-	      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-		</Content>
-		<Content Include="DeObfus\de4dot\de4dot.exe">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-		</Content>
-		<Content Include="DeObfus\de4dot\de4dot.mdecrypt.dll">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-		</Content>
-	    <Content Include="DeObfus\de4dot\dnlib.dll">
-	      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-		</Content>
-		 <Content Include="DeObfus\mappings\BaseRemapperConfig.json">
-	      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	    </Content>
-	    <Content Include="DeObfus\mappings\Aki\AkiRemapperConfig.json">
-	      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	    </Content>
-	    <Content Include="DeObfus\mappings\SIT\SITRemapperConfig.json">
-	      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	    </Content>
     <Content Include="References\Accessibility.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
@@ -456,24 +405,25 @@
     <PackageReference Include="NetDiscordRpc" Version="1.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Octokit" Version="7.1.0" />
+    <PackageReference Include="Paulov.Tarkov.Deobfuscator.Lib" Version="1.0.1" />
     <PackageReference Include="System.IO.Compression" Version="4.3.0" />
   </ItemGroup>
 	<ItemGroup>
-		<Reference Include="de4dot.cui">
-		  <HintPath>DeObfus\de4dot\de4dot.cui.dll</HintPath>
-		</Reference>
-		<Reference Include="Mono.Cecil">
-		  <HintPath>DeObfus\Mono.Cecil.dll</HintPath>
-		</Reference>
-		<Reference Include="Mono.Cecil.Rocks">
-		  <HintPath>DeObfus\Mono.Cecil.Rocks.dll</HintPath>
-		</Reference>
 		<Reference Include="References/bsg.componentace.compression.libs.zlib.dll"></Reference>
 	</ItemGroup>
 
   <ItemGroup>
     <None Update="AddNewServerDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="DeObfus\mappings\Aki\AkiRemapperConfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="DeObfus\mappings\BaseRemapperConfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="DeObfus\mappings\SIT\SITRemapperConfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 

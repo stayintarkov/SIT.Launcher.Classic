@@ -3,8 +3,7 @@ using MahApps.Metro.Controls;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using Octokit;
-using SIT.Launcher.DeObfus;
-using SIT.Launcher.Windows;
+using Paulov.Tarkov.Deobfuscator.Lib;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,13 +11,12 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Documents;
+using Tarkov.Deobfuscator;
 
 namespace SIT.Launcher
 {
@@ -30,8 +28,6 @@ namespace SIT.Launcher
         public MainWindow()
         {
             InitializeComponent();
-
-            ExtractDeobfuscator();
 
             if (File.Exists("LauncherConfig.json"))
             {
@@ -251,8 +247,8 @@ namespace SIT.Launcher
             await loadingDialog.UpdateAsync("Installing", $"Installing BepInEx");
             await DownloadAndInstallBepInEx5(exeLocation);
 
-            await loadingDialog.UpdateAsync("Installing", $"Deobfuscating Assembly-CSharp. This can take some time...");
-            await Deobfuscate(exeLocation);
+            //await loadingDialog.UpdateAsync("Installing", $"Deobfuscating Assembly-CSharp. This can take some time...");
+            //await Deobfuscate(exeLocation);
 
             await loadingDialog.UpdateAsync("Installing", $"Installing StayInTarkov.Client");
             await DownloadAndInstallSIT(exeLocation);
@@ -933,7 +929,8 @@ namespace SIT.Launcher
 
         private async Task<bool> Deobfuscate(string exeLocation, bool createBackup = true, bool overwriteExisting = true, bool doRemapping = true)
         {
-            Deobfuscator.Logged.Clear();
+            var debobfuscator = new PaulovDeobfuscator();
+            PaulovDeobfuscator.Logged.Clear();
             await Dispatcher.InvokeAsync(() =>
             {
                 txtDeobfuscateLog.Text = String.Empty;
@@ -946,7 +943,7 @@ namespace SIT.Launcher
             });
             loadingDialog.Update("Deobfuscating", "Deobfuscating");
 
-            var result = await Deobfuscator.DeobfuscateAsync(exeLocation, createBackup, overwriteExisting, doRemapping, this);
+            var result = await debobfuscator.DeobfuscateAsync(exeLocation, createBackup, overwriteExisting, doRemapping, this);
             await Dispatcher.InvokeAsync(() =>
             {
                 btnDeobfuscate.IsEnabled = true;
@@ -972,21 +969,6 @@ namespace SIT.Launcher
             assemblyLocation += "EscapeFromTarkov_Data\\Managed\\Assembly-CSharp.dll";
             return !File.Exists(assemblyLocation + ".backup");
         }
-
-        private void ExtractDeobfuscator()
-        {
-            var deobfusFolder = App.ApplicationDirectory + "/DeObfus/";
-            if (!File.Exists(deobfusFolder + "Deobfuscator.zip"))
-                return;
-
-            if (!File.Exists(deobfusFolder + "/de4dot/" + "de4dot.exe"))
-            {
-                System.IO.Compression.ZipFile.ExtractToDirectory(deobfusFolder + "Deobfuscator.zip", deobfusFolder + "/de4dot/");
-                File.Delete(deobfusFolder + "Deobfuscator.zip");
-            }
-        }
-
-       
 
         private void btnStartServer_Click(object sender, RoutedEventArgs e)
         {
@@ -1050,7 +1032,7 @@ namespace SIT.Launcher
             openFileDialog.Filter = "DLL (Assembly-CSharp)|Assembly-CSharp*.dll;";
             if (openFileDialog.ShowDialog() == true)
             {
-                Deobfuscator.DeobfuscateAssembly(openFileDialog.FileName, Directory.GetParent(openFileDialog.FileName).FullName, doRemapping: true);
+                new PaulovDeobfuscator().DeobfuscateAssembly(openFileDialog.FileName, Directory.GetParent(openFileDialog.FileName).FullName, doRemapping: true);
             }
         }
 
