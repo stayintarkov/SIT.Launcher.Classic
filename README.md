@@ -1,4 +1,8 @@
-﻿# Summary
+﻿# DEPRECATED
+
+This is no longer being maintained. Paulov's launcher is now on [his own repo](https://github.com/paulov-t)
+
+# Summary
 
 This Launcher is designed to work with [SPT-AKI](https://dev.sp-tarkov.com/SPT-AKI/Server) & [Stay In Tarkov](https://github.com/stayintarkov/StayInTarkov.Client)
 
@@ -6,7 +10,7 @@ This Launcher is designed to work with [SPT-AKI](https://dev.sp-tarkov.com/SPT-A
 
 <div align=center>
 
-![GitHub all releases](https://img.shields.io/github/downloads/paulov-t/SIT.Launcher/total) ![GitHub release (latest by date)](https://img.shields.io/github/downloads/paulov-t/SIT.Launcher/latest/total)
+![GitHub all releases](https://img.shields.io/github/downloads/stayintarkov/SIT.Launcher/total) ![GitHub release (latest by date)](https://img.shields.io/github/downloads/stayintarkov/SIT.Launcher/latest/total)
 
 </div>
 
